@@ -14,6 +14,7 @@
 
 ## 프로젝트 구조
 
+```
 AInterview_front/
 ├── app/
 │ ├── (tabs)/ # 하단 탭 네비게이션 관련 화면
@@ -28,7 +29,7 @@ AInterview_front/
 │ └── icons/ # 아이콘 파일 저장 폴더 (※ 현재 미생성)
 │
 ├── components/ # 공통 UI 컴포넌트 모음
-│  
+│
 │
 ├── constants/ # 공통으로 사용하는 색상, 폰트 등의 상수 설정
 │ └── Colors.ts
@@ -40,6 +41,7 @@ AInterview_front/
 ├── tsconfig.json # TypeScript 컴파일 설정
 ├── .gitignore # Git 추적 제외 파일 목록
 └── README.md # 프로젝트 설명 파일
+```
 
 ## 파일명 지정 방법
 
