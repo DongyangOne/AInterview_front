@@ -12,13 +12,19 @@ export default function TabLayout() {
       screenOptions={{
         tabBarShowLabel: false,
         tabBarStyle: {
+          height: "6.9%", // 56/812 비율
           backgroundColor: "#ffffff",
+          borderTopWidth: 0, // 상단 경계선 제거
+          elevation: 0,
+          alignItems: "center",
+          width: "100%",
         },
       }}
     >
       <Tabs.Screen
         name="home"
         options={{
+          headerShown: false, // 상단 타이틀 숨기기
           tabBarIcon: ({ color, focused }) => (
             <View style={{ alignItems: "center" }}>
               <Image
@@ -66,7 +72,6 @@ export default function TabLayout() {
                   marginLeft: "10%",
                   fontSize: 10,
                   width: 30,
-
                   color: focused ? color : "#999",
                 }}
               >
@@ -80,22 +85,30 @@ export default function TabLayout() {
         name="interview"
         options={{
           title: "",
-          tabBarIcon: ({ color, focused }) => (
-            <TouchableOpacity>
+          tabBarIcon: () => null, // 기본 아이콘 제거
+          tabBarButton: (props) => (
+            <TouchableOpacity
+              {...props}
+              style={{
+                flex: 1,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+              activeOpacity={1}
+            >
               <View
                 style={{
+                  position: "absolute",
+                  top: -25,
                   width: 64,
-                  height: 86,
+                  height: 64,
+                  alignItems: "center",
+                  justifyContent: "center",
                 }}
               >
                 <Image
                   source={require("../../assets/icons/interview.png")}
-                  style={{
-                    position: "absolute",
-                    bottom: 16,
-                    width: 64,
-                    height: 64,
-                  }}
+                  style={{ width: 64, height: 64 }}
                   resizeMode="contain"
                 />
               </View>
@@ -103,6 +116,7 @@ export default function TabLayout() {
           ),
         }}
       />
+
       <Tabs.Screen
         name="calendar"
         options={{
@@ -121,6 +135,7 @@ export default function TabLayout() {
               <Text
                 style={{
                   fontSize: 10,
+                  width: 30,
                   color: focused ? color : "#999",
                 }}
               >
@@ -139,9 +154,9 @@ export default function TabLayout() {
                 source={require("../../assets/icons/Person.png")}
                 style={{
                   marginTop: 10,
-                  marginLeft: "0.7%",
                   width: 24,
                   height: 24,
+                  marginRight: "30.77%",
                   tintColor: color,
                 }}
                 resizeMode="contain"
@@ -149,8 +164,8 @@ export default function TabLayout() {
               <Text
                 style={{
                   fontSize: 10,
-                  marginLeft: "0.7%",
-                  width: 44,
+                  marginRight: "7.77%",
+                  width: 50,
                   color: focused ? color : "#999",
                 }}
               >
