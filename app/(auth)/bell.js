@@ -54,6 +54,13 @@ const notifications = [
     time: "1시간 전",
     read: false,
   },
+  {
+    id: 7,
+    title: "면접 일정 안내",
+    desc: "내일 10시 ONE 면접이 예정되어 있습니다.",
+    time: "1시간 전",
+    read: false,
+  },
 ];
 
 export default function Bell() {
@@ -74,7 +81,7 @@ export default function Bell() {
         padding: 25,
         borderBottomColor: "#808080",
         borderBottomWidth: index < notis.length - 1 ? 1 : 0,
-        minHeight: 125,
+        height: 128.5,
         backgroundColor: item.read ? "#fff" : "#E3E6FF",
         position: "relative",
       }}
@@ -96,7 +103,7 @@ export default function Bell() {
               color: "#808080",
               marginBottom: 14,
               fontWeight: "600",
-              lineHeight: 20,
+              paddingtop: 14,
             }}
           >
             면접알림
@@ -115,10 +122,10 @@ export default function Bell() {
         </View>
         <Text
           style={{
-            fontSize: 15,
+            fontSize: 16,
             fontWeight: "bold",
             color: "#191919",
-            marginBottom: 8,
+            marginBottom: 4,
           }}
         >
           {item.title}
@@ -128,7 +135,7 @@ export default function Bell() {
             fontSize: 16,
             color: "#191919",
             fontWeight: "400",
-            paddingBottom: 10,
+            paddingBottom: 23,
           }}
         >
           {item.desc}
@@ -191,7 +198,6 @@ export default function Bell() {
         data={notis}
         keyExtractor={(item) => item.id.toString()}
         renderItem={renderItem}
-        contentContainerStyle={{ paddingBottom: 16 }}
         showsVerticalScrollIndicator={false}
         style={{ flex: 1 }}
       />
