@@ -14,6 +14,20 @@ export default function TabLayout() {
   return (
     <Stack initialRouteName="Login">
       <Stack.Screen name="Login" options={{ headerShown: false }} />
+      <Stack.Screen name="bell" options={{ headerShown: false }} />
+      <Stack.Screen
+        name="AccountDeletePassword"
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="AccountDeleteReason"
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="AccountDeleteCheck"
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen name="AccountDeleteLast" options={{ headerShown: false }} />
     </Stack>
   );
 }
