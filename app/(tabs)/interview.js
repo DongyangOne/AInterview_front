@@ -4,7 +4,7 @@ import { View, Text, TouchableOpacity, StyleSheet, Dimensions, Animated, Easing,
 const { width, height } = Dimensions.get('window');
 const PROGRESS_DURATION = 30;
 
-export default function InterviewScreen() {
+export default function Interview() {
   const progressAnim = useRef(new Animated.Value(0)).current;
   const [timeLeft, setTimeLeft] = useState(PROGRESS_DURATION);
 
