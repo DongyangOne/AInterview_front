@@ -2,8 +2,9 @@ import {
   View, Text, TextInput, StyleSheet, TouchableOpacity, Alert, ScrollView, Image, Modal,
 } from 'react-native';
 // import { StatusBar } from "expo-status-bar";
-import React, { useEffect, useState } from "react";
-import useWindowDimensions from 'react-native';
+import React from "react";
+import { useEffect, useState } from "react";
+import { useWindowDimensions } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import DropDownPicker from 'react-native-dropdown-picker';
 
