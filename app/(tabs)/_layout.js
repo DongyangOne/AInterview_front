@@ -13,7 +13,7 @@ export default function TabLayout() {
         tabBarShowLabel: false,
         tabBarActiveTintColor: "#5900FF",
         tabBarStyle: {
-          height: "8%", // 56/812 비율
+          height: "6.9%", // 56/812 비율
           backgroundColor: "#ffffff",
           borderTopWidth: 0, // 상단 경계선 제거
           elevation: 0,
@@ -157,7 +157,7 @@ export default function TabLayout() {
               <Image
                 source={require("../../assets/icons/Person.png")}
                 style={{
-                  marginTop: 20,
+                  marginTop: 10,
                   width: 24,
                   height: 24,
                   marginRight: "30.77%",
