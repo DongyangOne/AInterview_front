@@ -1,11 +1,12 @@
 import { StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
+import Logout from "../(auth)/Logout";
 export default function home() {
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.title}>메인페이지</Text>
       <View style={styles.separator} />
+      <Logout></Logout>
     </SafeAreaView>
   );
 }

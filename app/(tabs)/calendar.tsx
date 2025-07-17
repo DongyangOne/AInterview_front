@@ -1,10 +1,11 @@
 import { StyleSheet, View, Text } from "react-native";
-
+import Logout from "../(auth)/Logout";
 export default function Calendar() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>캘린더 페이지</Text>
       <View style={styles.separator} />
+      <Logout></Logout>
     </View>
   );
 }
