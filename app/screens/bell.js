@@ -79,7 +79,7 @@ export default function Bell() {
       style={{
         flexDirection: "row",
         padding: 25,
-        borderBottomColor: "#808080",
+        borderBottomColor: "#CCCCCC",
         borderBottomWidth: index < notis.length - 1 ? 1 : 0,
         height: 128.5,
         backgroundColor: item.read ? "#fff" : "#E3E6FF",

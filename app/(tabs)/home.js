@@ -236,7 +236,7 @@ export default function Home() {
         }}
       >
         <TouchableOpacity
-          onPress={() => router.push("../(auth)/bell")}
+          onPress={() => router.push("../screens/bell")}
           style={{ padding: 6 }}
         >
           <Image
