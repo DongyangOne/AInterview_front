@@ -11,6 +11,7 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         tabBarShowLabel: false,
+        tabBarActiveTintColor: "#5900FF",
         tabBarStyle: {
           height: "6.9%", // 56/812 비율
           backgroundColor: "#ffffff",
@@ -19,6 +20,9 @@ export default function TabLayout() {
           alignItems: "center",
           width: "100%",
         },
+        tabBarButton: (props) => (
+          <TouchableOpacity {...props} activeOpacity={1} />
+        ),
       }}
     >
       <Tabs.Screen
@@ -30,7 +34,7 @@ export default function TabLayout() {
               <Image
                 source={require("../../assets/icons/home.png")}
                 style={{
-                  marginTop: 10,
+                  marginTop: 20,
                   width: 22,
                   height: 18.9,
                   marginLeft: "10.19%",
@@ -59,7 +63,7 @@ export default function TabLayout() {
               <Image
                 source={require("../../assets/icons/feedback.png")}
                 style={{
-                  marginTop: 10,
+                  marginTop: 20,
                   width: 18,
                   height: 20,
                   marginLeft: "10%",
@@ -125,7 +129,7 @@ export default function TabLayout() {
               <Image
                 source={require("../../assets/icons/calendar.png")}
                 style={{
-                  marginTop: 10,
+                  marginTop: 20,
                   width: 18,
                   height: 20,
                   tintColor: color,
