@@ -7,7 +7,7 @@ export default function MainBell() {
   return (
     <View style={styles.mainBellView}>
       <TouchableOpacity
-        onPress={() => router.push("../(auth)/bell")}
+        onPress={() => router.push("../screens/bell")}
         style={styles.bell}
       >
         <Image
