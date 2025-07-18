@@ -152,6 +152,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="myPage"
         options={{
+        headerShown:false,
           tabBarIcon: ({ color, focused }) => (
             <View style={{ alignItems: "center" }}>
               <Image
