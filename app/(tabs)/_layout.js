@@ -79,7 +79,9 @@ export default function TabLayout() {
       <Tabs.Screen
         name="interview"
         options={{
+          headerShown: false,
           title: "",
+          tabBarStyle: { display: "none" }, // 하단바 숨기기
           tabBarIcon: ({ color, focused }) => (
             <TouchableOpacity>
               <View

@@ -1,140 +1,149 @@
-import React, { useRef, useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Dimensions, Animated, Easing, ImageBackground } from 'react-native';
+import { Tabs } from "expo-router";
+import { StyleSheet,
+         Text,
+         TouchableOpacity,
+         View,
+         Dimensions,
+         Image,
+         } from "react-native";
+import { useRouter } from 'expo-router';
 
-const { width, height } = Dimensions.get('window');
-const PROGRESS_DURATION = 30;
+const { width } = Dimensions.get('window');
 
 export default function Interview() {
-  const progressAnim = useRef(new Animated.Value(0)).current;
-  const [timeLeft, setTimeLeft] = useState(PROGRESS_DURATION);
-
-  useEffect(() => {
-    Animated.timing(progressAnim, {
-      toValue: 1,
-      duration: PROGRESS_DURATION * 1000,
-      easing: Easing.inOut(Easing.sin),
-      useNativeDriver: false,
-    }).start();
-
-    const timer = setInterval(() => {
-      setTimeLeft(prev => (prev > 0 ? prev - 1 : 0));
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, []);
-
-  const widthInterpolate = progressAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, width * 0.8],
-  });
-
+const router = useRouter();
   return (
-    <ImageBackground
-      source={require('../../assets/images/interviewface.png')}
-      style={styles.background}
-      resizeMode="cover"
-    >
+    <View style={styles.container}>
+    <TouchableOpacity style={styles.closeButton}>
+                        <View>
+                            <Image
+                            source={require("../../assets/icons/close.png")}
+                            style={{
+                            top: 23,
+                            left: 20,
+                            width: 17,
+                            height: 17,
+                            }}
+                            resizeMode="contain"
+                            />
+                        </View>
+                    </TouchableOpacity>
+        <View style={styles.sideLine} />
+            <View style={styles.content}>
+                {/* 중앙 텍스트} */}
+                <Text style={styles.title}>프론트{'\n'}면접 연습을{'\n'}시작합니다.</Text>
+                    <View style={styles.tipsContainer}>
+                      <View style={styles.tipRow}>
+                        <Text style={styles.tipTitle}>Tip 1.</Text>
+                        <Text style={styles.tipText}>면접 중 카메라를 사용하므로{'\n'}안정적으로 고정해 주세요.</Text>
+                      </View>
+                      <View style={styles.tipRow}>
+                        <Text style={styles.tipTitle}>Tip 2.</Text>
+                        <Text style={styles.tipText}>정확한 평가를 위해{'\n'}소음이 없는 조용한 환경에서{'\n'}면접을 진행해 주세요.</Text>
+                      </View>
+                    </View>
 
-      <TouchableOpacity style={styles.closeButton}>
-        <Text style={styles.closeText}>×</Text>
-      </TouchableOpacity>
 
-
-      <Text style={styles.questionText}>자기소개 부탁드립니다.</Text>
-
-
-      <View style={styles.progressSection}>
-        <View style={styles.progressContainer}>
-          <View style={styles.progressBarBackground}>
-            <Animated.View style={[styles.progressBar, { width: widthInterpolate }]} />
-            <View style={styles.nextButton}>
-              <Text style={styles.nextButtonText}>다음 질문</Text>
+                {/* 하단 시작 버튼 */}
+                <TouchableOpacity
+                    style={styles.startButton}
+                    onPress={() => router.replace('/interviewing')}
+                >
+                    <Text style={styles.startButtonText}>시작</Text>
+                </TouchableOpacity>
             </View>
-          </View>
-        </View>
-        <Text style={styles.timerText}>남은 시간 {timeLeft}초</Text>
-      </View>
-    </ImageBackground>
+        <View style={styles.sideLine} />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  background: {
-    flex: 1,
-    width: '100%',
-    height: '100%',
-    justifyContent: 'flex-start'
-  },
+  container: {
+      flex: 1,
+      flexDirection: 'row',      // 양 사이드에 배치되도록
+      backgroundColor: '#fff',
+    },
+  sideLine: {
+      marginHorizontal: 32,
+      width: 0.2,                  // 매우 얇은 선
+      backgroundColor: '#ff0000',   // 디자인 가이드의 회색 라인(#ccc)
+      height: '100%',
+    },
+  content: {
+      flex: 1,                   // 중앙 내용이 가운데 차지
+      alignItems: 'center',
+      backgroundColor: '#fff',
+    },
   closeButton: {
     position: 'absolute',
-    top: 20,
+    top: 30,
     left: 20,
-    zIndex: 2
+    zIndex: 10,
   },
-  closeText: {
-    fontSize: 32,
-    color: '#333'
+  closeButtonText: {
+    fontSize: 28,
+    color: '#888',
   },
-  questionText: {
-    marginTop: 80,
-    textAlign: 'center',
+  title: {
+    fontSize: 44,
+    fontWeight: 600,
+    textAlign: 'left',
+    color: '#222',
+    marginTop: 140,          // 필요에 따라 위치 조정
+    marginBottom: 0,        // tipsContainer와의 겹침 방지
+  },
+  tipsContainer: {
+    marginTop: 94,          // 타이틀과의 간격 충분히 주기
+    marginBottom: 55,
+    width: '90%',
+    },
+    tipRow: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      marginBottom: 45, // 두 줄 사이 간격
+    },
+    tipTitle: {
+      fontFamily: 'Pretendard',
+      fontSize: 14,
+      fontWeight: '600',
+      color: '#5900FF',
+      marginRight: 8, // 타이틀과 내용 간격
+    },
+    tipText: {
+      fontFamily: 'Pretendard',
+      fontSize: 16,
+      color: '#171717',
+      fontWeight: '500',
+      flexShrink: 1,       // 줄바꿈 자연스럽게
+      lineHeight: 22,
+    },
+  startButton: {
+    backgroundColor: '#5900FF',
+    marginHorizontal: 32,
+    marginBottom: 170,
+    borderRadius: 10,
+    width: 348,
+    height: 67,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: "#000000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 7,
+  },
+  startButtonText: {
+    fontFamily: 'Pretendard',
+    color: '#fff',
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#fff',
-    textShadowColor: '#000',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2
-  },
-  progressSection: {
+    },
+  cancelButton: {
+    flex: 1,
+    backgroundColor: '#eee',
+    borderRadius: 8,
+    paddingVertical: 12,
+    marginRight: 8,
     alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 'auto',
-    marginBottom: 60
   },
-  progressContainer: {
-    width: width * 0.8,
-    height: 48,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 20
-  },
-  progressBarBackground: {
-    backgroundColor: '#E0E0E0',
-    borderRadius: 24,
-    width: '100%',
-    height: 48,
-    overflow: 'hidden',
-    justifyContent: 'center'
-  },
-  progressBar: {
-    backgroundColor: '#6C4CF7',
-    height: 48,
-    borderRadius: 24,
-    position: 'absolute',
-    left: 0,
-    top: 0
-  },
-  nextButton: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    height: 48,
-    justifyContent:
-    'center',
-    alignItems:
-    'center'
-  },
-  nextButtonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold'
-  },
-  timerText: {
-    color: '#fff',
-    fontSize: 16,
-    textAlign: 'center',
-    marginTop: 10,
-    textShadowColor: '#000',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2 },
 });
