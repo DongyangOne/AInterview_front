@@ -48,6 +48,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="feedback"
         options={{
+        headerShown: false,
           tabBarIcon: ({ color, focused }) => (
             <View style={{ alignItems: "center" }}>
               <Image

@@ -1,19 +1,14 @@
-import { StyleSheet, Text, View, SafeAreaView } from "react-native";
-import Feedback_result from '../Feedback_result';
-
-
+import { StyleSheet, View, SafeAreaView } from "react-native";
+import Feedback_result from '../screens/Feedback_result.jsx';
 
 export default function Feedback() {
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>피드백 페이지</Text>
-      <View style={styles.separator} />
-       <SafeAreaView style={{ flex: 1 }}>
-            <Feedback_result />
-          </SafeAreaView>
-    </View>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#fff", paddingTop: 0 }}>
+      <Feedback_result />
+    </SafeAreaView>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {
