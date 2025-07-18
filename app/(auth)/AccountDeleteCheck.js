@@ -33,9 +33,8 @@ export default function AccountDeleteReason() {
           onPress={() => router.replace("/AccountDeleteReason")}
         >
           <Image
-            source={require("../../assets/icons/bell_arrow.png")}
-            style={{ width: 24, height: 24, marginLeft: 6 }}
-            resizeMode="contain"
+            source={require("../../assets/icons/del_arrow.png")}
+            style={{ width: 24, height: 48, marginLeft: 6 }}
           />
         </TouchableOpacity>
         <Text style={{ fontSize: 20, fontWeight: "400", color: "#222" }}>

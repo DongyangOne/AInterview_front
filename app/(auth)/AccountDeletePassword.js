@@ -35,8 +35,8 @@ export default function AccountDeletePassword() {
       >
         <TouchableOpacity onPress={() => router.replace("../(tabs)/myPage")}>
           <Image
-            source={require("../../assets/icons/bell_arrow.png")}
-            style={{ width: 24, height: 24, marginLeft: 6 }}
+            source={require("../../assets/icons/del_arrow.png")}
+            style={{ width: 24, height: 48, marginLeft: 6 }}
             resizeMode="contain"
           />
         </TouchableOpacity>
