@@ -1,20 +1,12 @@
-<<<<<<< Updated upstream
-import { StyleSheet, Text, View } from "react-native";
-=======
 'use client';
 import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, SafeAreaView, Image } from "react-native";
 import { useRouter } from 'expo-router';
->>>>>>> Stashed changes
 
 export default function MyPage() {
+  const router = useRouter();
+
   return (
-<<<<<<< Updated upstream
-    <View style={styles.container}>
-      <Text style={styles.title}>마이페이지</Text>
-      <View style={styles.separator} />
-    </View>
-=======
     <SafeAreaView style={styles.container}>
       {/* 헤더 */}
       <View style={styles.header}>
@@ -91,17 +83,10 @@ export default function MyPage() {
         </TouchableOpacity>
       </View>
     </SafeAreaView>
->>>>>>> Stashed changes
   );
 }
 
 const styles = StyleSheet.create({
-<<<<<<< Updated upstream
-  container: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-=======
   container: { flex: 1, backgroundColor: '#fff', paddingTop: 40, paddingHorizontal: 20 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
   headerTitle: { fontSize: 16, fontWeight: 'bold' },
@@ -120,22 +105,20 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     right:15
->>>>>>> Stashed changes
   },
-  title: {
-    fontSize: 20,
-    fontWeight: "bold",
+  section: { marginBottom: 30 },
+  sectionTitle: { fontWeight: 'bold', fontSize: 16, marginBottom: 10, color: '#000' },
+  divider: { height: 1, backgroundColor: '#ccc', marginBottom: 10 },
+  row: {
+    paddingVertical: 12,
+    borderBottomWidth: 0.5,
+    borderColor: '#ddd',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: "80%",
-  },
-<<<<<<< Updated upstream
-=======
   label: { fontSize: 14, color: '#333' },
   value: { fontSize: 14, color: '#888' },
   right: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   arrowIcon: { width: 18, height: 18, marginLeft: 4 },
->>>>>>> Stashed changes
 });
