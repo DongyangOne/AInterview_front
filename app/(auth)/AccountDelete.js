@@ -93,7 +93,6 @@ export default function Logout() {
               style={{
                 flexDirection: "row",
                 justifyContent: "space-between",
-                width: "100%",
               }}
             >
               <TouchableOpacity
