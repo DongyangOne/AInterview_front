@@ -93,7 +93,6 @@ export default function Logout() {
               style={{
                 flexDirection: "row",
                 justifyContent: "space-between",
-                width: "100%",
               }}
             >
               <TouchableOpacity
@@ -101,7 +100,6 @@ export default function Logout() {
                   flex: 1,
                   paddingVertical: 12,
                   borderRadius: 8,
-                  marginHorizontal: 4,
                   alignItems: "center",
                   backgroundColor: "#DDDDDD",
                   minWidth: 144,
@@ -118,13 +116,18 @@ export default function Logout() {
                   취소
                 </Text>
               </TouchableOpacity>
+              <View
+                style={{
+                  width: 14,
+                }}
+              ></View>
 
               <TouchableOpacity
                 style={{
                   flex: 1,
                   paddingVertical: 12,
                   borderRadius: 8,
-                  marginHorizontal: 4,
+
                   alignItems: "center",
                   backgroundColor: "#5900FF",
                   minWidth: 144,
