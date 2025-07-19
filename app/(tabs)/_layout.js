@@ -149,37 +149,38 @@ export default function TabLayout() {
           ),
         }}
       />
-      <Tabs.Screen
-        name="myPage"
-        options={{
-          headerShown: false,
-          tabBarIcon: ({ color, focused }) => (
-            <View style={{ alignItems: "center" }}>
-              <Image
-                source={require("../../assets/icons/Person.png")}
-                style={{
-                  marginTop: 20,
-                  width: 24,
-                  height: 24,
-                  marginRight: "30.77%",
-                  tintColor: color,
-                }}
-                resizeMode="contain"
-              />
-              <Text
-                style={{
-                  fontSize: 10,
-                  marginRight: "7.77%",
-                  width: 50,
-                  color: focused ? color : "#999",
-                }}
-              >
-                마이페이지
-              </Text>
-            </View>
-          ),
-        }}
-      />
-    </Tabs>
-  );
-}
+       <Tabs.Screen
+              name="myPage"
+              options={{
+              headerShown:false,
+                tabBarIcon: ({ color, focused }) => (
+                  <View style={{ alignItems: "center" }}>
+                    <Image
+                      source={require("../../assets/icons/Person.png")}
+                      style={{
+                        marginTop: 10,
+                        width: 24,
+                        height: 24,
+                        marginRight: "30.77%",
+                        tintColor: color,
+                      }}
+                      resizeMode="contain"
+                    />
+                    <Text
+                      style={{
+                        fontSize: 10,
+                        marginRight: "7.77%",
+                        width: 50,
+                        color: focused ? color : "#999",
+                      }}
+                    >
+                      마이페이지
+                    </Text>
+                  </View>
+                ),
+              }}
+            />
+          </Tabs>
+        );
+      }
+
