@@ -1,12 +1,35 @@
 import React from "react";
-import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  Alert,
+} from "react-native";
 import { useRouter } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function Start() {
   const router = useRouter();
 
   const handleSocialLogin = (provider) => {
     router.push(`/auth/social/${provider}`);
+  };
+
+  const handleReset = async () => {
+    try {
+      await AsyncStorage.clear();
+      Alert.alert("초기화 완료", "저장된 사용자 정보가 모두 삭제되었어요.", [
+        {
+          text: "확인",
+          onPress: () => router.replace("/(auth)/Login"),
+        },
+      ]);
+    } catch (e) {
+      Alert.alert("오류", "초기화 중 문제가 발생했어요.");
+      console.error("초기화 실패:", e);
+    }
   };
 
   return (
@@ -24,6 +47,11 @@ export default function Start() {
         onPress={() => router.push("/(auth)/Login")}
       >
         <Text style={styles.loginBtnText}>아이디로 로그인</Text>
+      </TouchableOpacity>
+
+      {/* ✅ 초기화 버튼 */}
+      <TouchableOpacity style={styles.resetBtn} onPress={handleReset}>
+        <Text style={styles.resetBtnText}>초기화</Text>
       </TouchableOpacity>
 
       <View style={styles.divider}>
@@ -97,13 +125,27 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 40,
     borderRadius: 10,
-    marginBottom: 40,
+    marginBottom: 12,
     width: "100%",
     alignItems: "center",
   },
   loginBtnText: {
     color: "#fff",
     fontSize: 14,
+    fontWeight: "bold",
+  },
+  resetBtn: {
+    backgroundColor: "#888",
+    paddingVertical: 12,
+    paddingHorizontal: 40,
+    borderRadius: 10,
+    marginBottom: 24,
+    width: "100%",
+    alignItems: "center",
+  },
+  resetBtnText: {
+    color: "#fff",
+    fontSize: 13,
     fontWeight: "bold",
   },
   divider: {

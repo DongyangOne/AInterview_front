@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function Login() {
   const router = useRouter();
@@ -21,35 +22,55 @@ export default function Login() {
   const [idError, setIdError] = useState("");
   const [pwError, setPwError] = useState("");
 
-  const handleLogin = () => {
+  useEffect(() => {
+    const checkKeepLogin = async () => {
+      const keep = await AsyncStorage.getItem("keepLogin");
+      const user = await AsyncStorage.getItem("loggedInUser");
+      if (keep === "true" && user) {
+        router.replace("/(tabs)/home");
+      }
+    };
+    checkKeepLogin();
+  }, []);
+
+  const handleLogin = async () => {
     setIdError("");
     setPwError("");
 
-    if (id.trim() === "") {
-      setIdError("아이디를 입력해 주세요.");
-    } else if (id !== "one1234") {
+    const storedData = await AsyncStorage.getItem("users");
+    const users = storedData
+      ? (JSON.parse(storedData) as {
+          id: string;
+          password: string;
+          nickname: string;
+        }[])
+      : [];
+
+    const user = users.find((u) => u.id === id);
+
+    if (!user) {
       setIdError("존재하지 않는 아이디입니다.");
+      return;
     }
 
-    if (pw.trim() === "") {
+    if (user.password !== pw) {
       setPwError("비밀번호를 확인해 주세요.");
-    } else if (pw !== "one1234**") {
-      setPwError("비밀번호를 확인해 주세요.");
+      return;
     }
 
-    if (id === "one1234" && pw === "one1234*") {
-      router.replace("/(tabs)/home");
+    if (keepLogin) {
+      await AsyncStorage.setItem("keepLogin", "true");
+      await AsyncStorage.setItem("loggedInUser", JSON.stringify(user));
+    } else {
+      await AsyncStorage.removeItem("keepLogin");
+      await AsyncStorage.removeItem("loggedInUser");
     }
+
+    router.replace("/(tabs)/home");
   };
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity onPress={() => router.replace("/Start")}>
-        <Ionicons name="chevron-back" size={28} color="black" />
-      </TouchableOpacity>
-
-      <Text style={styles.title}>로그인</Text>
-
       <View style={styles.inputWrap}>
         <Text style={styles.label}>아이디</Text>
         <TextInput
@@ -66,18 +87,20 @@ export default function Login() {
         <Text style={styles.label}>비밀번호</Text>
         <View style={styles.passwordRow}>
           <TextInput
-            style={[styles.input, { flex: 1 }]}
+            style={styles.input}
             placeholder="비밀번호를 입력해 주세요."
             secureTextEntry={!showPw}
             value={pw}
             onChangeText={setPw}
           />
-          <TouchableOpacity onPress={() => setShowPw(!showPw)}>
+          <TouchableOpacity
+            style={styles.eyeContainer}
+            onPress={() => setShowPw(!showPw)}
+          >
             <Ionicons
               name={showPw ? "eye" : "eye-off"}
-              size={24}
+              size={20}
               color="gray"
-              style={styles.eyeIcon}
             />
           </TouchableOpacity>
         </View>
@@ -101,10 +124,12 @@ export default function Login() {
       </TouchableOpacity>
 
       <View style={styles.socialWrap}>
-        <Image
-          source={require("../../assets/images/kakao.png")}
-          style={styles.icon}
-        />
+        <TouchableOpacity>
+          <Image
+            source={require("../../assets/images/kakao.png")}
+            style={styles.icon}
+          />
+        </TouchableOpacity>
         <Image
           source={require("../../assets/images/google.png")}
           style={styles.icon}
@@ -118,6 +143,8 @@ export default function Login() {
           style={styles.icon}
         />
       </View>
+
+      <View style={styles.divider} />
 
       <View style={styles.signUpWrap}>
         <Text style={styles.signUpText}>아직 회원이 아니신가요?</Text>
@@ -139,12 +166,6 @@ const styles = StyleSheet.create({
     paddingTop: 40,
     backgroundColor: "#fff",
   },
-  title: {
-    fontSize: 18,
-    fontWeight: "600",
-    alignSelf: "center",
-    marginBottom: 28,
-  },
   inputWrap: {
     marginBottom: 20,
   },
@@ -160,13 +181,16 @@ const styles = StyleSheet.create({
     borderColor: "#eee",
     padding: 14,
     fontSize: 14,
+    paddingRight: 40,
   },
   passwordRow: {
-    flexDirection: "row",
-    alignItems: "center",
+    position: "relative",
+    justifyContent: "center",
   },
-  eyeIcon: {
-    marginLeft: 8,
+  eyeContainer: {
+    position: "absolute",
+    right: 10,
+    top: 12,
   },
   error: {
     color: "#e11d48",
@@ -197,12 +221,19 @@ const styles = StyleSheet.create({
   socialWrap: {
     flexDirection: "row",
     justifyContent: "space-around",
-    marginBottom: 32,
+    marginBottom: 24,
   },
   icon: {
     width: 44,
     height: 44,
     resizeMode: "contain",
+    borderRadius: 22,
+    overflow: "hidden",
+  },
+  divider: {
+    height: 1,
+    backgroundColor: "#ddd",
+    marginBottom: 32,
   },
   signUpWrap: {
     alignItems: "center",
