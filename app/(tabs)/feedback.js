@@ -1,4 +1,3 @@
-
 import {
   View,
   Text,
@@ -51,7 +50,7 @@ export default function Feedback() {
             placeholder="제목, 날짜, 메모 검색"
           />
           <Image
-            source={require('../../assets/icons/search.png')}
+            source={require("../../assets/icons/search.png")}
             style={{ width: 25, height: 25, marginLeft: 300, top: -30 }}
           />
         </View>
@@ -88,10 +87,18 @@ export default function Feedback() {
       <ScrollView style={[styles.entire, { position: "relative" }]}>
         <View style={styles.subEntire}>
           <View style={styles.empty} />
-          <View style={[styles.contentBox, { position: "relative", marginTop: 30 }]}>
+          <View
+            style={[styles.contentBox, { position: "relative", marginTop: 30 }]}
+          >
             <Image
-              source={require('../../assets/icons/bookmark.png')}
-              style={{ width: 50, height: 50, marginLeft: 270, top: -12, position: 'absolute' }}
+              source={require("../../assets/icons/bookmark.png")}
+              style={{
+                width: 50,
+                height: 50,
+                marginLeft: 270,
+                top: -12,
+                position: "absolute",
+              }}
             />
             <View style={{ flexDirection: "row" }}>
               <Text style={styles.fontTw1}>2025.07.06</Text>
@@ -106,14 +113,13 @@ export default function Feedback() {
                 <Text style={{ marginLeft: 240, top: -10 }}>•</Text>
                 <Text style={{ marginLeft: 240, top: -20 }}>•</Text>
               </TouchableOpacity>
-
             </View>
             <View style={{ top: -15 }}>
               <Text style={styles.fontTw2}>삼성 회사 면접</Text>
               <Text style={styles.fontTw3}>&lt 앞으로 자신감...</Text>
             </View>
           </View>
-        //2
+          //2
           <View style={styles.contentBox}>
             <View style={{ flexDirection: "row" }}>
               <Text style={styles.fontTw1}>2025.07.06</Text>
@@ -128,14 +134,13 @@ export default function Feedback() {
                 <Text style={{ marginLeft: 240, top: -10 }}>•</Text>
                 <Text style={{ marginLeft: 240, top: -20 }}>•</Text>
               </TouchableOpacity>
-
             </View>
             <View style={{ top: -15 }}>
               <Text style={styles.fontTw2}>삼성 회사 면접</Text>
               <Text style={styles.fontTw3}>&lt 앞으로 자신감...</Text>
             </View>
           </View>
-        //3
+          //3
           <View style={styles.contentBox}>
             <View style={{ flexDirection: "row" }}>
               <Text style={styles.fontTw1}>2025.07.06</Text>
@@ -150,14 +155,13 @@ export default function Feedback() {
                 <Text style={{ marginLeft: 240, top: -10 }}>•</Text>
                 <Text style={{ marginLeft: 240, top: -20 }}>•</Text>
               </TouchableOpacity>
-
             </View>
             <View style={{ top: -15 }}>
               <Text style={styles.fontTw2}>삼성 회사 면접</Text>
               <Text style={styles.fontTw3}>&lt 앞으로 자신감...</Text>
             </View>
           </View>
-        //4
+          //4
           <View style={styles.contentBox}>
             <View style={{ flexDirection: "row" }}>
               <Text style={styles.fontTw1}>2025.07.06</Text>
@@ -172,14 +176,13 @@ export default function Feedback() {
                 <Text style={{ marginLeft: 240, top: -10 }}>•</Text>
                 <Text style={{ marginLeft: 240, top: -20 }}>•</Text>
               </TouchableOpacity>
-
             </View>
             <View style={{ top: -15 }}>
               <Text style={styles.fontTw2}>삼성 회사 면접</Text>
               <Text style={styles.fontTw3}>&lt 앞으로 자신감...</Text>
             </View>
           </View>
-        //5
+          //5
           <View style={styles.contentBox}>
             <View style={{ flexDirection: "row" }}>
               <Text style={styles.fontTw1}>2025.07.06</Text>
@@ -194,7 +197,6 @@ export default function Feedback() {
                 <Text style={{ marginLeft: 240, top: -10 }}>•</Text>
                 <Text style={{ marginLeft: 240, top: -20 }}>•</Text>
               </TouchableOpacity>
-
             </View>
             <View style={{ top: -15 }}>
               <Text style={styles.fontTw2}>삼성 회사 면접</Text>
@@ -204,9 +206,6 @@ export default function Feedback() {
           <View style={{ height: 250 }} />
         </View>
       </ScrollView>
-
-
-
     </View>
   );
 }
@@ -216,12 +215,28 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "100%",
     top: 130,
-    paddingTop: 20
+    paddingTop: 20,
+  },
+  header: {
+    height: 56,
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#fff",
+    marginBottom: 57,
+  },
+  headerText: {
+    position: "absolute",
+    left: 50,
+    right: 50,
+    textAlign: "center",
+    fontSize: 20,
+    fontWeight: "400",
+    color: "#191919",
   },
   subEntire: {
     justifyContent: "center",
     alignItems: "center",
-    marginTop: -150
+    marginTop: -150,
   },
   head: {
     marginTop: 70,
@@ -235,19 +250,19 @@ const styles = StyleSheet.create({
     top: 40,
     width: 350,
     height: 50,
-    alignItems: 'center',
+    alignItems: "center",
   },
   searchInput: {
     top: 5,
     width: 280,
     fontSize: 15,
-    marginRight: 25
+    marginRight: 25,
     // backgroundColor:'black'
   },
 
   //--------------content-----------------
   empty: {
-    height: 120
+    height: 120,
   },
   contentBox: {
     borderRadius: 10,
@@ -277,6 +292,4 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     color: "#808080",
   },
-
-
 });

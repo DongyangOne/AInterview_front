@@ -119,6 +119,7 @@ export default function TabLayout() {
         <Tabs.Screen
           name="feedback"
           options={{
+            headerShown: false,
             tabBarIcon: ({ color, focused }) => (
               <View style={{ alignItems: "center" }}>
                 <Image
@@ -238,29 +239,41 @@ export default function TabLayout() {
             <TouchableOpacity
               style={styles.optionBtn}
               onPress={() => {
-              setShowFAB(false);          // +버튼 숨기기
-              setOpen(false);             // 오버레이 닫기
-              router.push({ pathname: '/interview', params: { role: "서버 관리자" } })
-              }}>
-                <Text style={styles.optionText}>서버 관리자</Text>
+                setShowFAB(false); // +버튼 숨기기
+                setOpen(false); // 오버레이 닫기
+                router.push({
+                  pathname: "/interview",
+                  params: { role: "서버 관리자" },
+                });
+              }}
+            >
+              <Text style={styles.optionText}>서버 관리자</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.optionBtn}
               onPress={() => {
-              setShowFAB(false);          // +버튼 숨기기
-              setOpen(false);             // 오버레이 닫기
-              router.push({ pathname: '/interview', params: { role: "백엔드" } })
-              }}>
-                <Text style={styles.optionText}>백엔드</Text>
+                setShowFAB(false); // +버튼 숨기기
+                setOpen(false); // 오버레이 닫기
+                router.push({
+                  pathname: "/interview",
+                  params: { role: "백엔드" },
+                });
+              }}
+            >
+              <Text style={styles.optionText}>백엔드</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.optionBtn}
               onPress={() => {
-              setShowFAB(false);          // +버튼 숨기기
-              setOpen(false);             // 오버레이 닫기
-              router.push({ pathname: '/interview', params: { role: "프론트" } })
-              }}>
-                <Text style={styles.optionText}>프론트</Text>
+                setShowFAB(false); // +버튼 숨기기
+                setOpen(false); // 오버레이 닫기
+                router.push({
+                  pathname: "/interview",
+                  params: { role: "프론트" },
+                });
+              }}
+            >
+              <Text style={styles.optionText}>프론트</Text>
             </TouchableOpacity>
           </View>
         </>
