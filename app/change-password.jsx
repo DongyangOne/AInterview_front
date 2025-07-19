@@ -153,7 +153,7 @@ const styles = StyleSheet.create({
     height: 33, // 무조건 33px!
     justifyContent: 'center',
   },
-  error: { color: 'red', fontSize: 12, marginBottom: 0, marginLeft: 4, textAlignVertical: 'center' },
+  error: { color: '#FF5151', fontSize: 12, marginBottom: 0, marginLeft: 4, textAlignVertical: 'center' },
   bottomButtonWrapper: {
     position: 'absolute',
     left: 32,
