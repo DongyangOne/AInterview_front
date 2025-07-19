@@ -1,5 +1,5 @@
 import { useState} from 'react';
-import { Tabs,  useLocalSearchParams } from "expo-router";
+import { Tabs,  useLocalSearchParams, useRouter } from "expo-router";
 import { StyleSheet,
          Text,
          TouchableOpacity,
@@ -67,7 +67,9 @@ const displayRole = role || "프론트";
 
 
         {/* 하단 시작 버튼 */}
-        <TouchableOpacity style={styles.startButton}>
+        <TouchableOpacity
+          style={styles.startButton}
+          onPress={() => router.replace('/interviewing')}>
             <Text style={styles.startButtonText}>시작</Text>
         </TouchableOpacity>
     </View>

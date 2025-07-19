@@ -27,7 +27,7 @@ export default function Interviewing() {
 
   const widthInterpolate = progressAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, width * 1],
+    outputRange: [0, 348],
   });
 
   return (
@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
     color: '#333'
   },
   questionText: {
-    marginTop: 100,
+    marginTop: 110,
     textAlign: 'center',
     fontSize: 20,
     fontWeight: '600',
