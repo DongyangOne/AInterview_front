@@ -1,11 +1,9 @@
 import { StyleSheet, Text, View,SafeAreaView } from "react-native";
-import FeedbackDetail from './FeedbackDetail';
+import FeedbackDetail from '../screens/FeedbackDetail.jsx';
 
 export default function Feedback() {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>피드백 페이지</Text>
-      <View style={styles.separator} />
       <SafeAreaView style={{flex:1}}>
       <FeedbackDetail/>
       </SafeAreaView>
