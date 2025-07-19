@@ -27,8 +27,6 @@ export default function Interview() {
                             />
                         </View>
                     </TouchableOpacity>
-        <View style={styles.sideLine} />
-            <View style={styles.content}>
                 {/* 중앙 텍스트} */}
                 <Text style={styles.title}>프론트{'\n'}면접 연습을{'\n'}시작합니다.</Text>
                     <View style={styles.tipsContainer}>
@@ -47,8 +45,6 @@ export default function Interview() {
                 <TouchableOpacity style={styles.startButton}>
                     <Text style={styles.startButtonText}>시작</Text>
                 </TouchableOpacity>
-            </View>
-        <View style={styles.sideLine} />
     </View>
   );
 }
@@ -56,29 +52,14 @@ export default function Interview() {
 const styles = StyleSheet.create({
   container: {
       flex: 1,
-      flexDirection: 'row',      // 양 사이드에 배치되도록
-      backgroundColor: '#fff',
-    },
-  sideLine: {
-      marginHorizontal: 32,
-      width: 0.2,                  // 매우 얇은 선
-      backgroundColor: '#ff0000',   // 디자인 가이드의 회색 라인(#ccc)
-      height: '100%',
-    },
-  content: {
-      flex: 1,                   // 중앙 내용이 가운데 차지
       alignItems: 'center',
       backgroundColor: '#fff',
-    },
+  },
   closeButton: {
     position: 'absolute',
     top: 30,
     left: 20,
     zIndex: 10,
-  },
-  closeButtonText: {
-    fontSize: 28,
-    color: '#888',
   },
   title: {
     fontSize: 44,
@@ -91,7 +72,7 @@ const styles = StyleSheet.create({
   tipsContainer: {
     marginTop: 94,          // 타이틀과의 간격 충분히 주기
     marginBottom: 55,
-    width: '90%',
+    width: 240
     },
     tipRow: {
       flexDirection: 'row',
@@ -132,7 +113,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard',
     color: '#fff',
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: '600',
     },
   cancelButton: {
     flex: 1,
