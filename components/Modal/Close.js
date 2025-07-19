@@ -2,6 +2,7 @@
 import React from 'react';
 import { Modal, View, Text, TouchableOpacity, StyleSheet, Dimensions, Image } from 'react-native';
 import { BlurView } from 'expo-blur';
+import {router } from 'expo-router';
 
 
 const { width } = Dimensions.get('window');
@@ -12,7 +13,11 @@ interface Props {
   onConfirm: () => void;
 }
 
-export default function CustomModal({ visible, onCancel, onConfirm }: Props) {
+export default function Close({ visible, onCancel }) {
+  const handleConfirm = () => {
+    router.back();
+  }
+
   return (
     <Modal
       visible={visible}
@@ -44,7 +49,7 @@ export default function CustomModal({ visible, onCancel, onConfirm }: Props) {
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.endButton}
-              onPress={onConfirm}
+              onPress={handleConfirm}
             >
               <Text style={styles.endButtonText}>종료</Text>
             </TouchableOpacity>

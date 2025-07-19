@@ -149,7 +149,6 @@ export default function TabLayout() {
         <Tabs.Screen
           name="interview"
           options={{
-            setShowFAB: false,
             headerShown: false,
             title: "",
             tabBarStyle: { display: "none" },
@@ -238,27 +237,24 @@ export default function TabLayout() {
             <TouchableOpacity
               style={styles.optionBtn}
               onPress={() => {
-              setShowFAB(false);          // +버튼 숨기기
               setOpen(false);             // 오버레이 닫기
-              router.push({ pathname: '/interview', params: { role: "서버 관리자" } })
+              router.push({ pathname: '/screens/interview', params: { role: "서버 관리자" } })
               }}>
                 <Text style={styles.optionText}>서버 관리자</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.optionBtn}
               onPress={() => {
-              setShowFAB(false);          // +버튼 숨기기
               setOpen(false);             // 오버레이 닫기
-              router.push({ pathname: '/interview', params: { role: "백엔드" } })
+              router.push({ pathname: '/screens/interview', params: { role: "백엔드" } })
               }}>
                 <Text style={styles.optionText}>백엔드</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.optionBtn}
               onPress={() => {
-              setShowFAB(false);          // +버튼 숨기기
               setOpen(false);             // 오버레이 닫기
-              router.push({ pathname: '/interview', params: { role: "프론트" } })
+              router.push({ pathname: '/screens/interview', params: { role: "프론트" } })
               }}>
                 <Text style={styles.optionText}>프론트</Text>
             </TouchableOpacity>
