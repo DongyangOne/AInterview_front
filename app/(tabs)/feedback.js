@@ -4,13 +4,13 @@ import {
   TextInput,
   StyleSheet,
   TouchableOpacity,
-  ScrollView,
   Image,
   FlatList,
+  Pressable,
 } from "react-native";
 import { useState } from "react";
-import DropDownPicker from "react-native-dropdown-picker";
 import { SafeAreaView } from "react-native-safe-area-context";
+import AlignModal from "../../components/Modal/AlignModal";
 const feedbackList = [
   {
     id: "1",
@@ -113,13 +113,23 @@ export default function Feedback() {
         >
           모든 피드백
         </Text>
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
+        <Pressable
+          onPress={() => {
+            setOpen(!open);
+          }}
+          style={{ flexDirection: "row", alignItems: "center" }}
+        >
           <Text style={{ fontSize: 15 }}>정렬기준</Text>
           <Image
             style={{ width: 28, height: 14 }}
-            source={require("../../assets/icons/arrow_down.png")}
+            source={
+              open
+                ? require("../../assets/icons/arrow_down.png")
+                : require("../../assets/icons/arrow_up.png")
+            }
           />
-        </View>
+        </Pressable>
+        {open ? <AlignModal setOpen={setOpen} /> : null}
       </View>
       <FlatList
         data={sortedList}
