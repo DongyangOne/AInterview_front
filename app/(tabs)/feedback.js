@@ -42,7 +42,7 @@ export default function Feedback() {
   return (
     <View style={{ flex: 1 }}>
       <View style={styles.head}>
-        <Text style={{ fontSize: 20, top: 10, fontWeight: "bold" }}>
+        <Text style={{ fontSize: 20, top: 10, fontWeight: "500" }}>
           나의 피드백 목록
         </Text>
         <View style={styles.search}>
@@ -52,15 +52,17 @@ export default function Feedback() {
           />
           <Image
             source={require('../../assets/icons/search.png')}
-            style={{ width: 25, height: 25, marginLeft: 300, top: -30 }}
+            style={{ width: 25, height: 25, marginLeft: 285, top: -30 }}
+
           />
         </View>
         <View style={{ top: 60, width: "85%", flexDirection: "row" }}>
           <Text
-            style={{ fontSize: 15, marginRight: 140, top: 5, color: "#808080" }}
+            style={{ fontSize: 15, marginLeft: 5, marginRight: 170, top: 5, color: "#808080" }}
           >
             모든 피드백
           </Text>
+
           <DropDownPicker
             open={open}
             value={value}
@@ -74,11 +76,25 @@ export default function Feedback() {
               height: 40,
               zIndex: 2000,
               borderWidth: 0,
+              fontSize: 15,
             }}
+
             dropDownContainerStyle={{
               fontSize: 14,
               width: 115,
               maxHeight: 80,
+              borderRadius: 0,
+              borderWidth: 0.5,
+              backgroundColor: 'white',
+              borderColor: '#CCCCCC',
+              placeholder: "정렬 기준",
+              shadowColor: "#CCCCCC",
+              overflow: 'visible',
+              elevation: 7
+              , zIndex: 3000,
+            }}
+            containerStyle={{
+              zIndex: 3000,
             }}
             textStyle={{ fontSize: 15 }}
           />
@@ -94,7 +110,7 @@ export default function Feedback() {
               style={{ width: 50, height: 50, marginLeft: 270, top: -12, position: 'absolute' }}
             />
             <View style={{ flexDirection: "row" }}>
-              <Text style={styles.fontTw1}>2025.07.06</Text>
+              <Text style={styles.fontTw1}>2025년 6월 27일</Text>
               <TouchableOpacity
                 style={{ top: 20, right: 14 }}
                 onPress={() => {
@@ -102,21 +118,21 @@ export default function Feedback() {
                   setModalVisible(true);
                 }}
               >
-                <Text style={{ marginLeft: 240 }}>•</Text>
-                <Text style={{ marginLeft: 240, top: -10 }}>•</Text>
-                <Text style={{ marginLeft: 240, top: -20 }}>•</Text>
+                <Text style={{ marginLeft: 220, fontWeight: 800 }}>•</Text>
+                <Text style={{ marginLeft: 220, fontWeight: 800, top: -10 }}>•</Text>
+                <Text style={{ marginLeft: 220, fontWeight: 800, top: -20 }}>•</Text>
               </TouchableOpacity>
 
             </View>
             <View style={{ top: -15 }}>
               <Text style={styles.fontTw2}>삼성 회사 면접</Text>
-              <Text style={styles.fontTw3}>&lt 앞으로 자신감...</Text>
+              <Text style={styles.fontTw3}>&lt 앞으로 자신감, 위기대처능력, 업무이...</Text>
             </View>
           </View>
         //2
           <View style={styles.contentBox}>
             <View style={{ flexDirection: "row" }}>
-              <Text style={styles.fontTw1}>2025.07.06</Text>
+              <Text style={styles.fontTw1}>2025년 6월 15일</Text>
               <TouchableOpacity
                 onPress={() => {
                   setOpen(false);
@@ -124,21 +140,21 @@ export default function Feedback() {
                 }}
                 style={{ top: 20, right: 14 }}
               >
-                <Text style={{ marginLeft: 240 }}>•</Text>
-                <Text style={{ marginLeft: 240, top: -10 }}>•</Text>
-                <Text style={{ marginLeft: 240, top: -20 }}>•</Text>
+                <Text style={{ marginLeft: 220, fontWeight: 800 }}>•</Text>
+                <Text style={{ marginLeft: 220, fontWeight: 800, top: -10 }}>•</Text>
+                <Text style={{ marginLeft: 220, fontWeight: 800, top: -20 }}>•</Text>
               </TouchableOpacity>
 
             </View>
             <View style={{ top: -15 }}>
               <Text style={styles.fontTw2}>삼성 회사 면접</Text>
-              <Text style={styles.fontTw3}>&lt 앞으로 자신감...</Text>
+              <Text style={styles.fontTw3}>&lt 앞으로 자신감, 위기대처능력, 업무이...</Text>
             </View>
           </View>
         //3
           <View style={styles.contentBox}>
             <View style={{ flexDirection: "row" }}>
-              <Text style={styles.fontTw1}>2025.07.06</Text>
+              <Text style={styles.fontTw1}>2025년 6월 04일</Text>
               <TouchableOpacity
                 style={{ top: 20, right: 14 }}
                 onPress={() => {
@@ -146,21 +162,21 @@ export default function Feedback() {
                   setModalVisible(true);
                 }}
               >
-                <Text style={{ marginLeft: 240 }}>•</Text>
-                <Text style={{ marginLeft: 240, top: -10 }}>•</Text>
-                <Text style={{ marginLeft: 240, top: -20 }}>•</Text>
+                <Text style={{ marginLeft: 220, fontWeight: 800 }}>•</Text>
+                <Text style={{ marginLeft: 220, fontWeight: 800, top: -10 }}>•</Text>
+                <Text style={{ marginLeft: 220, fontWeight: 800, top: -20 }}>•</Text>
               </TouchableOpacity>
 
             </View>
             <View style={{ top: -15 }}>
               <Text style={styles.fontTw2}>삼성 회사 면접</Text>
-              <Text style={styles.fontTw3}>&lt 앞으로 자신감...</Text>
+              <Text style={styles.fontTw3}>&lt 앞으로 자신감, 위기대처능력, 업무이...</Text>
             </View>
           </View>
         //4
           <View style={styles.contentBox}>
             <View style={{ flexDirection: "row" }}>
-              <Text style={styles.fontTw1}>2025.07.06</Text>
+              <Text style={styles.fontTw1}>2025년 5월 13일</Text>
               <TouchableOpacity
                 style={{ top: 20, right: 14 }}
                 onPress={() => {
@@ -168,21 +184,21 @@ export default function Feedback() {
                   setModalVisible(true);
                 }}
               >
-                <Text style={{ marginLeft: 240 }}>•</Text>
-                <Text style={{ marginLeft: 240, top: -10 }}>•</Text>
-                <Text style={{ marginLeft: 240, top: -20 }}>•</Text>
+                <Text style={{ marginLeft: 220, fontWeight: 800 }}>•</Text>
+                <Text style={{ marginLeft: 220, fontWeight: 800, top: -10 }}>•</Text>
+                <Text style={{ marginLeft: 220, fontWeight: 800, top: -20 }}>•</Text>
               </TouchableOpacity>
 
             </View>
             <View style={{ top: -15 }}>
               <Text style={styles.fontTw2}>삼성 회사 면접</Text>
-              <Text style={styles.fontTw3}>&lt 앞으로 자신감...</Text>
+              <Text style={styles.fontTw3}>&lt 앞으로 자신감, 위기대처능력, 업무이...</Text>
             </View>
           </View>
         //5
           <View style={styles.contentBox}>
             <View style={{ flexDirection: "row" }}>
-              <Text style={styles.fontTw1}>2025.07.06</Text>
+              <Text style={styles.fontTw1}>2025년 5월 13일</Text>
               <TouchableOpacity
                 style={{ top: 20, right: 14 }}
                 onPress={() => {
@@ -190,15 +206,15 @@ export default function Feedback() {
                   setModalVisible(true);
                 }}
               >
-                <Text style={{ marginLeft: 240 }}>•</Text>
-                <Text style={{ marginLeft: 240, top: -10 }}>•</Text>
-                <Text style={{ marginLeft: 240, top: -20 }}>•</Text>
+                <Text style={{ marginLeft: 220, fontWeight: 800 }}>•</Text>
+                <Text style={{ marginLeft: 220, fontWeight: 800, top: -10 }}>•</Text>
+                <Text style={{ marginLeft: 220, fontWeight: 800, top: -20 }}>•</Text>
               </TouchableOpacity>
 
             </View>
             <View style={{ top: -15 }}>
               <Text style={styles.fontTw2}>삼성 회사 면접</Text>
-              <Text style={styles.fontTw3}>&lt 앞으로 자신감...</Text>
+              <Text style={styles.fontTw3}>&lt 앞으로 자신감, 위기대처능력, 업무이...</Text>
             </View>
           </View>
           <View style={{ height: 250 }} />
@@ -216,7 +232,8 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "100%",
     top: 130,
-    paddingTop: 20
+    paddingTop: 20,
+    backgroundColor: 'white'
   },
   subEntire: {
     justifyContent: "center",
@@ -229,20 +246,23 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   search: {
-    borderRadius: 5,
-    borderWidth: 2,
+    borderRadius: 10,
+    borderWidth: 0.5,
     borderColor: "#cccccc",
     top: 40,
-    width: 350,
+    width: 348,
     height: 50,
     alignItems: 'center',
+    paddingLeft: 17,
+    paddingRight: 15,
+    textAlign: 'left'
   },
   searchInput: {
     top: 5,
     width: 280,
     fontSize: 15,
-    marginRight: 25
-    // backgroundColor:'black'
+    // backgroundColor:'black',
+    width: '100%'
   },
 
   //--------------content-----------------
@@ -251,30 +271,32 @@ const styles = StyleSheet.create({
   },
   contentBox: {
     borderRadius: 10,
-    borderWidth: 2,
+    borderWidth: 0.5,
     borderColor: "#cccccc",
     width: 350,
     height: 135,
     marginBottom: 20,
     zIndex: 3,
+    backgroundColor: 'white'
   },
   fontTw1: {
-    marginTop: 20,
-    marginLeft: 18,
+    marginTop: 24,
+    marginLeft: 17,
     fontSize: 14,
     color: "#808080",
   },
   fontTw2: {
     fontSize: 18,
-    marginTop: 15,
-    marginLeft: 18,
+    marginTop: 18,
+    marginLeft: 17,
     marginBottom: 10,
-    fontWeight: "bold",
+    fontWeight: "600",
   },
   fontTw3: {
     fontSize: 16,
-    marginLeft: 18,
+    marginLeft: 17,
     marginBottom: 10,
+    bottom: 5,
     color: "#808080",
   },
 
