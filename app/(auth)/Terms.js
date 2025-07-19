@@ -7,10 +7,6 @@ export default function Terms() {
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-        <Text style={styles.backArrow}>←</Text>
-      </TouchableOpacity>
-
       <Text style={styles.title}>이용약관 동의서</Text>
 
       <Text style={styles.purpleText}>AInterview 약관 동의</Text>

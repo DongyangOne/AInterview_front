@@ -1,4 +1,3 @@
-// app/SignUpForm.js
 import React, { useState } from "react";
 import {
   View,
@@ -9,6 +8,8 @@ import {
   ScrollView,
 } from "react-native";
 import { useRouter } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function SignUpForm() {
   const router = useRouter();
@@ -32,7 +33,46 @@ export default function SignUpForm() {
     return badWords.some((word) => text.includes(word));
   };
 
-  const validate = () => {
+  const checkDuplicateId = async () => {
+    const trimmedId = id.trim();
+
+    if (!trimmedId) {
+      setIdError("아이디를 입력해 주세요.");
+      return;
+    } else if (!/^[A-Za-z0-9]{3,15}$/.test(trimmedId)) {
+      setIdError("아이디는 3~15자의 영문자, 숫자만 사용할 수 있어요.");
+      return;
+    }
+
+    try {
+      const usersJson = await AsyncStorage.getItem("users");
+      const users = usersJson ? JSON.parse(usersJson) : [];
+      const isDuplicate = users.some((user) => user.id === trimmedId);
+      setIdError(isDuplicate ? "사용할 수 없는 아이디예요." : "");
+    } catch (e) {
+      setIdError("중복 확인 중 오류가 발생했어요.");
+    }
+  };
+
+  const checkDuplicateNickname = async () => {
+    setNicknameError("");
+    const trimmedNickname = nickname.trim();
+    if (!trimmedNickname) return;
+    try {
+      const usersJson = await AsyncStorage.getItem("users");
+      const users = usersJson ? JSON.parse(usersJson) : [];
+      const isDuplicate = users.some(
+        (user) => user.nickname === trimmedNickname
+      );
+      if (isDuplicate) {
+        setNicknameError("이미 사용 중인 닉네임이에요.");
+      }
+    } catch (e) {
+      console.error("닉네임 중복 확인 오류:", e);
+    }
+  };
+
+  const validate = async () => {
     let valid = true;
     setIdError("");
     setNicknameError("");
@@ -77,93 +117,124 @@ export default function SignUpForm() {
       valid = false;
     }
 
+    const usersJson = await AsyncStorage.getItem("users");
+    const users = usersJson ? JSON.parse(usersJson) : [];
+    const isIdTaken = users.some((user) => user.id === id);
+    const isNicknameTaken = users.some((user) => user.nickname === nickname);
+    if (isIdTaken) {
+      setIdError("사용할 수 없는 아이디예요.");
+      valid = false;
+    }
+    if (isNicknameTaken) {
+      setNicknameError("이미 사용 중인 닉네임이에요.");
+      valid = false;
+    }
+
     if (valid) {
+      const newUser = { id, nickname, password, agreePush };
+      const updatedUsers = [...users, newUser];
+      await AsyncStorage.setItem("users", JSON.stringify(updatedUsers));
       router.replace("/Login");
     }
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.label}>아이디</Text>
-      <View style={styles.row}>
+    <View style={{ flex: 1, backgroundColor: "#fff" }}>
+      <ScrollView contentContainerStyle={styles.container}>
+        <Text style={styles.label}>아이디</Text>
+        <View style={styles.inputRow}>
+          <TextInput
+            style={styles.inputFull}
+            placeholder="3~15자 영대소문자, 숫자 사용 가능"
+            value={id}
+            onChangeText={setId}
+          />
+          <TouchableOpacity style={styles.checkBtn} onPress={checkDuplicateId}>
+            <Text style={{ fontSize: 12 }}>중복확인</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.errorBox}>
+          <Text style={styles.error}>{idError}</Text>
+        </View>
+
+        <Text style={styles.label}>닉네임</Text>
         <TextInput
           style={styles.input}
-          placeholder="3~15자 영대소문자, 숫자 사용 가능"
-          value={id}
-          onChangeText={setId}
+          placeholder="2~8자 영대소문자, 한글, 숫자 사용 가능"
+          value={nickname}
+          onChangeText={setNickname}
+          onBlur={checkDuplicateNickname}
         />
-        <TouchableOpacity style={styles.checkBtn}>
-          <Text style={{ fontSize: 12 }}>중복확인</Text>
+        <View style={styles.errorBox}>
+          <Text style={styles.error}>{nicknameError}</Text>
+        </View>
+
+        <Text style={styles.label}>비밀번호</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="8~16자 영대소문자, 숫자, 특수문자 사용 가능"
+          value={password}
+          secureTextEntry
+          onChangeText={setPassword}
+        />
+        <View style={styles.errorBox}>
+          <Text style={styles.error}>{passwordError}</Text>
+        </View>
+
+        <Text style={styles.label}>비밀번호 확인</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="비밀번호를 다시 입력해 주세요."
+          value={confirmPassword}
+          secureTextEntry
+          onChangeText={setConfirmPassword}
+        />
+        <View style={styles.errorBox}>
+          <Text style={styles.error}>{confirmPasswordError}</Text>
+        </View>
+
+        <View style={styles.checkRow}>
+          <TouchableOpacity onPress={() => setAgreeTerms(!agreeTerms)}>
+            <Ionicons
+              name={agreeTerms ? "checkbox" : "square-outline"}
+              size={20}
+              color="#5900FF"
+            />
+          </TouchableOpacity>
+          <Text style={styles.checkText}>
+            이용약관 동의{" "}
+            <Text style={styles.link} onPress={() => router.push("/Terms")}>
+              보기
+            </Text>{" "}
+            (필수)
+          </Text>
+        </View>
+        <View style={styles.errorBox}>
+          <Text style={styles.error}>{termsError}</Text>
+        </View>
+
+        <View style={styles.checkRow}>
+          <TouchableOpacity onPress={() => setAgreePush(!agreePush)}>
+            <Ionicons
+              name={agreePush ? "checkbox" : "square-outline"}
+              size={20}
+              color="#5900FF"
+            />
+          </TouchableOpacity>
+          <Text style={styles.checkText}>
+            앱 푸시 수신 동의{" "}
+            <Text style={styles.link} onPress={() => router.push("/PushTerms")}>
+              보기
+            </Text>{" "}
+            (선택)
+          </Text>
+        </View>
+
+        <TouchableOpacity style={styles.submitBtn} onPress={validate}>
+          <Text style={styles.submitText}>회원가입</Text>
         </TouchableOpacity>
-      </View>
-      {!!idError && <Text style={styles.error}>{idError}</Text>}
-
-      <Text style={styles.label}>닉네임</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="2~8자 한글, 영문, 숫자 사용 가능"
-        value={nickname}
-        onChangeText={setNickname}
-      />
-      {!!nicknameError && <Text style={styles.error}>{nicknameError}</Text>}
-
-      <Text style={styles.label}>비밀번호</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="8~16자 영문, 숫자, 특수문자 사용 가능"
-        value={password}
-        secureTextEntry
-        onChangeText={setPassword}
-      />
-      {!!passwordError && <Text style={styles.error}>{passwordError}</Text>}
-
-      <Text style={styles.label}>비밀번호 확인</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="비밀번호를 다시 입력해 주세요."
-        value={confirmPassword}
-        secureTextEntry
-        onChangeText={setConfirmPassword}
-      />
-      {!!confirmPasswordError && (
-        <Text style={styles.error}>{confirmPasswordError}</Text>
-      )}
-
-      <View style={styles.checkRow}>
-        <TouchableOpacity onPress={() => setAgreeTerms(!agreeTerms)}>
-          <View style={styles.checkbox}>
-            {agreeTerms && <View style={styles.checkedBox} />}
-          </View>
-        </TouchableOpacity>
-        <Text style={styles.checkText}>
-          이용약관 동의{" "}
-          <Text style={styles.link} onPress={() => router.push("/Terms")}>
-            보기
-          </Text>{" "}
-          (필수)
-        </Text>
-      </View>
-      {!!termsError && <Text style={styles.error}>{termsError}</Text>}
-
-      <View style={styles.checkRow}>
-        <TouchableOpacity onPress={() => setAgreePush(!agreePush)}>
-          <View style={styles.checkbox}>
-            {agreePush && <View style={styles.checkedBox} />}
-          </View>
-        </TouchableOpacity>
-        <Text style={styles.checkText}>
-          앱 푸시 수신 동의{" "}
-          <Text style={styles.link} onPress={() => router.push("/PushTerms")}>
-            보기
-          </Text>{" "}
-          (선택)
-        </Text>
-      </View>
-
-      <TouchableOpacity style={styles.submitBtn} onPress={validate}>
-        <Text style={styles.submitText}>회원가입</Text>
-      </TouchableOpacity>
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 
@@ -171,58 +242,59 @@ const styles = StyleSheet.create({
   container: {
     padding: 24,
     backgroundColor: "#fff",
+    paddingBottom: 48,
   },
   label: {
     fontSize: 14,
     fontWeight: "500",
-    marginTop: 16,
+    marginTop: 20,
   },
   input: {
     borderWidth: 1,
     borderColor: "#ccc",
     borderRadius: 8,
     padding: 12,
-    marginTop: 8,
     fontSize: 14,
+    marginTop: 8,
   },
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
+  inputRow: {
+    position: "relative",
+    marginTop: 8,
+  },
+  inputFull: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 14,
+    paddingRight: 90,
   },
   checkBtn: {
+    position: "absolute",
+    right: 6,
+    top: 4,
     paddingVertical: 10,
     paddingHorizontal: 12,
     backgroundColor: "#eee",
     borderRadius: 6,
-    marginTop: 8,
+  },
+  errorBox: {
+    height: 18,
+    marginTop: 4,
+    justifyContent: "center",
   },
   error: {
     color: "#e11d48",
     fontSize: 12,
-    marginTop: 4,
   },
   checkRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: 16,
-  },
-  checkbox: {
-    width: 20,
-    height: 20,
-    borderWidth: 1,
-    borderColor: "#999",
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 8,
-  },
-  checkedBox: {
-    width: 12,
-    height: 12,
-    backgroundColor: "#5900FF",
+    marginTop: 20,
   },
   checkText: {
     fontSize: 13,
+    marginLeft: 8,
   },
   link: {
     textDecorationLine: "underline",
