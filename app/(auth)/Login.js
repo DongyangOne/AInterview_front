@@ -71,6 +71,17 @@ export default function Login() {
 
   return (
     <View style={styles.container}>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.back()}>
+          <Image
+            source={require("../../assets/icons/bell_arrow.png")}
+            style={{ width: 24, height: 48 }}
+            resizeMode="contain"
+          />
+        </TouchableOpacity>
+
+        <Text style={styles.headerText}>로그인</Text>
+      </View>
       <View style={styles.inputWrap}>
         <Text style={styles.label}>아이디</Text>
         <TextInput
@@ -165,6 +176,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingTop: 40,
     backgroundColor: "#fff",
+  },
+  header: {
+    height: 56,
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#fff",
+    marginBottom: 63,
+  },
+  headerText: {
+    position: "absolute",
+    left: 50,
+    right: 50,
+    textAlign: "center",
+    fontSize: 20,
+    fontWeight: "400",
+    color: "#191919",
   },
   inputWrap: {
     marginBottom: 20,

@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { Tabs } from "expo-router";
+import { Tabs, useRouter } from "expo-router";
 import {
   View,
   Image,
@@ -63,8 +63,9 @@ function FloatingActionButton({ open, setOpen }) {
 }
 
 export default function TabLayout() {
+  const [showFAB, setShowFAB] = useState(true);
   const [open, setOpen] = useState(false);
-
+  const router = useRouter();
   return (
     <View style={{ flex: 1 }}>
       {/* (1) 기본 Tabs 화면 */}
@@ -148,8 +149,10 @@ export default function TabLayout() {
         <Tabs.Screen
           name="interview"
           options={{
+            setShowFAB: false,
             headerShown: false,
             title: "",
+            tabBarStyle: { display: "none" },
             tabBarIcon: () => null,
           }}
         />
@@ -232,33 +235,53 @@ export default function TabLayout() {
           </TouchableOpacity>
           {/* 선택지 메뉴 - 화면 수직 가운데 */}
           <View style={styles.centerMenu}>
-            <TouchableOpacity style={styles.optionBtn}>
-              <Text style={styles.optionText}>서버 관리자</Text>
+            <TouchableOpacity
+              style={styles.optionBtn}
+              onPress={() => {
+              setShowFAB(false);          // +버튼 숨기기
+              setOpen(false);             // 오버레이 닫기
+              router.push({ pathname: '/interview', params: { role: "서버 관리자" } })
+              }}>
+                <Text style={styles.optionText}>서버 관리자</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.optionBtn}>
-              <Text style={styles.optionText}>백엔드</Text>
+            <TouchableOpacity
+              style={styles.optionBtn}
+              onPress={() => {
+              setShowFAB(false);          // +버튼 숨기기
+              setOpen(false);             // 오버레이 닫기
+              router.push({ pathname: '/interview', params: { role: "백엔드" } })
+              }}>
+                <Text style={styles.optionText}>백엔드</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.optionBtn}>
-              <Text style={styles.optionText}>프론트</Text>
+            <TouchableOpacity
+              style={styles.optionBtn}
+              onPress={() => {
+              setShowFAB(false);          // +버튼 숨기기
+              setOpen(false);             // 오버레이 닫기
+              router.push({ pathname: '/interview', params: { role: "프론트" } })
+              }}>
+                <Text style={styles.optionText}>프론트</Text>
             </TouchableOpacity>
           </View>
         </>
       )}
 
       {/* (3) 플로팅 액션 버튼 (+버튼) 항상 하단에 위치 */}
-      <View
-        pointerEvents="box-none"
-        style={{
-          position: "absolute",
-          left: 0,
-          right: 0,
-          bottom: 0,
-          alignItems: "center",
-          zIndex: 10,
-        }}
-      >
-        <FloatingActionButton open={open} setOpen={setOpen} />
-      </View>
+      {showFAB && (
+        <View
+          pointerEvents="box-none"
+          style={{
+            position: "absolute",
+            left: 0,
+            right: 0,
+            bottom: 0,
+            alignItems: "center",
+            zIndex: 10,
+          }}
+        >
+          <FloatingActionButton open={open} setOpen={setOpen} />
+        </View>
+      )}
     </View>
   );
 }
