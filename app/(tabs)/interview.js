@@ -1,4 +1,4 @@
-import { Tabs } from "expo-router";
+import { Tabs,  useLocalSearchParams } from "expo-router";
 import { StyleSheet,
          Text,
          TouchableOpacity,
@@ -9,42 +9,53 @@ import { StyleSheet,
 
 const { width } = Dimensions.get('window');
 
-export default function Interview() {
+export const unstable_settings = {
+  initialRouteName: 'interview',
+};
 
+export const options = {
+  tabBarStyle: { display: 'none' }, // 현재 이미 있음
+  headerShown: false,
+};
+
+
+export default function Interview() {
+const { role } = useLocalSearchParams(); // role은 (서버 관리자 / 백엔드 / 프론트)
+const displayRole = role || "프론트";
   return (
     <View style={styles.container}>
     <TouchableOpacity style={styles.closeButton}>
-                        <View>
-                            <Image
-                            source={require("../../assets/icons/close.png")}
-                            style={{
-                            top: 23,
-                            left: 20,
-                            width: 17,
-                            height: 17,
-                            }}
-                            resizeMode="contain"
-                            />
-                        </View>
-                    </TouchableOpacity>
-                {/* 중앙 텍스트} */}
-                <Text style={styles.title}>프론트{'\n'}면접 연습을{'\n'}시작합니다.</Text>
-                    <View style={styles.tipsContainer}>
-                      <View style={styles.tipRow}>
-                        <Text style={styles.tipTitle}>Tip 1.</Text>
-                        <Text style={styles.tipText}>면접 중 카메라를 사용하므로{'\n'}안정적으로 고정해 주세요.</Text>
-                      </View>
-                      <View style={styles.tipRow}>
-                        <Text style={styles.tipTitle}>Tip 2.</Text>
-                        <Text style={styles.tipText}>정확한 평가를 위해{'\n'}소음이 없는 조용한 환경에서{'\n'}면접을 진행해 주세요.</Text>
-                      </View>
-                    </View>
+        <View>
+            <Image
+            source={require("../../assets/icons/close.png")}
+            style={{
+            top: 23,
+            left: 20,
+            width: 17,
+            height: 17,
+            }}
+            resizeMode="contain"
+            />
+        </View>
+    </TouchableOpacity>
+        {/* 중앙 텍스트} */}
+        <Text style={styles.title}>{displayRole}{'\n'}면접 연습을{'\n'}시작합니다.</Text>
+            <View style={styles.tipsContainer}>
+              <View style={styles.tipRow}>
+                <Text style={styles.tipTitle}>Tip 1.</Text>
+                <Text style={styles.tipText}>면접 중 카메라를 사용하므로{'\n'}안정적으로 고정해 주세요.</Text>
+              </View>
+              <View style={styles.tipRow}>
+                <Text style={styles.tipTitle}>Tip 2.</Text>
+                <Text style={styles.tipText}>정확한 평가를 위해{'\n'}소음이 없는 조용한 환경에서{'\n'}면접을 진행해 주세요.</Text>
+              </View>
+            </View>
 
 
-                {/* 하단 시작 버튼 */}
-                <TouchableOpacity style={styles.startButton}>
-                    <Text style={styles.startButtonText}>시작</Text>
-                </TouchableOpacity>
+        {/* 하단 시작 버튼 */}
+        <TouchableOpacity style={styles.startButton}>
+            <Text style={styles.startButtonText}>시작</Text>
+        </TouchableOpacity>
     </View>
   );
 }
