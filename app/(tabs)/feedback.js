@@ -203,7 +203,6 @@ const styles = StyleSheet.create({
     marginTop: 35,
     marginBottom: 10,
   },
-
   contentBox: {
     borderRadius: 10,
     borderWidth: 0.5,
@@ -211,7 +210,6 @@ const styles = StyleSheet.create({
     width: "100%",
     height: 135,
     marginBottom: 20,
-    zIndex: 3,
     backgroundColor: "white",
   },
   fontTw1: {
