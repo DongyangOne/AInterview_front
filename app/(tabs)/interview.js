@@ -1,4 +1,5 @@
-import { Tabs } from "expo-router";
+import { useState} from 'react';
+import { Tabs,  useLocalSearchParams } from "expo-router";
 import { StyleSheet,
          Text,
          TouchableOpacity,
@@ -6,53 +7,69 @@ import { StyleSheet,
          Dimensions,
          Image,
          } from "react-native";
-import { useRouter } from 'expo-router';
+import CustomModal from '../../components/Modal/Close';
 
 const { width } = Dimensions.get('window');
 
+export const unstable_settings = {
+  initialRouteName: 'interview',
+};
+
+export const options = {
+  tabBarStyle: { display: 'none' }, // 현재 이미 있음
+  headerShown: false,
+};
+
+
 export default function Interview() {
-const router = useRouter();
+const [modalVisible, setModalVisible] = useState(false);
+const { role } = useLocalSearchParams(); // role은 (서버 관리자 / 백엔드 / 프론트)
+const displayRole = role || "프론트";
   return (
     <View style={styles.container}>
-    <TouchableOpacity style={styles.closeButton}>
-                        <View>
-                            <Image
-                            source={require("../../assets/icons/close.png")}
-                            style={{
-                            top: 23,
-                            left: 20,
-                            width: 17,
-                            height: 17,
-                            }}
-                            resizeMode="contain"
-                            />
-                        </View>
-                    </TouchableOpacity>
-        <View style={styles.sideLine} />
-            <View style={styles.content}>
-                {/* 중앙 텍스트} */}
-                <Text style={styles.title}>프론트{'\n'}면접 연습을{'\n'}시작합니다.</Text>
-                    <View style={styles.tipsContainer}>
-                      <View style={styles.tipRow}>
-                        <Text style={styles.tipTitle}>Tip 1.</Text>
-                        <Text style={styles.tipText}>면접 중 카메라를 사용하므로{'\n'}안정적으로 고정해 주세요.</Text>
-                      </View>
-                      <View style={styles.tipRow}>
-                        <Text style={styles.tipTitle}>Tip 2.</Text>
-                        <Text style={styles.tipText}>정확한 평가를 위해{'\n'}소음이 없는 조용한 환경에서{'\n'}면접을 진행해 주세요.</Text>
-                      </View>
-                    </View>
-
-
-                {/* 하단 시작 버튼 */}
-                <TouchableOpacity
-                    style={styles.startButton}
-                    onPress={() => router.replace('/interviewing')}
-                >
-                    <Text style={styles.startButtonText}>시작</Text>
-                </TouchableOpacity>
+    <TouchableOpacity
+    style={styles.closeButton}
+    onPress={() => setModalVisible(true)}
+    >
+        <View>
+            <Image
+            source={require("../../assets/icons/close.png")}
+            style={{
+            top: 23,
+            left: 20,
+            width: 17,
+            height: 17,
+            }}
+            resizeMode="contain"
+            />
+        </View>
+    </TouchableOpacity>
+    <CustomModal
+            visible={modalVisible}
+            onCancel={() => setModalVisible(false)}
+            onConfirm={() => {
+              // 종료 처리 로직
+              setModalVisible(false);
+            }}
+          />
+        {/* 중앙 텍스트} */}
+        <Text style={styles.title}>{displayRole}{'\n'}면접 연습을{'\n'}시작합니다.</Text>
+            <View style={styles.tipsContainer}>
+              <View style={styles.tipRow}>
+                <Text style={styles.tipTitle}>Tip 1.</Text>
+                <Text style={styles.tipText}>면접 중 카메라를 사용하므로{'\n'}안정적으로 고정해 주세요.</Text>
+              </View>
+              <View style={styles.tipRow}>
+                <Text style={styles.tipTitle}>Tip 2.</Text>
+                <Text style={styles.tipText}>정확한 평가를 위해{'\n'}소음이 없는 조용한 환경에서{'\n'}면접을 진행해 주세요.</Text>
+              </View>
             </View>
-        <View style={styles.sideLine} />
+
+
+        {/* 하단 시작 버튼 */}
+        <TouchableOpacity style={styles.startButton}>
+            <Text style={styles.startButtonText}>시작</Text>
+        </TouchableOpacity>
     </View>
   );
 }
@@ -60,29 +77,14 @@ const router = useRouter();
 const styles = StyleSheet.create({
   container: {
       flex: 1,
-      flexDirection: 'row',      // 양 사이드에 배치되도록
-      backgroundColor: '#fff',
-    },
-  sideLine: {
-      marginHorizontal: 32,
-      width: 0.2,                  // 매우 얇은 선
-      backgroundColor: '#ff0000',   // 디자인 가이드의 회색 라인(#ccc)
-      height: '100%',
-    },
-  content: {
-      flex: 1,                   // 중앙 내용이 가운데 차지
       alignItems: 'center',
       backgroundColor: '#fff',
-    },
+  },
   closeButton: {
     position: 'absolute',
     top: 30,
     left: 20,
     zIndex: 10,
-  },
-  closeButtonText: {
-    fontSize: 28,
-    color: '#888',
   },
   title: {
     fontSize: 44,
@@ -95,7 +97,7 @@ const styles = StyleSheet.create({
   tipsContainer: {
     marginTop: 94,          // 타이틀과의 간격 충분히 주기
     marginBottom: 55,
-    width: '90%',
+    width: 240
     },
     tipRow: {
       flexDirection: 'row',
@@ -136,7 +138,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard',
     color: '#fff',
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: '600',
     },
   cancelButton: {
     flex: 1,
