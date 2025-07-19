@@ -1,13 +1,21 @@
 import React, { useState, useRef } from "react";
-import { Text, View, ScrollView, StyleSheet } from "react-native";
+import {
+  Text,
+  View,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  Image,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import MainCalendar from "../../components/main/MainCalendar";
 import MainFeedback from "../../components/main/MainFeedback";
-import MainBell from "../../components/main/MainBell";
 import MainQuestion from "../../components/main/MainQuestion";
+import { useRouter } from "expo-router";
 
 export default function Home() {
   const scrollRef = useRef(null);
+  const router = useRouter();
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
