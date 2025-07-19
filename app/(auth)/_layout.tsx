@@ -14,6 +14,7 @@ export default function TabLayout() {
   return (
     <Stack initialRouteName="Start">
       <Stack.Screen name="Start" options={{ headerShown: false }} />
+      <Stack.Screen name="bell" options={{ headerShown: false }} />
     </Stack>
   );
 }
