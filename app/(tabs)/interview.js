@@ -1,53 +1,76 @@
-import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Animated, Easing, TouchableOpacity } from 'react-native';
-import { useRouter } from 'expo-router';
+import { Tabs, useLocalSearchParams } from "expo-router";
+import {
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  Dimensions,
+  Image,
+} from "react-native";
+
+const { width } = Dimensions.get("window");
+
+export const unstable_settings = {
+  initialRouteName: "interview",
+};
+
+export const options = {
+  tabBarStyle: { display: "none" }, // 현재 이미 있음
+  headerShown: false,
+};
 
 export default function Interview() {
-  const router = useRouter();
-  const progressAnim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    Animated.timing(progressAnim, {
-      toValue: 1,
-      duration: 10000,
-      easing: Easing.linear,
-      useNativeDriver: false,
-    }).start(() => {
-      router.replace('/Interview_result');
-    });
-  }, [progressAnim, router]);
-
-  const widthInterpolated = progressAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0%', '100%'],
-  });
-
+  const { role } = useLocalSearchParams(); // role은 (서버 관리자 / 백엔드 / 프론트)
+  const displayRole = role || "프론트";
   return (
     <View style={styles.container}>
       <TouchableOpacity style={styles.closeButton}>
-        <Text style={styles.closeText}>×</Text>
+        <View>
+          <Image
+            source={require("../../assets/icons/close.png")}
+            style={{
+              top: 23,
+              left: 20,
+              width: 17,
+              height: 17,
+            }}
+            resizeMode="contain"
+          />
+        </View>
       </TouchableOpacity>
-      <View style={styles.doneText}>
-        <Text style={styles.textBold}>
-          <Text style={styles.textExtraBold}>답변</Text>
-          을 평가 완료 {'\n'}하였습니다...
-        </Text>
-        <Text style={styles.textBold}>
-          <Text style={styles.textExtraBold}>결과</Text>
-          를 분석 완료 {'\n'}하였습니다...
-        </Text>
-        <Text style={styles.textBold}>
-          <Text style={styles.textExtraBold}>피드백</Text>
-          을 생성 완료 {'\n'}하였습니다...
-        </Text>
-      </View>
-      <Text style={styles.waitText}>잠시만 기다려 주세요...</Text>
-      <View style={styles.progressBarBackground}>
-        <Animated.View style={[styles.progressBarFill, { width: widthInterpolated }]} />
-        <View style={styles.progressBarTextContainer} pointerEvents="none">
-          <Text style={styles.progressBarText}>처리 중...</Text>
+      <CustomModal
+        visible={modalVisible}
+        onCancel={() => setModalVisible(false)}
+        onConfirm={() => {
+          // 종료 처리 로직
+          setModalVisible(false);
+        }}
+      />
+      {/* 중앙 텍스트} */}
+      <Text style={styles.title}>
+        {displayRole}
+        {"\n"}면접 연습을{"\n"}시작합니다.
+      </Text>
+      <View style={styles.tipsContainer}>
+        <View style={styles.tipRow}>
+          <Text style={styles.tipTitle}>Tip 1.</Text>
+          <Text style={styles.tipText}>
+            면접 중 카메라를 사용하므로{"\n"}안정적으로 고정해 주세요.
+          </Text>
+        </View>
+        <View style={styles.tipRow}>
+          <Text style={styles.tipTitle}>Tip 2.</Text>
+          <Text style={styles.tipText}>
+            정확한 평가를 위해{"\n"}소음이 없는 조용한 환경에서{"\n"}면접을
+            진행해 주세요.
+          </Text>
         </View>
       </View>
+
+      {/* 하단 시작 버튼 */}
+      <TouchableOpacity style={styles.startButton}>
+        <Text style={styles.startButtonText}>시작</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -55,76 +78,75 @@ export default function Interview() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-    justifyContent: 'center',
-    padding: 24,
+    alignItems: "center",
+    backgroundColor: "#fff",
   },
   closeButton: {
-    position: 'absolute',
-    top: 20,
+    position: "absolute",
+    top: 30,
     left: 20,
-    zIndex: 2,
+    zIndex: 10,
   },
-  closeText: {
-    fontSize: 32,
-    color: '#333',
+  title: {
+    fontSize: 44,
+    fontWeight: 600,
+    textAlign: "left",
+    color: "#222",
+    marginTop: 140, // 필요에 따라 위치 조정
+    marginBottom: 0, // tipsContainer와의 겹침 방지
   },
-  doneText: {
-    marginTop: 'auto',
+  tipsContainer: {
+    marginTop: 94, // 타이틀과의 간격 충분히 주기
+    marginBottom: 55,
+    width: 240,
   },
-  textBold: {
-    fontSize: 24,
-    fontWeight: '700',
-    fontFamily: 'Pretendard',
-    color: '#171717',
-    marginLeft: 80,
-    marginTop: 20,
-    marginBottom: 8,
-    textAlign: 'left',
+  tipRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    marginBottom: 45, // 두 줄 사이 간격
   },
-  textExtraBold: {
-    fontWeight: '900',
-    fontFamily: 'Pretendard',
-    color: '#171717',
+  tipTitle: {
+    fontFamily: "Pretendard",
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#5900FF",
+    marginRight: 8, // 타이틀과 내용 간격
   },
-  waitText: {
+  tipText: {
+    fontFamily: "Pretendard",
     fontSize: 16,
-    color: '#808080',
-    fontFamily: 'Pretendard',
-    marginTop: 'auto',
-    marginBottom: 10,
-    textAlign: 'center',
+    color: "#171717",
+    fontWeight: "500",
+    flexShrink: 1, // 줄바꿈 자연스럽게
+    lineHeight: 22,
   },
-  progressBarBackground: {
-    height: 50,
-    width: 300,
-    borderRadius: 15,
-    backgroundColor: '#eee',
-    overflow: 'hidden',
-    justifyContent: 'center',
-    marginTop: 10,
-    marginBottom: 100,
-    marginLeft: 30,
+  startButton: {
+    backgroundColor: "#5900FF",
+    marginHorizontal: 32,
+    marginBottom: 170,
+    borderRadius: 10,
+    width: 348,
+    height: 67,
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 7,
   },
-  progressBarFill: {
-    height: 50,
-    backgroundColor: '#5900FF',
-    position: 'absolute',
-    left: 0,
-    top: 0,
-  },
-  progressBarTextContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: 50,
-  },
-  progressBarText: {
-    color: '#fff',
+  startButtonText: {
+    fontFamily: "Pretendard",
+    color: "#fff",
     fontSize: 20,
-    fontWeight: '700',
-    fontFamily: 'Pretendard',
-    position: 'absolute',
-    width: '100%',
-    textAlign: 'center',
+    fontWeight: "600",
+  },
+  cancelButton: {
+    flex: 1,
+    backgroundColor: "#eee",
+    borderRadius: 8,
+    paddingVertical: 12,
+    marginRight: 8,
+    alignItems: "center",
   },
 });

@@ -5,34 +5,58 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
+
     "scheme": "ainterviewfront",
+
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+
     "splash": {
       "image": "./assets/images/splash-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
+
     "ios": {
       "supportsTablet": true
     },
+
     "android": {
+      "package": "com.dana7259.ainterviewfront",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true
     },
+
     "web": {
       "bundler": "metro",
       "output": "static",
       "favicon": "./assets/images/favicon.png"
     },
+
     "plugins": [
+      [
+        "@react-native-seoul/kakao-login",
+        {
+          "kakaoAppKey": "44682a4b6329aa1fc5f9ddf575f9bf2a"
+        }
+      ],
       "expo-router"
     ],
+
     "experiments": {
       "typedRoutes": true
-    }
+    },
+
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "76a53025-9fcf-4966-8b97-149ba97debf4"
+      }
+    },
+
+    "owner": "dana7259"
   }
 }
