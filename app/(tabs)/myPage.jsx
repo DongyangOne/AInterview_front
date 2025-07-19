@@ -10,14 +10,19 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import Logout from "../../components/modal/Logout";
+import AccountDelete from "../../components/modal/AccountDelete";
 
 export default function MyPage() {
   const [logout, setLogout] = useState(false);
+  const [deleteAcc, setDeleteAcc] = useState(false);
   const router = useRouter();
 
   return (
     <SafeAreaView style={styles.container}>
       {logout ? <Logout logout={logout} setLogout={setLogout} /> : null}
+      {deleteAcc ? (
+        <AccountDelete deleteAcc={deleteAcc} setDeleteAcc={setDeleteAcc} />
+      ) : null}
       {/* 헤더 */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>마이페이지</Text>
@@ -86,7 +91,7 @@ export default function MyPage() {
           />
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.row}>
+        <TouchableOpacity onPress={() => setDeleteAcc(true)} style={styles.row}>
           <Text style={styles.label}>회원탈퇴</Text>
           <Image
             source={require("../../assets/icons/arrow2.png")}
