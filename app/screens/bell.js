@@ -162,7 +162,6 @@ export default function Bell() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
       {/* 상단 헤더 */}
-
       <View
         style={{
           height: 56,
@@ -173,6 +172,7 @@ export default function Bell() {
           borderBottomColor: "#eee",
           backgroundColor: "#fff",
           position: "relative",
+
         }}
       >
         <TouchableOpacity onPress={() => router.back()}>
@@ -192,11 +192,13 @@ export default function Bell() {
             fontSize: 20,
             fontWeight: "400",
             color: "# 191919",
+
           }}
         >
           알림
         </Text>
       </View>
+
 
       <FlatList
         data={notis}
