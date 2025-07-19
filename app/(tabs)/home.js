@@ -10,8 +10,29 @@ export default function Home() {
   const scrollRef = useRef(null);
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <MainBell />
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
+      <View
+        style={{
+          width: "100%",
+          height: 56,
+          flexDirection: "row",
+          justifyContent: "flex-end",
+          alignItems: "center",
+          paddingHorizontal: "4%",
+        }}
+      >
+        <TouchableOpacity
+          onPress={() => router.push("../screens/bell")}
+          style={{ padding: 6 }}
+        >
+          <Image
+            source={require("../../assets/icons/bell.png")}
+            style={{ width: 24, height: 24, right: 32 }}
+            resizeMode="contain"
+          />
+        </TouchableOpacity>
+      </View>
+
       <ScrollView
         ref={scrollRef}
         style={styles.scrollView}
