@@ -1,17 +1,46 @@
 import React, { useState, useRef } from "react";
-import { Text, View, ScrollView, StyleSheet } from "react-native";
+import {
+  Text,
+  View,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  Image,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import MainCalendar from "../../components/main/MainCalendar";
 import MainFeedback from "../../components/main/MainFeedback";
-import MainBell from "../../components/main/MainBell";
 import MainQuestion from "../../components/main/MainQuestion";
+import { useRouter } from "expo-router";
 
 export default function Home() {
   const scrollRef = useRef(null);
+  const router = useRouter();
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <MainBell />
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
+      <View
+        style={{
+          width: "100%",
+          height: 56,
+          flexDirection: "row",
+          justifyContent: "flex-end",
+          alignItems: "center",
+          paddingHorizontal: "4%",
+        }}
+      >
+        <TouchableOpacity
+          onPress={() => router.push("../screens/bell")}
+          style={{ padding: 6 }}
+        >
+          <Image
+            source={require("../../assets/icons/bell.png")}
+            style={{ width: 24, height: 24, right: 32 }}
+            resizeMode="contain"
+          />
+        </TouchableOpacity>
+      </View>
+
       <ScrollView
         ref={scrollRef}
         style={styles.scrollView}
