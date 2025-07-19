@@ -28,7 +28,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="home"
         options={{
-          headerShown: false, // 상단 타이틀 숨기기
+          headerShown: false,
           tabBarIcon: ({ color, focused }) => (
             <View style={{ alignItems: "center" }}>
               <Image
@@ -152,6 +152,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="myPage"
         options={{
+          headerShown: false,
           tabBarIcon: ({ color, focused }) => (
             <View style={{ alignItems: "center" }}>
               <Image
