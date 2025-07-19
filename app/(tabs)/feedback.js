@@ -11,6 +11,7 @@ import {
 import { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import AlignModal from "../../components/Modal/AlignModal";
+import EditListModal from "../../components/Modal/EditListModal";
 const feedbackList = [
   {
     id: "1",
@@ -58,26 +59,7 @@ const feedbackList = [
 
 export default function Feedback() {
   const [open, setOpen] = useState(false);
-  const [value, setValue] = useState("basic");
-  const [items, setItems] = useState([
-    { label: "정렬 기준", value: "basic" },
-    { label: "최근 날짜 순", value: "latest" },
-    { label: "가나다 순", value: "name" },
-  ]);
-
-  const [open1, setOpen1] = useState(false);
-  const [open2, setOpen2] = useState(false);
-  const [value1, setValue1] = useState("basic");
-  const [items1, setItems1] = useState([
-    { label: "정렬 기준", value: "basic" },
-    { label: "최상단 고정", value: "static" },
-    { label: "제목 수정", value: "title" },
-    { label: "메모 수정", value: "memo" },
-    { label: "기록 삭제", value: "delete" },
-  ]);
-
-  const [modalVisible, setModalVisible] = useState(false);
-  const [modalType, setModalType] = useState(null); // 'title', 'memo', 'delete'
+  const [openModalItemId, setOpenModalItemId] = useState(null);
 
   const sortedList = [...feedbackList].sort((a, b) => {
     if (a.pin === "Y" && b.pin !== "Y") return -1;
@@ -134,48 +116,56 @@ export default function Feedback() {
       <FlatList
         data={sortedList}
         keyExtractor={(item) => item.id}
-        ListHeaderComponent={<View style={styles.empty} />}
         showsVerticalScrollIndicator={false}
-        renderItem={({ item }) => (
-          <View style={[styles.contentBox, { position: "relative" }]}>
-            {item.pin === "Y" && (
-              <Image
-                source={require("../../assets/icons/bookmark.png")}
-                style={{
-                  width: 50,
-                  height: 50,
-                  marginLeft: 270,
-                  top: -12,
-                  position: "absolute",
-                }}
-              />
-            )}
+        renderItem={({ item }) => {
+          const isModalVisible = openModalItemId === item.id;
 
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-              }}
-            >
-              <Text style={styles.fontTw1}>{item.date}</Text>
-              <TouchableOpacity
-                style={{ top: 20, right: 14 }}
-                onPress={() => {
-                  setModalVisible(true);
+          return (
+            <View style={[styles.contentBox, { position: "relative" }]}>
+              {item.pin === "Y" && (
+                <Image
+                  source={require("../../assets/icons/bookmark.png")}
+                  style={{
+                    width: 50,
+                    height: 50,
+                    marginLeft: 270,
+                    top: -12,
+                    position: "absolute",
+                  }}
+                />
+              )}
+
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
                 }}
               >
-                <Image
-                  source={require("../../assets/icons/dot.png")}
-                  style={{ width: 24, height: 24 }}
-                />
-              </TouchableOpacity>
+                <Text style={styles.fontTw1}>{item.date}</Text>
+                <TouchableOpacity
+                  style={{ top: 20, right: 14 }}
+                  onPress={() => {
+                    setOpenModalItemId(isModalVisible ? null : item.id);
+                  }}
+                >
+                  <Image
+                    source={require("../../assets/icons/dot.png")}
+                    style={{ width: 24, height: 24 }}
+                  />
+                </TouchableOpacity>
+
+                {isModalVisible ? (
+                  <EditListModal setOpenModalItemId={setOpenModalItemId} />
+                ) : null}
+              </View>
+
+              <View>
+                <Text style={styles.fontTw2}>{item.title}</Text>
+                <Text style={styles.fontTw3}>{item.memo}</Text>
+              </View>
             </View>
-            <View>
-              <Text style={styles.fontTw2}>{item.title}</Text>
-              <Text style={styles.fontTw3}>{item.memo}</Text>
-            </View>
-          </View>
-        )}
+          );
+        }}
       />
     </SafeAreaView>
   );
@@ -219,7 +209,8 @@ const styles = StyleSheet.create({
     borderColor: "#cccccc",
     width: "100%",
     height: 135,
-    marginBottom: 20,
+    marginBottom: 10,
+    marginTop: 10,
     backgroundColor: "white",
   },
   fontTw1: {
