@@ -13,7 +13,7 @@ export default function TabLayout() {
         tabBarShowLabel: false,
         tabBarActiveTintColor: "#5900FF",
         tabBarStyle: {
-          height: "6.9%", // 56/812 비율
+          height: "8%", // 56/812 비율
           backgroundColor: "#ffffff",
           borderTopWidth: 0, // 상단 경계선 제거
           elevation: 0,
@@ -28,7 +28,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="home"
         options={{
-          headerShown: false, // 상단 타이틀 숨기기
+          headerShown: false,
           tabBarIcon: ({ color, focused }) => (
             <View style={{ alignItems: "center" }}>
               <Image
@@ -183,3 +183,4 @@ export default function TabLayout() {
           </Tabs>
         );
       }
+
