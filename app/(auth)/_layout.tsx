@@ -15,7 +15,12 @@ export default function TabLayout() {
     <Stack initialRouteName="Start">
       <Stack.Screen name="Start" options={{ headerShown: false }} />
       <Stack.Screen name="bell" options={{ headerShown: false }} />
-      <Stack.Screen name="Login" options={{ headerShown: true }} />
+      <Stack.Screen name="Login" options={{ headerShown: false }} />
+      <Stack.Screen name="SignUp" options={{ headerShown: false }} />
+      <Stack.Screen name="SignUpForm" options={{ headerShown: false }} />
+      <Stack.Screen name="Terms" options={{ headerShown: false }} />
+      <Stack.Screen name="PushTerms" options={{ headerShown: false }} />
+
       <Stack.Screen
         name="AccountDeletePassword"
         options={{ headerShown: false }}
