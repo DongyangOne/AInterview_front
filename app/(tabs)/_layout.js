@@ -150,7 +150,6 @@ export default function TabLayout() {
         <Tabs.Screen
           name="interview"
           options={{
-            setShowFAB: false,
             headerShown: false,
             title: "",
             tabBarStyle: { display: "none" },
@@ -239,10 +238,9 @@ export default function TabLayout() {
             <TouchableOpacity
               style={styles.optionBtn}
               onPress={() => {
-                setShowFAB(false); // +버튼 숨기기
                 setOpen(false); // 오버레이 닫기
                 router.push({
-                  pathname: "/interview",
+                  pathname: "/screens/interview",
                   params: { role: "서버 관리자" },
                 });
               }}
@@ -252,10 +250,9 @@ export default function TabLayout() {
             <TouchableOpacity
               style={styles.optionBtn}
               onPress={() => {
-                setShowFAB(false); // +버튼 숨기기
                 setOpen(false); // 오버레이 닫기
                 router.push({
-                  pathname: "/interview",
+                  pathname: "/screens/interview",
                   params: { role: "백엔드" },
                 });
               }}
@@ -265,10 +262,9 @@ export default function TabLayout() {
             <TouchableOpacity
               style={styles.optionBtn}
               onPress={() => {
-                setShowFAB(false); // +버튼 숨기기
                 setOpen(false); // 오버레이 닫기
                 router.push({
-                  pathname: "/interview",
+                  pathname: "/screens/interview",
                   params: { role: "프론트" },
                 });
               }}

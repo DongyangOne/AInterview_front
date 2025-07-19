@@ -38,6 +38,14 @@ export default function Interview() {
           />
         </View>
       </TouchableOpacity>
+      <CustomModal
+        visible={modalVisible}
+        onCancel={() => setModalVisible(false)}
+        onConfirm={() => {
+          // 종료 처리 로직
+          setModalVisible(false);
+        }}
+      />
       {/* 중앙 텍스트} */}
       <Text style={styles.title}>
         {displayRole}
