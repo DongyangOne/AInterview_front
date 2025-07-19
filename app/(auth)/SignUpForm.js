@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
+  Image,
 } from "react-native";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -139,8 +140,19 @@ export default function SignUpForm() {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#fff" }}>
-      <ScrollView contentContainerStyle={styles.container}>
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.back()}>
+          <Image
+            source={require("../../assets/icons/bell_arrow.png")}
+            style={{ width: 24, height: 48 }}
+            resizeMode="contain"
+          />
+        </TouchableOpacity>
+
+        <Text style={styles.headerText}>회원가입</Text>
+      </View>
+      <ScrollView>
         <Text style={styles.label}>아이디</Text>
         <View style={styles.inputRow}>
           <TextInput
@@ -202,10 +214,10 @@ export default function SignUpForm() {
             />
           </TouchableOpacity>
           <Text style={styles.checkText}>
-            이용약관 동의{" "}
+            이용약관 동의
             <Text style={styles.link} onPress={() => router.push("/Terms")}>
               보기
-            </Text>{" "}
+            </Text>
             (필수)
           </Text>
         </View>
@@ -222,10 +234,10 @@ export default function SignUpForm() {
             />
           </TouchableOpacity>
           <Text style={styles.checkText}>
-            앱 푸시 수신 동의{" "}
+            앱 푸시 수신 동의
             <Text style={styles.link} onPress={() => router.push("/PushTerms")}>
               보기
-            </Text>{" "}
+            </Text>
             (선택)
           </Text>
         </View>
@@ -240,9 +252,27 @@ export default function SignUpForm() {
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
     padding: 24,
+    paddingTop: 40,
     backgroundColor: "#fff",
     paddingBottom: 48,
+  },
+  header: {
+    height: 56,
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#fff",
+    marginBottom: 57,
+  },
+  headerText: {
+    position: "absolute",
+    left: 50,
+    right: 50,
+    textAlign: "center",
+    fontSize: 20,
+    fontWeight: "400",
+    color: "#191919",
   },
   label: {
     fontSize: 14,
@@ -290,7 +320,6 @@ const styles = StyleSheet.create({
   checkRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: 20,
   },
   checkText: {
     fontSize: 13,
