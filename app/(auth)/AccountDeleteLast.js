@@ -38,7 +38,7 @@ export default function AccountDeleteLast() {
 
   const handleConfirm = () => {
     setConfirmModalVisible(false);
-    router.replace("/Login");
+    router.replace("/Start");
   };
 
   const handleSelect = (reason) => {
