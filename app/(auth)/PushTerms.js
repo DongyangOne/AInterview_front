@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
 import { useRouter } from "expo-router";
 
 export default function PushTerms() {
@@ -7,9 +7,17 @@ export default function PushTerms() {
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-        <Text style={styles.backArrow}>←</Text>
-      </TouchableOpacity>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.back()}>
+          <Image
+            source={require("../../assets/icons/bell_arrow.png")}
+            style={{ width: 24, height: 48 }}
+            resizeMode="contain"
+          />
+        </TouchableOpacity>
+
+        <Text style={styles.headerText}>앱 푸시 수신 동의서</Text>
+      </View>
 
       <Text style={styles.title}>앱 푸시 수신 동의서</Text>
 
@@ -26,8 +34,25 @@ export default function PushTerms() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    paddingTop: 40,
     backgroundColor: "#fff",
     padding: 20,
+  },
+  header: {
+    height: 56,
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#fff",
+    marginBottom: 12,
+  },
+  headerText: {
+    position: "absolute",
+    left: 50,
+    right: 50,
+    textAlign: "center",
+    fontSize: 20,
+    fontWeight: "400",
+    color: "#191919",
   },
   backBtn: {
     marginBottom: 10,

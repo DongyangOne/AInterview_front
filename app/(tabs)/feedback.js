@@ -51,7 +51,7 @@ export default function Feedback() {
             placeholder="제목, 날짜, 메모 검색"
           />
           <Image
-            source={require('../../assets/icons/search.png')}
+            source={require('./assets/icons/search1.png')}
             style={{ width: 25, height: 25, marginLeft: 285, top: -30 }}
 
           />
@@ -94,7 +94,7 @@ export default function Feedback() {
               , zIndex: 3000,
             }}
             containerStyle={{
-              zIndex: 3000,
+              zIndex: 3000,     // ✅ 부모의 zIndex도 충분히 높여야 가려지지 않음
             }}
             textStyle={{ fontSize: 15 }}
           />
@@ -106,7 +106,7 @@ export default function Feedback() {
           <View style={styles.empty} />
           <View style={[styles.contentBox, { position: "relative", marginTop: 30 }]}>
             <Image
-              source={require('../../assets/icons/bookmark.png')}
+              source={require('./assets/icons/bookmark.png')}
               style={{ width: 50, height: 50, marginLeft: 270, top: -12, position: 'absolute' }}
             />
             <View style={{ flexDirection: "row" }}>
