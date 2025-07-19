@@ -51,7 +51,7 @@ export default function Feedback() {
             placeholder="제목, 날짜, 메모 검색"
           />
           <Image
-            source={require('./assets/images/search.png')}
+            source={require('../../assets/icons/search.png')}
             style={{ width: 25, height: 25, marginLeft: 300, top: -30 }}
           />
         </View>
@@ -90,7 +90,7 @@ export default function Feedback() {
           <View style={styles.empty} />
           <View style={[styles.contentBox, { position: "relative", marginTop: 30 }]}>
             <Image
-              source={require('./assets/images/bookmark.png')}
+              source={require('../../assets/icons/bookmark.png')}
               style={{ width: 50, height: 50, marginLeft: 270, top: -12, position: 'absolute' }}
             />
             <View style={{ flexDirection: "row" }}>
@@ -106,28 +106,7 @@ export default function Feedback() {
                 <Text style={{ marginLeft: 240, top: -10 }}>•</Text>
                 <Text style={{ marginLeft: 240, top: -20 }}>•</Text>
               </TouchableOpacity>
-              {open1 && (
-                <DropDownPicker
-                  open={open1}
-                  value={value1}
-                  items={items1}
-                  setOpen={setOpen1}
-                  setValue={setValue1}
-                  setItems={setItems1}
-                  style={styles.dropdown}
-                  zIndex={3000}
-                  zIndexInverse={1000}
-                  dropDownContainerStyle={styles.dropdownContainer}
-                  onChangeValue={(val) => {
-                    console.log("선택된 항목:", val);
-                    setValue1(val);
-                    setOpen1(false);
-                    if (val === "title") {
-                      setModalVisible(true);
-                    }
-                  }}
-                />
-              )}
+
             </View>
             <View style={{ top: -15 }}>
               <Text style={styles.fontTw2}>삼성 회사 면접</Text>
@@ -149,28 +128,7 @@ export default function Feedback() {
                 <Text style={{ marginLeft: 240, top: -10 }}>•</Text>
                 <Text style={{ marginLeft: 240, top: -20 }}>•</Text>
               </TouchableOpacity>
-              {open1 && (
-                <DropDownPicker
-                  open={open1}
-                  value={value1}
-                  items={items1}
-                  setOpen={setOpen1}
-                  setValue={setValue1}
-                  setItems={setItems1}
-                  style={styles.dropdown}
-                  zIndex={3000}
-                  zIndexInverse={1000}
-                  dropDownContainerStyle={styles.dropdownContainer}
-                  onChangeValue={(val) => {
-                    console.log("선택된 항목:", val);
-                    setValue1(val);
-                    setOpen1(false);
-                    if (val === "title") {
-                      setModalVisible(true);
-                    }
-                  }}
-                />
-              )}
+
             </View>
             <View style={{ top: -15 }}>
               <Text style={styles.fontTw2}>삼성 회사 면접</Text>
@@ -192,28 +150,7 @@ export default function Feedback() {
                 <Text style={{ marginLeft: 240, top: -10 }}>•</Text>
                 <Text style={{ marginLeft: 240, top: -20 }}>•</Text>
               </TouchableOpacity>
-              {open1 && (
-                <DropDownPicker
-                  open={open1}
-                  value={value1}
-                  items={items1}
-                  setOpen={setOpen1}
-                  setValue={setValue1}
-                  setItems={setItems1}
-                  style={styles.dropdown}
-                  zIndex={3000}
-                  zIndexInverse={1000}
-                  dropDownContainerStyle={styles.dropdownContainer}
-                  onChangeValue={(val) => {
-                    console.log("선택된 항목:", val);
-                    setValue1(val);
-                    setOpen1(false);
-                    if (val === "title") {
-                      setModalVisible(true);
-                    }
-                  }}
-                />
-              )}
+
             </View>
             <View style={{ top: -15 }}>
               <Text style={styles.fontTw2}>삼성 회사 면접</Text>
@@ -235,28 +172,7 @@ export default function Feedback() {
                 <Text style={{ marginLeft: 240, top: -10 }}>•</Text>
                 <Text style={{ marginLeft: 240, top: -20 }}>•</Text>
               </TouchableOpacity>
-              {open1 && (
-                <DropDownPicker
-                  open={open1}
-                  value={value1}
-                  items={items1}
-                  setOpen={setOpen1}
-                  setValue={setValue1}
-                  setItems={setItems1}
-                  style={styles.dropdown}
-                  zIndex={3000}
-                  zIndexInverse={1000}
-                  dropDownContainerStyle={styles.dropdownContainer}
-                  onChangeValue={(val) => {
-                    console.log("선택된 항목:", val);
-                    setValue1(val);
-                    setOpen1(false);
-                    if (val === "title") {
-                      setModalVisible(true);
-                    }
-                  }}
-                />
-              )}
+
             </View>
             <View style={{ top: -15 }}>
               <Text style={styles.fontTw2}>삼성 회사 면접</Text>
@@ -278,35 +194,14 @@ export default function Feedback() {
                 <Text style={{ marginLeft: 240, top: -10 }}>•</Text>
                 <Text style={{ marginLeft: 240, top: -20 }}>•</Text>
               </TouchableOpacity>
-              {open1 && (
-                <DropDownPicker
-                  open={open1}
-                  value={value1}
-                  items={items1}
-                  setOpen={setOpen1}
-                  setValue={setValue1}
-                  setItems={setItems1}
-                  style={styles.dropdown}
-                  zIndex={3000}
-                  zIndexInverse={1000}
-                  dropDownContainerStyle={styles.dropdownContainer}
-                  onChangeValue={(val) => {
-                    console.log("선택된 항목:", val);
-                    setValue1(val);
-                    setOpen1(false);
-                    if (val === "title") {
-                      setModalVisible(true);
-                    }
-                  }}
-                />
-              )}
+
             </View>
             <View style={{ top: -15 }}>
               <Text style={styles.fontTw2}>삼성 회사 면접</Text>
               <Text style={styles.fontTw3}>&lt 앞으로 자신감...</Text>
             </View>
           </View>
-          <View style={{ height: 150 }} />
+          <View style={{ height: 250 }} />
         </View>
       </ScrollView>
 
@@ -321,12 +216,12 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "100%",
     top: 130,
-    paddingTop: 20,
-
+    paddingTop: 20
   },
   subEntire: {
     justifyContent: "center",
     alignItems: "center",
+    marginTop: -150
   },
   head: {
     marginTop: 70,
@@ -383,32 +278,5 @@ const styles = StyleSheet.create({
     color: "#808080",
   },
 
-
-  dropdown: {
-    top: 30,
-    right: 30,
-    width: 120,
-    maxHeight: 50,
-    zIndex: 1000,
-    backgroundColor: "white",
-    borderWidth: 0,
-  },
-  dropdownContainer: {
-    position: "absolute",
-    fontSize: 14,
-    width: 160,
-    maxHeight: 195,
-    right: 350,
-    zIndex: 1000,
-    borderWidth: 0,
-  },
-
-
-  //image
-
-  bookmark: {
-    width: 10,
-    height: 10,
-  }
 
 });
