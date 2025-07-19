@@ -1,3 +1,4 @@
+
 import {
   View,
   Text,
@@ -50,8 +51,8 @@ export default function Feedback() {
             placeholder="제목, 날짜, 메모 검색"
           />
           <Image
-            source={require("../../assets/images/search.png")}
-            style={{ width: 25, height: 25, marginLeft: 300, top: -5 }}
+            source={require('./assets/images/search.png')}
+            style={{ width: 25, height: 25, marginLeft: 300, top: -30 }}
           />
         </View>
         <View style={{ top: 60, width: "85%", flexDirection: "row" }}>
@@ -71,8 +72,8 @@ export default function Feedback() {
               top: -12,
               width: 130,
               height: 40,
-              // borderWidth: "none",
               zIndex: 2000,
+              borderWidth: 0,
             }}
             dropDownContainerStyle={{
               fontSize: 14,
@@ -85,233 +86,232 @@ export default function Feedback() {
       </View>
 
       <ScrollView style={[styles.entire, { position: "relative" }]}>
-        <View style={[styles.contentBox, { position: "relative" }]}>
-          <Image
-            source={require("../../assets/images/bookmark.png")}
-            style={{
-              width: 34,
-              height: 34,
-              marginLeft: 300,
-              top: -17,
-              zIndex: 10,
-              position: "absolute",
-            }}
-          />
-          <View style={{ flexDirection: "row" }}>
-            <Text style={styles.fontTw1}>2025.07.06</Text>
-            <TouchableOpacity
-              style={{ top: 20, right: 14 }}
-              onPress={() => {
-                setOpen(false);
-                setModalVisible(true);
-              }}
-            >
-              <Text style={{ marginLeft: 240 }}>•</Text>
-              <Text style={{ marginLeft: 240, top: -10 }}>•</Text>
-              <Text style={{ marginLeft: 240, top: -20 }}>•</Text>
-            </TouchableOpacity>
-            {open1 && (
-              <DropDownPicker
-                open={open1}
-                value={value1}
-                items={items1}
-                setOpen={setOpen1}
-                setValue={setValue1}
-                setItems={setItems1}
-                style={styles.dropdown}
-                zIndex={3000}
-                zIndexInverse={1000}
-                dropDownContainerStyle={styles.dropdownContainer}
-                onChangeValue={(val) => {
-                  console.log("선택된 항목:", val);
-                  setValue1(val);
-                  setOpen1(false);
-                  if (val === "title") {
-                    setModalVisible(true);
-                  }
+        <View style={styles.subEntire}>
+          <View style={styles.empty} />
+          <View style={[styles.contentBox, { position: "relative", marginTop: 30 }]}>
+            <Image
+              source={require('./assets/images/bookmark.png')}
+              style={{ width: 50, height: 50, marginLeft: 270, top: -15, position: 'absolute' }}
+            />
+            <View style={{ flexDirection: "row" }}>
+              <Text style={styles.fontTw1}>2025.07.06</Text>
+              <TouchableOpacity
+                style={{ top: 20, right: 14 }}
+                onPress={() => {
+                  setOpen(false);
+                  setModalVisible(true);
                 }}
-              />
-            )}
+              >
+                <Text style={{ marginLeft: 240 }}>•</Text>
+                <Text style={{ marginLeft: 240, top: -10 }}>•</Text>
+                <Text style={{ marginLeft: 240, top: -20 }}>•</Text>
+              </TouchableOpacity>
+              {open1 && (
+                <DropDownPicker
+                  open={open1}
+                  value={value1}
+                  items={items1}
+                  setOpen={setOpen1}
+                  setValue={setValue1}
+                  setItems={setItems1}
+                  style={styles.dropdown}
+                  zIndex={3000}
+                  zIndexInverse={1000}
+                  dropDownContainerStyle={styles.dropdownContainer}
+                  onChangeValue={(val) => {
+                    console.log("선택된 항목:", val);
+                    setValue1(val);
+                    setOpen1(false);
+                    if (val === "title") {
+                      setModalVisible(true);
+                    }
+                  }}
+                />
+              )}
+            </View>
+            <View style={{ top: -15 }}>
+              <Text style={styles.fontTw2}>삼성 회사 면접</Text>
+              <Text style={styles.fontTw3}>&lt 앞으로 자신감...</Text>
+            </View>
           </View>
-          <View style={{ top: -15 }}>
-            <Text style={styles.fontTw2}>삼성 회사 면접</Text>
-            <Text style={styles.fontTw3}>&lt 앞으로 자신감...</Text>
-          </View>
-        </View>
         //2
-        <View style={styles.contentBox}>
-          <View style={{ flexDirection: "row" }}>
-            <Text style={styles.fontTw1}>2025.07.06</Text>
-            <TouchableOpacity
-              onPress={() => {
-                setOpen(false);
-                setOpen1(!open1);
-              }}
-              style={{ top: 20, right: 14 }}
-            >
-              <Text style={{ marginLeft: 240 }}>•</Text>
-              <Text style={{ marginLeft: 240, top: -10 }}>•</Text>
-              <Text style={{ marginLeft: 240, top: -20 }}>•</Text>
-            </TouchableOpacity>
-            {open1 && (
-              <DropDownPicker
-                open={open1}
-                value={value1}
-                items={items1}
-                setOpen={setOpen1}
-                setValue={setValue1}
-                setItems={setItems1}
-                style={styles.dropdown}
-                zIndex={3000}
-                zIndexInverse={1000}
-                dropDownContainerStyle={styles.dropdownContainer}
-                onChangeValue={(val) => {
-                  console.log("선택된 항목:", val);
-                  setValue1(val);
-                  setOpen1(false);
-                  if (val === "title") {
-                    setModalVisible(true);
-                  }
+          <View style={styles.contentBox}>
+            <View style={{ flexDirection: "row" }}>
+              <Text style={styles.fontTw1}>2025.07.06</Text>
+              <TouchableOpacity
+                onPress={() => {
+                  setOpen(false);
+                  setOpen1(!open1);
                 }}
-              />
-            )}
+                style={{ top: 20, right: 14 }}
+              >
+                <Text style={{ marginLeft: 240 }}>•</Text>
+                <Text style={{ marginLeft: 240, top: -10 }}>•</Text>
+                <Text style={{ marginLeft: 240, top: -20 }}>•</Text>
+              </TouchableOpacity>
+              {open1 && (
+                <DropDownPicker
+                  open={open1}
+                  value={value1}
+                  items={items1}
+                  setOpen={setOpen1}
+                  setValue={setValue1}
+                  setItems={setItems1}
+                  style={styles.dropdown}
+                  zIndex={3000}
+                  zIndexInverse={1000}
+                  dropDownContainerStyle={styles.dropdownContainer}
+                  onChangeValue={(val) => {
+                    console.log("선택된 항목:", val);
+                    setValue1(val);
+                    setOpen1(false);
+                    if (val === "title") {
+                      setModalVisible(true);
+                    }
+                  }}
+                />
+              )}
+            </View>
+            <View style={{ top: -15 }}>
+              <Text style={styles.fontTw2}>삼성 회사 면접</Text>
+              <Text style={styles.fontTw3}>&lt 앞으로 자신감...</Text>
+            </View>
           </View>
-          <View style={{ top: -15 }}>
-            <Text style={styles.fontTw2}>삼성 회사 면접</Text>
-            <Text style={styles.fontTw3}>&lt 앞으로 자신감...</Text>
-          </View>
-        </View>
         //3
-        <View style={styles.contentBox}>
-          <View style={{ flexDirection: "row" }}>
-            <Text style={styles.fontTw1}>2025.07.06</Text>
-            <TouchableOpacity
-              style={{ top: 20, right: 14 }}
-              onPress={() => {
-                setOpen(false);
-                setModalVisible(true);
-              }}
-            >
-              <Text style={{ marginLeft: 240 }}>•</Text>
-              <Text style={{ marginLeft: 240, top: -10 }}>•</Text>
-              <Text style={{ marginLeft: 240, top: -20 }}>•</Text>
-            </TouchableOpacity>
-            {open1 && (
-              <DropDownPicker
-                open={open1}
-                value={value1}
-                items={items1}
-                setOpen={setOpen1}
-                setValue={setValue1}
-                setItems={setItems1}
-                style={styles.dropdown}
-                zIndex={3000}
-                zIndexInverse={1000}
-                dropDownContainerStyle={styles.dropdownContainer}
-                onChangeValue={(val) => {
-                  console.log("선택된 항목:", val);
-                  setValue1(val);
-                  setOpen1(false);
-                  if (val === "title") {
-                    setModalVisible(true);
-                  }
+          <View style={styles.contentBox}>
+            <View style={{ flexDirection: "row" }}>
+              <Text style={styles.fontTw1}>2025.07.06</Text>
+              <TouchableOpacity
+                style={{ top: 20, right: 14 }}
+                onPress={() => {
+                  setOpen(false);
+                  setModalVisible(true);
                 }}
-              />
-            )}
+              >
+                <Text style={{ marginLeft: 240 }}>•</Text>
+                <Text style={{ marginLeft: 240, top: -10 }}>•</Text>
+                <Text style={{ marginLeft: 240, top: -20 }}>•</Text>
+              </TouchableOpacity>
+              {open1 && (
+                <DropDownPicker
+                  open={open1}
+                  value={value1}
+                  items={items1}
+                  setOpen={setOpen1}
+                  setValue={setValue1}
+                  setItems={setItems1}
+                  style={styles.dropdown}
+                  zIndex={3000}
+                  zIndexInverse={1000}
+                  dropDownContainerStyle={styles.dropdownContainer}
+                  onChangeValue={(val) => {
+                    console.log("선택된 항목:", val);
+                    setValue1(val);
+                    setOpen1(false);
+                    if (val === "title") {
+                      setModalVisible(true);
+                    }
+                  }}
+                />
+              )}
+            </View>
+            <View style={{ top: -15 }}>
+              <Text style={styles.fontTw2}>삼성 회사 면접</Text>
+              <Text style={styles.fontTw3}>&lt 앞으로 자신감...</Text>
+            </View>
           </View>
-          <View style={{ top: -15 }}>
-            <Text style={styles.fontTw2}>삼성 회사 면접</Text>
-            <Text style={styles.fontTw3}>&lt 앞으로 자신감...</Text>
-          </View>
-        </View>
         //4
-        <View style={styles.contentBox}>
-          <View style={{ flexDirection: "row" }}>
-            <Text style={styles.fontTw1}>2025.07.06</Text>
-            <TouchableOpacity
-              style={{ top: 20, right: 14 }}
-              onPress={() => {
-                setOpen(false);
-                setModalVisible(true);
-              }}
-            >
-              <Text style={{ marginLeft: 240 }}>•</Text>
-              <Text style={{ marginLeft: 240, top: -10 }}>•</Text>
-              <Text style={{ marginLeft: 240, top: -20 }}>•</Text>
-            </TouchableOpacity>
-            {open1 && (
-              <DropDownPicker
-                open={open1}
-                value={value1}
-                items={items1}
-                setOpen={setOpen1}
-                setValue={setValue1}
-                setItems={setItems1}
-                style={styles.dropdown}
-                zIndex={3000}
-                zIndexInverse={1000}
-                dropDownContainerStyle={styles.dropdownContainer}
-                onChangeValue={(val) => {
-                  console.log("선택된 항목:", val);
-                  setValue1(val);
-                  setOpen1(false);
-                  if (val === "title") {
-                    setModalVisible(true);
-                  }
+          <View style={styles.contentBox}>
+            <View style={{ flexDirection: "row" }}>
+              <Text style={styles.fontTw1}>2025.07.06</Text>
+              <TouchableOpacity
+                style={{ top: 20, right: 14 }}
+                onPress={() => {
+                  setOpen(false);
+                  setModalVisible(true);
                 }}
-              />
-            )}
+              >
+                <Text style={{ marginLeft: 240 }}>•</Text>
+                <Text style={{ marginLeft: 240, top: -10 }}>•</Text>
+                <Text style={{ marginLeft: 240, top: -20 }}>•</Text>
+              </TouchableOpacity>
+              {open1 && (
+                <DropDownPicker
+                  open={open1}
+                  value={value1}
+                  items={items1}
+                  setOpen={setOpen1}
+                  setValue={setValue1}
+                  setItems={setItems1}
+                  style={styles.dropdown}
+                  zIndex={3000}
+                  zIndexInverse={1000}
+                  dropDownContainerStyle={styles.dropdownContainer}
+                  onChangeValue={(val) => {
+                    console.log("선택된 항목:", val);
+                    setValue1(val);
+                    setOpen1(false);
+                    if (val === "title") {
+                      setModalVisible(true);
+                    }
+                  }}
+                />
+              )}
+            </View>
+            <View style={{ top: -15 }}>
+              <Text style={styles.fontTw2}>삼성 회사 면접</Text>
+              <Text style={styles.fontTw3}>&lt 앞으로 자신감...</Text>
+            </View>
           </View>
-          <View style={{ top: -15 }}>
-            <Text style={styles.fontTw2}>삼성 회사 면접</Text>
-            <Text style={styles.fontTw3}>&lt 앞으로 자신감...</Text>
-          </View>
-        </View>
         //5
-        <View style={styles.contentBox}>
-          <View style={{ flexDirection: "row" }}>
-            <Text style={styles.fontTw1}>2025.07.06</Text>
-            <TouchableOpacity
-              style={{ top: 20, right: 14 }}
-              onPress={() => {
-                setOpen(false);
-                setModalVisible(true);
-              }}
-            >
-              <Text style={{ marginLeft: 240 }}>•</Text>
-              <Text style={{ marginLeft: 240, top: -10 }}>•</Text>
-              <Text style={{ marginLeft: 240, top: -20 }}>•</Text>
-            </TouchableOpacity>
-            {open1 && (
-              <DropDownPicker
-                open={open1}
-                value={value1}
-                items={items1}
-                setOpen={setOpen1}
-                setValue={setValue1}
-                setItems={setItems1}
-                style={styles.dropdown}
-                zIndex={3000}
-                zIndexInverse={1000}
-                dropDownContainerStyle={styles.dropdownContainer}
-                onChangeValue={(val) => {
-                  console.log("선택된 항목:", val);
-                  setValue1(val);
-                  setOpen1(false);
-                  if (val === "title") {
-                    setModalVisible(true);
-                  }
+          <View style={styles.contentBox}>
+            <View style={{ flexDirection: "row" }}>
+              <Text style={styles.fontTw1}>2025.07.06</Text>
+              <TouchableOpacity
+                style={{ top: 20, right: 14 }}
+                onPress={() => {
+                  setOpen(false);
+                  setModalVisible(true);
                 }}
-              />
-            )}
+              >
+                <Text style={{ marginLeft: 240 }}>•</Text>
+                <Text style={{ marginLeft: 240, top: -10 }}>•</Text>
+                <Text style={{ marginLeft: 240, top: -20 }}>•</Text>
+              </TouchableOpacity>
+              {open1 && (
+                <DropDownPicker
+                  open={open1}
+                  value={value1}
+                  items={items1}
+                  setOpen={setOpen1}
+                  setValue={setValue1}
+                  setItems={setItems1}
+                  style={styles.dropdown}
+                  zIndex={3000}
+                  zIndexInverse={1000}
+                  dropDownContainerStyle={styles.dropdownContainer}
+                  onChangeValue={(val) => {
+                    console.log("선택된 항목:", val);
+                    setValue1(val);
+                    setOpen1(false);
+                    if (val === "title") {
+                      setModalVisible(true);
+                    }
+                  }}
+                />
+              )}
+            </View>
+            <View style={{ top: -15 }}>
+              <Text style={styles.fontTw2}>삼성 회사 면접</Text>
+              <Text style={styles.fontTw3}>&lt 앞으로 자신감...</Text>
+            </View>
           </View>
-          <View style={{ top: -15 }}>
-            <Text style={styles.fontTw2}>삼성 회사 면접</Text>
-            <Text style={styles.fontTw3}>&lt 앞으로 자신감...</Text>
-          </View>
+          <View style={{ height: 150 }} />
         </View>
-        <View style={{ height: 150 }} />
       </ScrollView>
+
+
+
     </View>
   );
 }
@@ -322,6 +322,12 @@ const styles = StyleSheet.create({
     height: "100%",
     top: 130,
     paddingTop: 20,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  subEntire: {
+    justifyContent: "center",
+    alignItems: "center",
   },
   head: {
     marginTop: 70,
@@ -335,16 +341,20 @@ const styles = StyleSheet.create({
     top: 40,
     width: 350,
     height: 50,
+    alignItems: 'center',
   },
   searchInput: {
-    marginLeft: 20,
-    top: 15,
+    top: 5,
     width: 280,
     fontSize: 15,
+    marginRight: 25
+    // backgroundColor:'black'
   },
 
   //--------------content-----------------
-
+  empty: {
+    height: 120
+  },
   contentBox: {
     borderRadius: 10,
     borderWidth: 2,
@@ -355,60 +365,25 @@ const styles = StyleSheet.create({
     zIndex: 3,
   },
   fontTw1: {
-    marginTop: 26,
+    marginTop: 20,
     marginLeft: 18,
     fontSize: 14,
     color: "#808080",
   },
   fontTw2: {
     fontSize: 18,
-    marginTop: 23,
+    marginTop: 15,
     marginLeft: 18,
     marginBottom: 10,
     fontWeight: "bold",
   },
   fontTw3: {
     fontSize: 16,
-    marginTop: 10,
     marginLeft: 18,
     marginBottom: 10,
     color: "#808080",
   },
 
-  //----------------footer------------------
-  foot: {
-    textAlign: "center",
-    width: "100%",
-    flexDirection: "row",
-    paddingTop: 0,
-    paddingBottom: 0,
-  },
-  footBtn1: {
-    flex: 1,
-    alignItems: "center",
-    padding: 10,
-    height: 70,
-    backgroundColor: "white",
-    borderColor: "black",
-  },
-  footBtn1L: {
-    flex: 1,
-    alignItems: "center",
-    padding: 10,
-    height: 70,
-    borderTopLeftRadius: 20,
-    backgroundColor: "white",
-    borderColor: "black",
-  },
-  footBtn1R: {
-    flex: 1,
-    alignItems: "center",
-    padding: 10,
-    height: 70,
-    borderTopRightRadius: 20,
-    backgroundColor: "white",
-    borderColor: "black",
-  },
 
   dropdown: {
     top: 30,
@@ -417,6 +392,7 @@ const styles = StyleSheet.create({
     maxHeight: 50,
     zIndex: 1000,
     backgroundColor: "white",
+    borderWidth: 0,
   },
   dropdownContainer: {
     position: "absolute",
@@ -425,14 +401,15 @@ const styles = StyleSheet.create({
     maxHeight: 195,
     right: 350,
     zIndex: 1000,
-    backgroundColor: "white",
+    borderWidth: 0,
   },
 
-  modalBtn: {
-    width: 140,
-    height: 45,
-    borderRadius: 10,
-    justifyContent: "center",
-    alignItems: "center",
-  },
+
+  //image
+
+  bookmark: {
+    width: 10,
+    height: 10,
+  }
+
 });
