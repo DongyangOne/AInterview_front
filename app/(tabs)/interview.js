@@ -1,4 +1,5 @@
-import { Tabs, useLocalSearchParams } from "expo-router";
+import { useState } from "react";
+import { Tabs, useLocalSearchParams, useRouter } from "expo-router";
 import {
   StyleSheet,
   Text,
@@ -7,6 +8,7 @@ import {
   Dimensions,
   Image,
 } from "react-native";
+import CustomModal from "../../components/Modal/Close";
 
 const { width } = Dimensions.get("window");
 
@@ -68,7 +70,10 @@ export default function Interview() {
       </View>
 
       {/* 하단 시작 버튼 */}
-      <TouchableOpacity style={styles.startButton}>
+      <TouchableOpacity
+        style={styles.startButton}
+        onPress={() => router.replace("/interviewing")}
+      >
         <Text style={styles.startButtonText}>시작</Text>
       </TouchableOpacity>
     </View>
