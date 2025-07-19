@@ -4,16 +4,57 @@ import {
   TextInput,
   StyleSheet,
   TouchableOpacity,
-  Alert,
-  ScrollView,
   Image,
-  Modal,
+  FlatList,
+  Pressable,
 } from "react-native";
-import { StatusBar } from "expo-status-bar";
-import React, { useEffect, useState } from "react";
-import useWindowDimensions from "react-native";
-import { Picker } from "@react-native-picker/picker";
-import DropDownPicker from "react-native-dropdown-picker";
+import { useState } from "react";
+import { SafeAreaView } from "react-native-safe-area-context";
+import AlignModal from "../../components/Modal/AlignModal";
+const feedbackList = [
+  {
+    id: "1",
+    date: "2025년 6월 27일",
+    title: "삼성 회사 면접",
+    memo: "앞으로 자신감, 위기대처능력, 업무이...",
+    pin: "Y",
+  },
+  {
+    id: "2",
+    date: "2025년 5월 13일",
+    title: "LG 1차 면접",
+    memo: "침착하고 간결한 말투 필요",
+    pin: "N",
+  },
+  {
+    id: "3",
+    date: "2025년 6월 27일",
+    title: "삼성 회사 면접",
+    memo: "앞으로 자신감, 위기대처능력, 업무이...",
+    pin: "Y",
+  },
+  {
+    id: "4",
+    date: "2025년 5월 13일",
+    title: "LG 1차 면접",
+    memo: "침착하고 간결한 말투 필요",
+    pin: "N",
+  },
+  {
+    id: "5",
+    date: "2025년 5월 13일",
+    title: "LG 1차 면접",
+    memo: "침착하고 간결한 말투 필요",
+    pin: "N",
+  },
+  {
+    id: "6",
+    date: "2025년 6월 27일",
+    title: "삼성 회사 면접",
+    memo: "앞으로 자신감, 위기대처능력, 업무이...",
+    pin: "Y",
+  },
+];
 
 export default function Feedback() {
   const [open, setOpen] = useState(false);
@@ -38,201 +79,147 @@ export default function Feedback() {
   const [modalVisible, setModalVisible] = useState(false);
   const [modalType, setModalType] = useState(null); // 'title', 'memo', 'delete'
 
+  const sortedList = [...feedbackList].sort((a, b) => {
+    if (a.pin === "Y" && b.pin !== "Y") return -1;
+    if (a.pin !== "Y" && b.pin === "Y") return 1;
+
+    // 날짜 내림차순
+    return new Date(b.date) - new Date(a.date);
+  });
+
   return (
-    <View style={{ flex: 1, backgroundColor: "white" }}>
+    <SafeAreaView style={styles.container}>
       <View style={styles.head}>
-        <Text style={{ fontSize: 20, top: 10, fontWeight: "500" }}>
+        <Text style={{ fontSize: 20, fontWeight: "500" }}>
           나의 피드백 목록
         </Text>
-        <View style={styles.search}>
-          <TextInput
-            style={styles.searchInput}
-            placeholder="제목, 날짜, 메모 검색"
-          />
-          <Image
-            source={require("../../assets/icons/search.png")}
-            style={{ width: 25, height: 25, marginLeft: 285, top: -30 }}
-          />
-        </View>
-        <View style={{ top: 60, width: "85%", flexDirection: "row" }}>
-          <Text
-            style={{
-              fontSize: 15,
-              marginLeft: 5,
-              marginRight: 170,
-              top: 5,
-              color: "#808080",
-            }}
-          >
-            모든 피드백
-          </Text>
-
-          <DropDownPicker
-            open={open}
-            value={value}
-            items={items}
-            setOpen={setOpen}
-            setValue={setValue}
-            setItems={setItems}
-            style={{
-              top: -12,
-              width: 130,
-              height: 40,
-              zIndex: 2000,
-              borderWidth: 0,
-              fontSize: 15,
-            }}
-            dropDownContainerStyle={{
-              fontSize: 14,
-              width: 115,
-              maxHeight: 80,
-              borderRadius: 0,
-              borderWidth: 0.5,
-              backgroundColor: "white",
-              borderColor: "#CCCCCC",
-              placeholder: "정렬 기준",
-              shadowColor: "#CCCCCC",
-              overflow: "visible",
-              elevation: 7,
-              zIndex: 3000,
-            }}
-            containerStyle={{
-              zIndex: 3000, // ✅ 부모의 zIndex도 충분히 높여야 가려지지 않음
-            }}
-            textStyle={{ fontSize: 15 }}
-          />
-        </View>
       </View>
+      <View style={styles.search}>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="제목, 날짜, 메모 검색"
+        />
+        <Image
+          source={require("../../assets/icons/search.png")}
+          style={{ width: 24, height: 24 }}
+        />
+      </View>
+      <View style={styles.wrapFilter}>
+        <Text
+          style={{
+            fontSize: 15,
+            color: "#808080",
+          }}
+        >
+          모든 피드백
+        </Text>
+        <Pressable
+          onPress={() => {
+            setOpen(!open);
+          }}
+          style={{ flexDirection: "row", alignItems: "center" }}
+        >
+          <Text style={{ fontSize: 15 }}>정렬기준</Text>
+          <Image
+            style={{ width: 28, height: 14 }}
+            source={
+              open
+                ? require("../../assets/icons/arrow_down.png")
+                : require("../../assets/icons/arrow_up.png")
+            }
+          />
+        </Pressable>
+        {open ? <AlignModal setOpen={setOpen} /> : null}
+      </View>
+      <FlatList
+        data={sortedList}
+        keyExtractor={(item) => item.id}
+        ListHeaderComponent={<View style={styles.empty} />}
+        showsVerticalScrollIndicator={false}
+        renderItem={({ item }) => (
+          <View style={[styles.contentBox, { position: "relative" }]}>
+            {item.pin === "Y" && (
+              <Image
+                source={require("../../assets/icons/bookmark.png")}
+                style={{
+                  width: 50,
+                  height: 50,
+                  marginLeft: 270,
+                  top: -12,
+                  position: "absolute",
+                }}
+              />
+            )}
 
-      <ScrollView style={[styles.entire, { position: "relative" }]}>
-        <View style={styles.subEntire}>
-          <View style={styles.empty} />
-          <View
-            style={[styles.contentBox, { position: "relative", marginTop: 30 }]}
-          >
-            <Image
-              source={require("../../assets/icons/bookmark.png")}
+            <View
               style={{
-                width: 50,
-                height: 50,
-                marginLeft: 270,
-                top: -12,
-                position: "absolute",
+                flexDirection: "row",
+                justifyContent: "space-between",
               }}
-            />
-            <View
-              style={{ flexDirection: "row", justifyContent: "space-between" }}
             >
-              <Text style={styles.fontTw1}>2025년 6월 27일</Text>
+              <Text style={styles.fontTw1}>{item.date}</Text>
               <TouchableOpacity
                 style={{ top: 20, right: 14 }}
                 onPress={() => {
-                  setOpen(false);
                   setModalVisible(true);
                 }}
               >
                 <Image
                   source={require("../../assets/icons/dot.png")}
-                  style={{
-                    width: 24,
-                    height: 24,
-                  }}
+                  style={{ width: 24, height: 24 }}
                 />
               </TouchableOpacity>
             </View>
             <View>
-              <Text style={styles.fontTw2}>삼성 회사 면접</Text>
-              <Text style={styles.fontTw3}>
-                &lt 앞으로 자신감, 위기대처능력, 업무이...
-              </Text>
+              <Text style={styles.fontTw2}>{item.title}</Text>
+              <Text style={styles.fontTw3}>{item.memo}</Text>
             </View>
           </View>
-
-          <View style={styles.contentBox}>
-            <View
-              style={{ flexDirection: "row", justifyContent: "space-between" }}
-            >
-              <Text style={styles.fontTw1}>2025년 5월 13일</Text>
-              <TouchableOpacity
-                style={{ top: 20, right: 14 }}
-                onPress={() => {
-                  setOpen(false);
-                  setModalVisible(true);
-                }}
-              >
-                <Image
-                  source={require("../../assets/icons/dot.png")}
-                  style={{
-                    width: 24,
-                    height: 24,
-                  }}
-                />
-              </TouchableOpacity>
-            </View>
-            <View>
-              <Text style={styles.fontTw2}>삼성 회사 면접</Text>
-              <Text style={styles.fontTw3}>
-                &lt 앞으로 자신감, 위기대처능력, 업무이...
-              </Text>
-            </View>
-          </View>
-          <View style={{ height: 250 }} />
-        </View>
-      </ScrollView>
-    </View>
+        )}
+      />
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  entire: {
-    width: "100%",
-    height: "100%",
-    top: 130,
-    paddingTop: 20,
+  container: {
+    flex: 1,
     backgroundColor: "white",
-  },
-  subEntire: {
-    justifyContent: "center",
-    alignItems: "center",
-    marginTop: -150,
+    paddingHorizontal: 32,
   },
   head: {
-    marginTop: 70,
     height: 60,
     alignItems: "center",
+    justifyContent: "center",
   },
   search: {
+    flexDirection: "row",
     borderRadius: 10,
     borderWidth: 0.5,
     borderColor: "#cccccc",
-    top: 40,
-    width: 348,
     height: 50,
     alignItems: "center",
-    paddingLeft: 17,
-    paddingRight: 15,
-    textAlign: "left",
+    justifyContent: "space-between",
+    paddingLeft: 20,
+    paddingRight: 12,
   },
   searchInput: {
-    top: 5,
-    width: 280,
+    height: 50,
     fontSize: 15,
-    // backgroundColor:'black',
-    width: "100%",
   },
-
-  //--------------content-----------------
-  empty: {
-    height: 120,
+  wrapFilter: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 35,
+    marginBottom: 10,
   },
   contentBox: {
     borderRadius: 10,
     borderWidth: 0.5,
     borderColor: "#cccccc",
-    width: 350,
+    width: "100%",
     height: 135,
     marginBottom: 20,
-    zIndex: 3,
     backgroundColor: "white",
   },
   fontTw1: {
