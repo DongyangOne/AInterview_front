@@ -72,16 +72,18 @@ export default function TabLayout() {
       <Tabs
         screenOptions={{
           tabBarShowLabel: false,
+          tabBarActiveTintColor: "#5900FF",
           tabBarStyle: {
+            height: "8%", // 56/812 비율
             backgroundColor: "#ffffff",
-            height: 64,
-            position: "absolute",
-            left: 0,
-            right: 0,
-            bottom: 0,
-            borderTopWidth: 0,
+            borderTopWidth: 0, // 상단 경계선 제거
             elevation: 0,
+            alignItems: "center",
+            width: "100%",
           },
+          tabBarButton: (props) => (
+            <TouchableOpacity {...props} activeOpacity={1} />
+          ),
         }}
       >
         <Tabs.Screen
@@ -184,15 +186,16 @@ export default function TabLayout() {
         <Tabs.Screen
           name="myPage"
           options={{
+            headerShown: false,
             tabBarIcon: ({ color, focused }) => (
               <View style={{ alignItems: "center" }}>
                 <Image
                   source={require("../../assets/icons/Person.png")}
                   style={{
                     marginTop: 10,
-                    marginLeft: "0.7%",
                     width: 24,
                     height: 24,
+                    marginRight: "30.77%",
                     tintColor: color,
                   }}
                   resizeMode="contain"
@@ -200,8 +203,8 @@ export default function TabLayout() {
                 <Text
                   style={{
                     fontSize: 10,
-                    marginLeft: "0.7%",
-                    width: 44,
+                    marginRight: "7.77%",
+                    width: 50,
                     color: focused ? color : "#999",
                   }}
                 >
