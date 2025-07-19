@@ -39,7 +39,14 @@ function FloatingActionButton({ open, setOpen }) {
         onPress={() => setOpen(!open)}
         style={styles.fab}
       >
-        <View style={{ width: 64, height: 86, justifyContent: "center", alignItems: "center" }}>
+        <View
+          style={{
+            width: 64,
+            height: 86,
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
           <Animated.Image
             source={require("../../assets/icons/interview.png")}
             style={{
@@ -79,7 +86,7 @@ export default function TabLayout() {
         <Tabs.Screen
           name="home"
           options={{
-            headerShown:false,
+            headerShown: false,
             tabBarIcon: ({ color, focused }) => (
               <View style={{ alignItems: "center" }}>
                 <Image
@@ -174,6 +181,7 @@ export default function TabLayout() {
         <Tabs.Screen
           name="myPage"
           options={{
+            headerShown: false,
             tabBarIcon: ({ color, focused }) => (
               <View style={{ alignItems: "center" }}>
                 <Image
@@ -212,7 +220,11 @@ export default function TabLayout() {
             activeOpacity={1}
             onPress={() => setOpen(false)}
           >
-            <BlurView intensity={40} tint="light" style={StyleSheet.absoluteFill}>
+            <BlurView
+              intensity={40}
+              tint="light"
+              style={StyleSheet.absoluteFill}
+            >
               <View style={styles.overlayGray} />
             </BlurView>
           </TouchableOpacity>
@@ -305,4 +317,3 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
 });
-
