@@ -11,20 +11,30 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         tabBarShowLabel: false,
+        tabBarActiveTintColor: "#5900FF",
         tabBarStyle: {
+          height: "8%", // 56/812 비율
           backgroundColor: "#ffffff",
+          borderTopWidth: 0, // 상단 경계선 제거
+          elevation: 0,
+          alignItems: "center",
+          width: "100%",
         },
+        tabBarButton: (props) => (
+          <TouchableOpacity {...props} activeOpacity={1} />
+        ),
       }}
     >
       <Tabs.Screen
         name="home"
         options={{
+          headerShown: false,
           tabBarIcon: ({ color, focused }) => (
             <View style={{ alignItems: "center" }}>
               <Image
                 source={require("../../assets/icons/home.png")}
                 style={{
-                  marginTop: 10,
+                  marginTop: 20,
                   width: 22,
                   height: 18.9,
                   marginLeft: "10.19%",
@@ -53,7 +63,7 @@ export default function TabLayout() {
               <Image
                 source={require("../../assets/icons/feedback.png")}
                 style={{
-                  marginTop: 10,
+                  marginTop: 20,
                   width: 18,
                   height: 20,
                   marginLeft: "10%",
@@ -66,7 +76,6 @@ export default function TabLayout() {
                   marginLeft: "10%",
                   fontSize: 10,
                   width: 30,
-
                   color: focused ? color : "#999",
                 }}
               >
@@ -80,22 +89,30 @@ export default function TabLayout() {
         name="interview"
         options={{
           title: "",
-          tabBarIcon: ({ color, focused }) => (
-            <TouchableOpacity>
+          tabBarIcon: () => null, // 기본 아이콘 제거
+          tabBarButton: (props) => (
+            <TouchableOpacity
+              {...props}
+              style={{
+                flex: 1,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+              activeOpacity={1}
+            >
               <View
                 style={{
+                  position: "absolute",
+                  top: -25,
                   width: 64,
-                  height: 86,
+                  height: 64,
+                  alignItems: "center",
+                  justifyContent: "center",
                 }}
               >
                 <Image
                   source={require("../../assets/icons/interview.png")}
-                  style={{
-                    position: "absolute",
-                    bottom: 16,
-                    width: 64,
-                    height: 64,
-                  }}
+                  style={{ width: 64, height: 64 }}
                   resizeMode="contain"
                 />
               </View>
@@ -103,6 +120,7 @@ export default function TabLayout() {
           ),
         }}
       />
+
       <Tabs.Screen
         name="calendar"
         options={{
@@ -111,7 +129,7 @@ export default function TabLayout() {
               <Image
                 source={require("../../assets/icons/calendar.png")}
                 style={{
-                  marginTop: 10,
+                  marginTop: 20,
                   width: 18,
                   height: 20,
                   tintColor: color,
@@ -121,6 +139,7 @@ export default function TabLayout() {
               <Text
                 style={{
                   fontSize: 10,
+                  width: 30,
                   color: focused ? color : "#999",
                 }}
               >
@@ -130,36 +149,38 @@ export default function TabLayout() {
           ),
         }}
       />
-      <Tabs.Screen
-        name="myPage"
-        options={{
-          tabBarIcon: ({ color, focused }) => (
-            <View style={{ alignItems: "center" }}>
-              <Image
-                source={require("../../assets/icons/Person.png")}
-                style={{
-                  marginTop: 10,
-                  marginLeft: "0.7%",
-                  width: 24,
-                  height: 24,
-                  tintColor: color,
-                }}
-                resizeMode="contain"
-              />
-              <Text
-                style={{
-                  fontSize: 10,
-                  marginLeft: "0.7%",
-                  width: 44,
-                  color: focused ? color : "#999",
-                }}
-              >
-                마이페이지
-              </Text>
-            </View>
-          ),
-        }}
-      />
-    </Tabs>
-  );
-}
+       <Tabs.Screen
+              name="myPage"
+              options={{
+              headerShown:false,
+                tabBarIcon: ({ color, focused }) => (
+                  <View style={{ alignItems: "center" }}>
+                    <Image
+                      source={require("../../assets/icons/Person.png")}
+                      style={{
+                        marginTop: 10,
+                        width: 24,
+                        height: 24,
+                        marginRight: "30.77%",
+                        tintColor: color,
+                      }}
+                      resizeMode="contain"
+                    />
+                    <Text
+                      style={{
+                        fontSize: 10,
+                        marginRight: "7.77%",
+                        width: 50,
+                        color: focused ? color : "#999",
+                      }}
+                    >
+                      마이페이지
+                    </Text>
+                  </View>
+                ),
+              }}
+            />
+          </Tabs>
+        );
+      }
+
