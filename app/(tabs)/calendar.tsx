@@ -116,7 +116,6 @@ export default function Calendar() {
             {formatHeaderDate(selectedDate)}
           </Text>
         </View>
-
         <RNCalendar
           current={selectedDate}
           onDayPress={onDayPress}
@@ -135,7 +134,6 @@ export default function Calendar() {
             selectedDayBackgroundColor: "#5B28EB",
           }}
         />
-
         <Modalize
           ref={modalRef}
           modalHeight={SCREEN_HEIGHT * 0.5}
@@ -175,7 +173,6 @@ export default function Calendar() {
             )}
           </View>
         </Modalize>
-
         {isModalVisible && !showAddModal && (
           <Pressable style={styles.fab} onPress={openAddModal}>
             <Ionicons name="add" size={28} color="#fff" />
@@ -276,9 +273,10 @@ export default function Calendar() {
                       style={[
                         styles.blueText,
                         priority === "중요하지 않음" && styles.selectedText,
+                        { textAlign: "center" },
                       ]}
                     >
-                      중요하지 않음
+                      중요하지{"\n"}않음
                     </Text>
                   </Pressable>
                 </View>
@@ -314,7 +312,6 @@ export default function Calendar() {
           </View>
         </Modal>
 
-        {/* 시간 휠 피커 */}
         {showTimePicker && (
           <Modal transparent animationType="slide">
             <View style={styles.pickerContainer}>
@@ -351,7 +348,7 @@ export default function Calendar() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: 24,
+    paddingHorizontal: 32,
     paddingTop: 60,
     backgroundColor: "#fff",
   },
@@ -362,78 +359,91 @@ const styles = StyleSheet.create({
   },
   headerText: { fontSize: 20, fontWeight: "bold", marginRight: 8 },
   modalContent: {
+    paddingHorizontal: 32,
     paddingTop: 16,
-    paddingHorizontal: 24,
-    paddingBottom: 40,
+    paddingBottom: 32,
     backgroundColor: "#fff",
     minHeight: SCREEN_HEIGHT * 0.5,
   },
-  modalDate: { fontSize: 18, fontWeight: "bold", marginBottom: 12 },
+  modalDate: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 12,
+    paddingTop: 20,
+  },
   addModalOverlay: {
     flex: 1,
     justifyContent: "flex-end",
     backgroundColor: "rgba(0,0,0,0.2)",
   },
   addModal: {
+    paddingHorizontal: 32,
     backgroundColor: "#fff",
     padding: 20,
     borderTopLeftRadius: 12,
     borderTopRightRadius: 12,
   },
-  inputRow: { flexDirection: "row", alignItems: "center", marginVertical: 8 },
-  label: { width: 80, fontSize: 14 },
+  inputRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    marginVertical: 12,
+  },
+  label: { fontWeight: "bold", width: 80, fontSize: 15, marginTop: 10 },
   input: {
     flex: 1,
     borderWidth: 1,
     borderColor: "#ccc",
-    borderRadius: 6,
+    borderRadius: 10,
     paddingHorizontal: 10,
-    paddingVertical: 8,
+    paddingVertical: 10,
   },
   memoInput: {
     flex: 1,
     borderWidth: 1,
     borderColor: "#ccc",
-    borderRadius: 6,
-    padding: 10,
-    minHeight: 80,
+    borderRadius: 10,
+    padding: 12,
+    minHeight: 120,
     textAlignVertical: "top",
   },
   footerButtons: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginTop: 20,
+    marginTop: 1,
   },
   cancelBtn: {
     backgroundColor: "#E5E5E5",
     paddingVertical: 10,
-    paddingHorizontal: 32,
-    borderRadius: 6,
+    paddingHorizontal: 70,
+    borderRadius: 10,
   },
   saveBtn: {
     backgroundColor: "#5B28EB",
     paddingVertical: 10,
-    paddingHorizontal: 32,
-    borderRadius: 6,
+    paddingHorizontal: 70,
+    borderRadius: 10,
   },
   required: { color: "red", marginLeft: 6, fontSize: 16 },
-  priorityBox: { flexDirection: "row", gap: 6 },
+  priorityBox: { flexDirection: "row", gap: 8 },
   priorityBtn: {
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-    borderWidth: 1,
-    borderRadius: 20,
+    width: 84,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 7,
+    paddingHorizontal: 14,
+    borderWidth: 1.5,
+    borderRadius: 30,
   },
-  unselectedRed: { borderColor: "#F8B6B6" },
-  unselectedYellow: { borderColor: "#FFF1B8" },
-  unselectedBlue: { borderColor: "#B6D1F8" },
-  redText: { color: "#F46E6E" },
-  yellowText: { color: "#F5C842" },
-  blueText: { color: "#62A8E5" },
+  unselectedRed: { borderColor: "#FFB7B7" },
+  unselectedYellow: { borderColor: "#FFCB82" },
+  unselectedBlue: { borderColor: "#B7C3FF" },
+  redText: { color: "#FFB7B7", fontSize: 12 },
+  yellowText: { color: "#FFCB82", fontSize: 12 },
+  blueText: { color: "#B7C3FF", fontSize: 12 },
   selectedText: { color: "#fff" },
-  selectedRed: { backgroundColor: "#F46E6E", borderColor: "#F46E6E" },
-  selectedYellow: { backgroundColor: "#F5C842", borderColor: "#F5C842" },
-  selectedBlue: { backgroundColor: "#62A8E5", borderColor: "#62A8E5" },
+  selectedRed: { backgroundColor: "#FFB7B7", borderColor: "#FFB7B7" },
+  selectedYellow: { backgroundColor: "#FFCB82", borderColor: "#FFCB82" },
+  selectedBlue: { backgroundColor: "#B7C3FF", borderColor: "#B7C3FF" },
   pickerContainer: {
     flex: 1,
     justifyContent: "flex-end",
@@ -475,4 +485,3 @@ const styles = StyleSheet.create({
   priorityText: { fontSize: 14, color: "#666", marginTop: 2 },
   memoText: { fontSize: 13, color: "#888", marginTop: 2 },
 });
-// dummy update for publish-23
