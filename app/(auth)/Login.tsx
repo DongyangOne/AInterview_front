@@ -34,37 +34,37 @@ export default function Login() {
   }, []);
 
   const handleLogin = async () => {
-    setIdError("");
-    setPwError("");
+    // setIdError("");
+    // setPwError("");
 
-    const storedData = await AsyncStorage.getItem("users");
-    const users = storedData
-      ? (JSON.parse(storedData) as {
-          id: string;
-          password: string;
-          nickname: string;
-        }[])
-      : [];
+    // const storedData = await AsyncStorage.getItem("users");
+    // const users = storedData
+    //   ? (JSON.parse(storedData) as {
+    //       id: string;
+    //       password: string;
+    //       nickname: string;
+    //     }[])
+    //   : [];
 
-    const user = users.find((u) => u.id === id);
+    // const user = users.find((u) => u.id === id);
 
-    if (!user) {
-      setIdError("존재하지 않는 아이디입니다.");
-      return;
-    }
+    // if (!user) {
+    //   setIdError("존재하지 않는 아이디입니다.");
+    //   return;
+    // }
 
-    if (user.password !== pw) {
-      setPwError("비밀번호를 확인해 주세요.");
-      return;
-    }
+    // if (user.password !== pw) {
+    //   setPwError("비밀번호를 확인해 주세요.");
+    //   return;
+    // }
 
-    if (keepLogin) {
-      await AsyncStorage.setItem("keepLogin", "true");
-      await AsyncStorage.setItem("loggedInUser", JSON.stringify(user));
-    } else {
-      await AsyncStorage.removeItem("keepLogin");
-      await AsyncStorage.removeItem("loggedInUser");
-    }
+    // if (keepLogin) {
+    //   await AsyncStorage.setItem("keepLogin", "true");
+    //   await AsyncStorage.setItem("loggedInUser", JSON.stringify(user));
+    // } else {
+    //   await AsyncStorage.removeItem("keepLogin");
+    //   await AsyncStorage.removeItem("loggedInUser");
+    // }
 
     router.replace("/(tabs)/home");
   };
