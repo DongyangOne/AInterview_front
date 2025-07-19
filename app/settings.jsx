@@ -14,11 +14,10 @@ export default function SettingsScreen() {
       {/* 헤더 */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}>
-          {/* 뒤로가기 아이콘은 그대로 두었음, 필요시 이미지로 변경 가능 */}
           <Image
             source={require('../assets/icons/arrow1.png')}
             style={styles.backIcon}
-            resizeMode="contain"
+            resizeMode="20"
           />
         </TouchableOpacity>
         <Text style={styles.title}>설정</Text>
@@ -57,13 +56,13 @@ export default function SettingsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff', paddingTop: 40, paddingHorizontal: 20 },
+  container: { flex: 1, backgroundColor: '#fff', paddingTop: 40, paddingHorizontal: 32 },
   header: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20
   },
-  title: { fontSize: 16, fontWeight: 'bold' },
+  title: { fontSize: 20, fontWeight: 'regular' },
   section: { marginBottom: 30 },
-  sectionTitle: { fontSize: 14, fontWeight: 'bold', marginBottom: 10 },
+  sectionTitle: { fontSize: 16, fontWeight: 'bold', marginBottom: 10 },
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -72,7 +71,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#D9D9D9', // 구분선 컬러 변경
   },
-  label: { fontSize: 14, color: '#333' },
+  label: { fontSize: 16, fontWeight:'Medium', color: '#000000' },
   arrowIcon: {
     width: 18,
     height: 18,
