@@ -39,7 +39,7 @@ export default function Feedback() {
   const [modalType, setModalType] = useState(null); // 'title', 'memo', 'delete'
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1, backgroundColor: "white" }}>
       <View style={styles.head}>
         <Text style={{ fontSize: 20, top: 10, fontWeight: "bold" }}>
           나의 피드백 목록
