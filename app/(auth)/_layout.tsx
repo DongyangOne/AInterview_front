@@ -12,8 +12,9 @@ function TabBarIcon(props: {
 
 export default function TabLayout() {
   return (
-    <Stack initialRouteName="Login">
-      <Stack.Screen name="Login" options={{ headerShown: false }} />
+    <Stack initialRouteName="Start">
+      <Stack.Screen name="Start" options={{ headerShown: false }} />
+      <Stack.Screen name="bell" options={{ headerShown: false }} />
     </Stack>
   );
 }
