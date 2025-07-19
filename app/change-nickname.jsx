@@ -28,7 +28,7 @@ export default function ChangeNicknameScreen() {
           <Image
             source={require('../assets/icons/arrow1.png')}
             style={styles.backIcon}
-            resizeMode="contain"
+            resizeMode="25"
           />
         </TouchableOpacity>
         <Text style={styles.title}>닉네임 변경</Text>
@@ -57,36 +57,38 @@ export default function ChangeNicknameScreen() {
 
       {/* 확인 버튼 - 하단 고정 */}
       <View style={styles.bottomButtonWrapper}>
-        <TouchableOpacity
-          style={[styles.button, { backgroundColor: isValid && nickname ? 'purple' : '#ccc' }]}
-          disabled={!isValid || nickname === ''}
-          onPress={handleSubmit}
-        >
-          <Text style={styles.buttonText}>확인</Text>
-        </TouchableOpacity>
+<TouchableOpacity
+  style={styles.button}
+  disabled={!isValid || nickname === ''}
+  onPress={handleSubmit}
+>
+  <Text style={styles.buttonText}>확인</Text>
+</TouchableOpacity>
+
       </View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff', paddingTop: 40, paddingHorizontal: 20 },
+  container: { flex: 1, backgroundColor: '#fff', paddingTop: 40, paddingHorizontal: 32 },
   header: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 36
   },
   backIcon: { width: 24, height: 24 },
-  title: { fontSize: 16, fontWeight: 'bold' },
+  title: { fontSize: 20, fontWeight: 'Regular' },
   form: { flex: 1 },
-  label: { fontSize: 14, fontWeight: 'bold', marginBottom: 6 },
+  label: { fontSize: 16, fontWeight: 'bold', marginBottom: 16,color:'#808080'},
   input: {
     height: 44,
-    borderWidth: 1,
-    borderColor: '#ddd',
+    borderWidth: 0.5,
+    borderColor: '#CCCCCC',
     borderRadius: 6,
     paddingHorizontal: 12,
-    marginBottom: 10,
+    marginBottom: 8,
+    color:'#808080'
   },
-  error: { color: 'red', fontSize: 12, marginBottom: 10 },
+  error: { color: '#FF5151', fontSize: 12, marginBottom: 10 },
   bottomButtonWrapper: {
     position: 'absolute',
     left: 20,
@@ -94,11 +96,13 @@ const styles = StyleSheet.create({
     bottom: 30,
     backgroundColor: 'transparent',
   },
-  button: {
-    height: 48,
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
+button: {
+  height: 48,
+  borderRadius: 8,
+  justifyContent: 'center',
+  alignItems: 'center',
+  backgroundColor: '#5900FF',   // ← 이 줄 추가!
+},
+
   buttonText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
 });
