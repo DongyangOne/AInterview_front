@@ -14,7 +14,7 @@ export default function FeedbackDetail() {
           <Image
             source={require('../../assets/icons/arrow1.png')}
             style={styles.headerIcon}
-            resizeMode="contain"
+            resizeMode="25"
           />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>피드백 상세</Text>
@@ -82,9 +82,9 @@ const styles = StyleSheet.create({
     height: 24,
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
-    color: '#222',
+    color: '#191919',
   },
   container: {
     paddingHorizontal: 32, // <- 좌우 마진 32
@@ -94,52 +94,53 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   title: {
-    fontSize: 16,
+    fontSize: 20,
     textAlign: 'center',
     marginBottom: 28,
     fontWeight: '500',
-    color: '#222',
+    color: '#191919',
   },
   section: {
     marginBottom: 22,
   },
   labelGood: {
-    color: '#7F3DFF',
+    color: '#A495CF',
     fontWeight: '600',
-    marginBottom: 5,
+    marginBottom: 15,
     fontSize: 13,
   },
   labelBad: {
-    color: '#7F3DFF', // 보라색으로 통일
+    color: '#A495CF', // 보라색으로 통일
     fontWeight: '600',
-    marginBottom: 5,
+    marginBottom: 15,
     fontSize: 13,
   },
   labelTip: {
-    color: '#5E35B1',
+    color: '#A495CF',
     fontWeight: '600',
-    marginBottom: 5,
+    marginBottom: 15,
     fontSize: 13,
   },
   bodyText: {
     fontSize: 14,
     lineHeight: 20,
-    color: '#333',
+    color: '#191919',
+    marginBottom:10
   },
   memoTitle: {
-    fontSize: 15,
+    fontSize: 20,
     fontWeight: '500',
     textAlign: 'center',
-    marginTop: 16,
+    marginTop: 51,
     marginBottom: 13,
-    color: '#222',
+    color: '#191919',
   },
   memoInput: {
     borderWidth: 1,
     borderColor: '#CCC',
     borderRadius: 8,
     padding: 16, // padding도 조금 더 크게
-    fontSize: 14,
+    fontSize: 16,
     color: '#333',
     minHeight: 100, // <<<<< 더 넉넉하게 (기존 60 -> 100)
     textAlignVertical: 'top',
