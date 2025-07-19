@@ -1,4 +1,3 @@
-
 import {
   View,
   Text,
@@ -40,7 +39,7 @@ export default function Feedback() {
   const [modalType, setModalType] = useState(null); // 'title', 'memo', 'delete'
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1, backgroundColor: "white" }}>
       <View style={styles.head}>
         <Text style={{ fontSize: 20, top: 10, fontWeight: "500" }}>
           나의 피드백 목록
@@ -51,14 +50,19 @@ export default function Feedback() {
             placeholder="제목, 날짜, 메모 검색"
           />
           <Image
-            source={require('./assets/icons/search1.png')}
+            source={require("../../assets/icons/search.png")}
             style={{ width: 25, height: 25, marginLeft: 285, top: -30 }}
-
           />
         </View>
         <View style={{ top: 60, width: "85%", flexDirection: "row" }}>
           <Text
-            style={{ fontSize: 15, marginLeft: 5, marginRight: 170, top: 5, color: "#808080" }}
+            style={{
+              fontSize: 15,
+              marginLeft: 5,
+              marginRight: 170,
+              top: 5,
+              color: "#808080",
+            }}
           >
             모든 피드백
           </Text>
@@ -78,23 +82,22 @@ export default function Feedback() {
               borderWidth: 0,
               fontSize: 15,
             }}
-
             dropDownContainerStyle={{
               fontSize: 14,
               width: 115,
               maxHeight: 80,
               borderRadius: 0,
               borderWidth: 0.5,
-              backgroundColor: 'white',
-              borderColor: '#CCCCCC',
+              backgroundColor: "white",
+              borderColor: "#CCCCCC",
               placeholder: "정렬 기준",
               shadowColor: "#CCCCCC",
-              overflow: 'visible',
-              elevation: 7
-              , zIndex: 3000,
+              overflow: "visible",
+              elevation: 7,
+              zIndex: 3000,
             }}
             containerStyle={{
-              zIndex: 3000,     // ✅ 부모의 zIndex도 충분히 높여야 가려지지 않음
+              zIndex: 3000, // ✅ 부모의 zIndex도 충분히 높여야 가려지지 않음
             }}
             textStyle={{ fontSize: 15 }}
           />
@@ -104,12 +107,22 @@ export default function Feedback() {
       <ScrollView style={[styles.entire, { position: "relative" }]}>
         <View style={styles.subEntire}>
           <View style={styles.empty} />
-          <View style={[styles.contentBox, { position: "relative", marginTop: 30 }]}>
+          <View
+            style={[styles.contentBox, { position: "relative", marginTop: 30 }]}
+          >
             <Image
-              source={require('./assets/icons/bookmark.png')}
-              style={{ width: 50, height: 50, marginLeft: 270, top: -12, position: 'absolute' }}
+              source={require("../../assets/icons/bookmark.png")}
+              style={{
+                width: 50,
+                height: 50,
+                marginLeft: 270,
+                top: -12,
+                position: "absolute",
+              }}
             />
-            <View style={{ flexDirection: "row" }}>
+            <View
+              style={{ flexDirection: "row", justifyContent: "space-between" }}
+            >
               <Text style={styles.fontTw1}>2025년 6월 27일</Text>
               <TouchableOpacity
                 style={{ top: 20, right: 14 }}
@@ -118,64 +131,27 @@ export default function Feedback() {
                   setModalVisible(true);
                 }}
               >
-                <Text style={{ marginLeft: 220, fontWeight: 800 }}>•</Text>
-                <Text style={{ marginLeft: 220, fontWeight: 800, top: -10 }}>•</Text>
-                <Text style={{ marginLeft: 220, fontWeight: 800, top: -20 }}>•</Text>
+                <Image
+                  source={require("../../assets/icons/dot.png")}
+                  style={{
+                    width: 24,
+                    height: 24,
+                  }}
+                />
               </TouchableOpacity>
-
             </View>
-            <View style={{ top: -15 }}>
+            <View>
               <Text style={styles.fontTw2}>삼성 회사 면접</Text>
-              <Text style={styles.fontTw3}>&lt 앞으로 자신감, 위기대처능력, 업무이...</Text>
+              <Text style={styles.fontTw3}>
+                &lt 앞으로 자신감, 위기대처능력, 업무이...
+              </Text>
             </View>
           </View>
-        //2
-          <View style={styles.contentBox}>
-            <View style={{ flexDirection: "row" }}>
-              <Text style={styles.fontTw1}>2025년 6월 15일</Text>
-              <TouchableOpacity
-                onPress={() => {
-                  setOpen(false);
-                  setOpen1(!open1);
-                }}
-                style={{ top: 20, right: 14 }}
-              >
-                <Text style={{ marginLeft: 220, fontWeight: 800 }}>•</Text>
-                <Text style={{ marginLeft: 220, fontWeight: 800, top: -10 }}>•</Text>
-                <Text style={{ marginLeft: 220, fontWeight: 800, top: -20 }}>•</Text>
-              </TouchableOpacity>
 
-            </View>
-            <View style={{ top: -15 }}>
-              <Text style={styles.fontTw2}>삼성 회사 면접</Text>
-              <Text style={styles.fontTw3}>&lt 앞으로 자신감, 위기대처능력, 업무이...</Text>
-            </View>
-          </View>
-        //3
           <View style={styles.contentBox}>
-            <View style={{ flexDirection: "row" }}>
-              <Text style={styles.fontTw1}>2025년 6월 04일</Text>
-              <TouchableOpacity
-                style={{ top: 20, right: 14 }}
-                onPress={() => {
-                  setOpen(false);
-                  setModalVisible(true);
-                }}
-              >
-                <Text style={{ marginLeft: 220, fontWeight: 800 }}>•</Text>
-                <Text style={{ marginLeft: 220, fontWeight: 800, top: -10 }}>•</Text>
-                <Text style={{ marginLeft: 220, fontWeight: 800, top: -20 }}>•</Text>
-              </TouchableOpacity>
-
-            </View>
-            <View style={{ top: -15 }}>
-              <Text style={styles.fontTw2}>삼성 회사 면접</Text>
-              <Text style={styles.fontTw3}>&lt 앞으로 자신감, 위기대처능력, 업무이...</Text>
-            </View>
-          </View>
-        //4
-          <View style={styles.contentBox}>
-            <View style={{ flexDirection: "row" }}>
+            <View
+              style={{ flexDirection: "row", justifyContent: "space-between" }}
+            >
               <Text style={styles.fontTw1}>2025년 5월 13일</Text>
               <TouchableOpacity
                 style={{ top: 20, right: 14 }}
@@ -184,45 +160,25 @@ export default function Feedback() {
                   setModalVisible(true);
                 }}
               >
-                <Text style={{ marginLeft: 220, fontWeight: 800 }}>•</Text>
-                <Text style={{ marginLeft: 220, fontWeight: 800, top: -10 }}>•</Text>
-                <Text style={{ marginLeft: 220, fontWeight: 800, top: -20 }}>•</Text>
+                <Image
+                  source={require("../../assets/icons/dot.png")}
+                  style={{
+                    width: 24,
+                    height: 24,
+                  }}
+                />
               </TouchableOpacity>
-
             </View>
-            <View style={{ top: -15 }}>
+            <View>
               <Text style={styles.fontTw2}>삼성 회사 면접</Text>
-              <Text style={styles.fontTw3}>&lt 앞으로 자신감, 위기대처능력, 업무이...</Text>
-            </View>
-          </View>
-        //5
-          <View style={styles.contentBox}>
-            <View style={{ flexDirection: "row" }}>
-              <Text style={styles.fontTw1}>2025년 5월 13일</Text>
-              <TouchableOpacity
-                style={{ top: 20, right: 14 }}
-                onPress={() => {
-                  setOpen(false);
-                  setModalVisible(true);
-                }}
-              >
-                <Text style={{ marginLeft: 220, fontWeight: 800 }}>•</Text>
-                <Text style={{ marginLeft: 220, fontWeight: 800, top: -10 }}>•</Text>
-                <Text style={{ marginLeft: 220, fontWeight: 800, top: -20 }}>•</Text>
-              </TouchableOpacity>
-
-            </View>
-            <View style={{ top: -15 }}>
-              <Text style={styles.fontTw2}>삼성 회사 면접</Text>
-              <Text style={styles.fontTw3}>&lt 앞으로 자신감, 위기대처능력, 업무이...</Text>
+              <Text style={styles.fontTw3}>
+                &lt 앞으로 자신감, 위기대처능력, 업무이...
+              </Text>
             </View>
           </View>
           <View style={{ height: 250 }} />
         </View>
       </ScrollView>
-
-
-
     </View>
   );
 }
@@ -233,12 +189,12 @@ const styles = StyleSheet.create({
     height: "100%",
     top: 130,
     paddingTop: 20,
-    backgroundColor: 'white'
+    backgroundColor: "white",
   },
   subEntire: {
     justifyContent: "center",
     alignItems: "center",
-    marginTop: -150
+    marginTop: -150,
   },
   head: {
     marginTop: 70,
@@ -252,22 +208,22 @@ const styles = StyleSheet.create({
     top: 40,
     width: 348,
     height: 50,
-    alignItems: 'center',
+    alignItems: "center",
     paddingLeft: 17,
     paddingRight: 15,
-    textAlign: 'left'
+    textAlign: "left",
   },
   searchInput: {
     top: 5,
     width: 280,
     fontSize: 15,
     // backgroundColor:'black',
-    width: '100%'
+    width: "100%",
   },
 
   //--------------content-----------------
   empty: {
-    height: 120
+    height: 120,
   },
   contentBox: {
     borderRadius: 10,
@@ -277,7 +233,7 @@ const styles = StyleSheet.create({
     height: 135,
     marginBottom: 20,
     zIndex: 3,
-    backgroundColor: 'white'
+    backgroundColor: "white",
   },
   fontTw1: {
     marginTop: 24,
@@ -287,18 +243,16 @@ const styles = StyleSheet.create({
   },
   fontTw2: {
     fontSize: 18,
-    marginTop: 18,
+    marginTop: 15,
     marginLeft: 17,
     marginBottom: 10,
     fontWeight: "600",
   },
   fontTw3: {
-    fontSize: 16,
+    fontSize: 15,
     marginLeft: 17,
     marginBottom: 10,
     bottom: 5,
     color: "#808080",
   },
-
-
 });

@@ -9,8 +9,8 @@ import {
   Image,
 } from "react-native";
 import { useRouter } from "expo-router";
-import Logout from "../../components/modal/Logout";
-import AccountDelete from "../../components/modal/AccountDelete";
+import Logout from "../../components/Modal/Logout";
+import AccountDelete from "../../components/Modal/AccountDelete";
 
 export default function MyPage() {
   const [logout, setLogout] = useState(false);
