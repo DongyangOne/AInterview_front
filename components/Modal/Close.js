@@ -15,9 +15,8 @@ interface Props {
 
 export default function Close({ visible, onCancel }) {
   const handleConfirm = () => {
-    router.back();
+    router.replace('/home');
   }
-
   return (
     <Modal
       visible={visible}
@@ -26,7 +25,7 @@ export default function Close({ visible, onCancel }) {
       onRequestClose={onCancel}
     >
       <View style={styles.modalOverlay}>
-      <BlurView intensity={40} tint="light" style={StyleSheet.absoluteFill} />
+      <BlurView intensity={40} tint="dark" style={StyleSheet.absoluteFill} />
         <View style={styles.alertBox}>
           <Image
             source={require("../../assets/icons/warning.png")}
