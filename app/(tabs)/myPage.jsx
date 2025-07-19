@@ -88,8 +88,8 @@ export default function MyPage() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff', paddingTop: 40, paddingHorizontal: 20 },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
-  headerTitle: { fontSize: 16, fontWeight: 'bold' },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 56 },
+  headerTitle: { fontSize: 20,marginLeft:140},
   settingsIcon: { width: 24, height: 24 },
   profileSection: { alignItems: 'center', marginBottom: 30 },
   profileImage: { width: 100, height: 100, borderRadius: 50, backgroundColor: '#eee' },
@@ -106,19 +106,17 @@ const styles = StyleSheet.create({
     height: 24,
     right:15
   },
-  section: { marginBottom: 30 },
-  sectionTitle: { fontWeight: 'bold', fontSize: 16, marginBottom: 10, color: '#000' },
-  divider: { height: 1, backgroundColor: '#ccc', marginBottom: 10 },
+  section: { marginBottom: 30 ,marginHorizontal:12},
+  sectionTitle: { fontWeight: 'bold', fontSize: 16, marginBottom: 10, color: '#000000' },
+  divider: { height: 1, backgroundColor: '#000000', marginBottom: 10 },
   row: {
     paddingVertical: 12,
-    borderBottomWidth: 0.5,
-    borderColor: '#ddd',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  label: { fontSize: 14, color: '#333' },
-  value: { fontSize: 14, color: '#888' },
+  label: { fontSize: 16, color: '#000000' ,fontFamily:'Pretendard-Medium'},
+  value: { fontSize: 14, color: '#808080' ,fontFamily:'Pretendard-Medium' },
   right: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   arrowIcon: { width: 18, height: 18, marginLeft: 4 },
 });
