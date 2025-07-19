@@ -1,12 +1,14 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Dimensions, Animated, Easing, ImageBackground, Image } from 'react-native';
 import { useRouter } from 'expo-router';
+import CustomModal from '../components/Modal/Close';
 
 const { width, height } = Dimensions.get('window');
 const PROGRESS_DURATION = 30;
 
 export default function Interviewing() {
   const router = useRouter();
+  const [modalVisible, setModalVisible] = useState(false);
   const progressAnim = useRef(new Animated.Value(0)).current;
   const [timeLeft, setTimeLeft] = useState(PROGRESS_DURATION);
 
@@ -39,7 +41,7 @@ export default function Interviewing() {
 
       <TouchableOpacity
         style={styles.closeButton}
-        onPress={() => router.replace('(tabs)/home')}
+        onPress={() => setModalVisible(true)}
       >
           <View>
               <Image
@@ -54,7 +56,14 @@ export default function Interviewing() {
               />
           </View>
       </TouchableOpacity>
-
+        <CustomModal
+            visible={modalVisible}
+            onCancel={() => setModalVisible(false)}
+            onConfirm={() => {
+              // 종료 처리 로직
+              setModalVisible(false);
+            }}
+          />
 
       <Text style={styles.questionText}>자기소개 부탁드립니다.</Text>
 
