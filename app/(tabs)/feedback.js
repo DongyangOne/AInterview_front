@@ -12,6 +12,7 @@ import { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import AlignModal from "../../components/Modal/AlignModal";
 import EditListModal from "../../components/Modal/EditListModal";
+import { useRouter } from "expo-router";
 const feedbackList = [
   {
     id: "1",
@@ -60,6 +61,7 @@ const feedbackList = [
 export default function Feedback() {
   const [open, setOpen] = useState(false);
   const [openModalItemId, setOpenModalItemId] = useState(null);
+  const route = useRouter();
 
   const sortedList = [...feedbackList].sort((a, b) => {
     if (a.pin === "Y" && b.pin !== "Y") return -1;
@@ -121,7 +123,10 @@ export default function Feedback() {
           const isModalVisible = openModalItemId === item.id;
 
           return (
-            <View style={[styles.contentBox, { position: "relative" }]}>
+            <Pressable
+              onPress={() => route.push("/screens/FeedbackDetail")}
+              style={[styles.contentBox, { position: "relative" }]}
+            >
               {item.pin === "Y" && (
                 <Image
                   source={require("../../assets/icons/bookmark.png")}
@@ -163,7 +168,7 @@ export default function Feedback() {
                 <Text style={styles.fontTw2}>{item.title}</Text>
                 <Text style={styles.fontTw3}>{item.memo}</Text>
               </View>
-            </View>
+            </Pressable>
           );
         }}
       />
