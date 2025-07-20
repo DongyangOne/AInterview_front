@@ -68,54 +68,53 @@ export default function App() {
                     visible={modalVisible}
                     onRequestClose={() => setModalVisible(false)}
                 >
-                    <BlurView
-                        style={{
-                            intensity: 70,
-                            tint: "dark",
-                            flex: 1,
-                            backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                            justifyContent: 'center',
-                            alignItems: 'center'
-                        }}>
+                    <View style={{
+                        flex: 1,
+                        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                        justifyContent: 'center',
+                        alignItems: 'center'
+                    }}>
                         <View style={{
                             width: 348,
-                            height: 379,
-                            paddingTop: 24,
+                            height: 212,
+                            paddingTop: 21,
                             backgroundColor: 'white',
                             borderRadius: 10,
                             elevation: 5,
                             alignItems: 'center',
                         }}>
-                            <Text style={{ fontSize: 18, fontWeight: 600, marginBottom: 15 }}>메모 수정</Text>
-                            <Text style={{ fontSize: 12, marginBottom: 7, marginLeft: 250, color: '#808080' }}>0/50</Text>
-                            <TextInput style={{
-                                width: 295, height: 227, borderRadius: 10,
-                                borderWidth: 0.5, borderColor: '#CCCCCC', paddingLeft: 19,
-                                paddingBottom: 170, fontSize: 16, multiline: 'true',
-                            }} placeholder='메모를 작성해주세요' onChangeText={setInputText} />
-                            <View style={{ flexDirection: 'row', }}>
+                            <Text style={{ fontSize: 18, fontWeight: '600', marginBottom: 25 }}>제목 수정</Text>
+                            <Text style={{ fontSize: 12, marginBottom: 7, marginLeft: 250, color: '#808080' }}>10/20</Text>
+                            <TextInput
+                                style={{
+                                    width: 298, height: 50, borderRadius: 10,
+                                    borderWidth: 0.5, borderColor: '#CCCCCC', paddingLeft: 20, fontSize: 16
+                                }}
+                                value={inputText}
+                                onChangeText={setInputText}
+                            />
+                            <View style={{ flexDirection: 'row' }}>
                                 <TouchableOpacity onPress={() => setModalVisible(false)}>
-                                    <View style={[styles.modalBtn, { marginRight: 15, marginTop: 15, backgroundColor: '#DDDDDD' }]}>
-                                        <Text style={{ fontSize: 16, }}>취소</Text>
+                                    <View style={[styles.modalBtn, { marginRight: 15, backgroundColor: '#DDDDDD' }]}>
+                                        <Text style={{ fontSize: 16 }}>취소</Text>
                                     </View>
                                 </TouchableOpacity>
 
                                 <TouchableOpacity onPress={() => {
-                                    setModalVisible(false);
                                     setFeedbacks((prev) =>
                                         prev.map((item) =>
-                                            item.id === selectedId ? { ...item, memo: inputText } : item
+                                            item.id === selectedId ? { ...item, title: inputText } : item
                                         )
                                     );
                                     setModalVisible(false);
                                 }}>
-                                    <View style={[styles.modalBtn, { marginTop: 15, backgroundColor: '#5900FF' }]}>
+                                    <View style={[styles.modalBtn, { backgroundColor: '#5900FF' }]}>
                                         <Text style={{ fontSize: 16, color: 'white' }}>저장</Text>
                                     </View>
                                 </TouchableOpacity>
                             </View>
                         </View>
-                    </BlurView>
+                    </View>
                 </Modal>
             </View>
         </ScrollView>
@@ -136,26 +135,6 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         alignItems: "center",
         marginTop: -150
-    },
-    head: {
-        marginTop: 70,
-        height: 60,
-        alignItems: 'center',
-    },
-    search: {
-        borderRadius: 5,
-        borderWidth: 2,
-        borderColor: '#cccccc',
-        top: 40,
-        width: 350,
-        height: 50,
-    },
-    searchInput: {
-        marginLeft: 20,
-        top: 15,
-        width: 280,
-        fontSize: 15
-        // backgroundColor:'gray'
     },
 
 
@@ -192,12 +171,13 @@ const styles = StyleSheet.create({
         left: 15
     },
     modalBtn: {
-        width: 139,
+        width: 142,
         height: 44,
         borderRadius: 10,
         justifyContent: 'center',
         alignItems: 'center',
-        marginBottom: 13,
+        top: 15,
+        bottom: 24,
     }
 
 
