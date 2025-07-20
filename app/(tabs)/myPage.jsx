@@ -26,7 +26,7 @@ export default function MyPage() {
       {/* 헤더 */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>마이페이지</Text>
-        <TouchableOpacity onPress={() => router.push("/settings")}>
+        <TouchableOpacity onPress={() => router.push("/screens/settings")}>
           <Image
             source={require("../../assets/icons/setting.png")}
             style={styles.settingsIcon}
