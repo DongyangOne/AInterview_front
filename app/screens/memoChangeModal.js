@@ -21,7 +21,8 @@ export default function memoChangeModal() {
 
     const [modalVisible, setModalVisible] = useState(false);
     const [inputText, setInputText] = useState('');
-    const [selectedId, setSelectedId] = useState(null);
+    const [selectedId, setSelectedId] = useState(null); // 어떤 항목을 수정 중인지 식별
+
 
     const [feedbacks, setFeedbacks] = useState([
         { id: 1, date: '2025.07.06', title: '삼성 회사 면접', memo: '> 앞으로 자신감...' },
@@ -79,27 +80,28 @@ export default function memoChangeModal() {
                         <View style={{
                             width: 348,
                             height: 379,
-                            paddingTop: 24,
                             backgroundColor: 'white',
                             borderRadius: 10,
                             elevation: 5,
                             alignItems: 'center',
                         }}>
-                            <Text style={{ fontSize: 18, fontWeight: 600, marginBottom: 15 }}>메모 수정</Text>
-                            <Text style={{ fontSize: 12, marginBottom: 7, marginLeft: 250, color: '#808080' }}>0/50</Text>
+                            <Text style={{ position: 'absolute', fontSize: 18, fontWeight: 600, top: 24 }}>메모 수정</Text>
+                            <Text style={{ position: 'absolute', top: 63, fontSize: 12, marginLeft: 240, color: '#808080' }}>10/50</Text>
                             <TextInput style={{
-                                width: 295, height: 227, borderRadius: 10,
-                                borderWidth: 0.5, borderColor: '#CCCCCC', paddingLeft: 19,
-                                paddingBottom: 170, fontSize: 16, multiline: 'true',
+                                position: 'absolute', top: 79,
+                                width: 295, height: 230, borderRadius: 10,
+                                borderWidth: 0.5, borderColor: '#CCCCCC', paddingLeft: 20,
+                                paddingBottom: 170, fontSize: 16, multiline: 'true'
                             }} placeholder='메모를 작성해주세요' onChangeText={setInputText} />
                             <View style={{ flexDirection: 'row', }}>
                                 <TouchableOpacity onPress={() => setModalVisible(false)}>
-                                    <View style={[styles.modalBtn, { marginRight: 15, marginTop: 15, backgroundColor: '#DDDDDD' }]}>
+                                    <View style={[styles.modalBtn, { right: 7, backgroundColor: '#DDDDDD' }]}>
                                         <Text style={{ fontSize: 16, }}>취소</Text>
                                     </View>
                                 </TouchableOpacity>
 
                                 <TouchableOpacity onPress={() => {
+                                    Alert.alert('저장 버튼 클릭됨');
                                     setModalVisible(false);
                                     setFeedbacks((prev) =>
                                         prev.map((item) =>
@@ -108,12 +110,13 @@ export default function memoChangeModal() {
                                     );
                                     setModalVisible(false);
                                 }}>
-                                    <View style={[styles.modalBtn, { marginTop: 15, backgroundColor: '#5900FF' }]}>
+                                    <View style={[styles.modalBtn, { left: 7, backgroundColor: '#5900FF' }]}>
                                         <Text style={{ fontSize: 16, color: 'white' }}>저장</Text>
                                     </View>
                                 </TouchableOpacity>
                             </View>
                         </View>
+
                     </BlurView>
                 </Modal>
             </View>
@@ -191,14 +194,13 @@ const styles = StyleSheet.create({
         left: 15
     },
     modalBtn: {
-        width: 139,
-        height: 44,
+        width: 140,
+        height: 45,
         borderRadius: 10,
         justifyContent: 'center',
         alignItems: 'center',
-        marginBottom: 13,
+        position: 'absolute', top: 321,
     }
-
 
 
 });

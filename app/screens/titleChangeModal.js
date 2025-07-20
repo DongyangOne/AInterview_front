@@ -16,12 +16,12 @@ import { Picker } from "@react-native-picker/picker";
 import DropDownPicker from "react-native-dropdown-picker";
 import { BlurView } from 'expo-blur';
 
-export default function App() {
+export default function titleChangeModal() {
     const [open, setOpen] = useState(false);
 
     const [modalVisible, setModalVisible] = useState(false);
     const [inputText, setInputText] = useState('');
-    const [selectedId, setSelectedId] = useState(null); // 어떤 항목을 수정 중인지 식별
+    const [selectedId, setSelectedId] = useState(null);
 
 
     const [feedbacks, setFeedbacks] = useState([
@@ -77,16 +77,16 @@ export default function App() {
                         <View style={{
                             width: 348,
                             height: 212,
-                            paddingTop: 21,
                             backgroundColor: 'white',
                             borderRadius: 10,
                             elevation: 5,
                             alignItems: 'center',
                         }}>
-                            <Text style={{ fontSize: 18, fontWeight: '600', marginBottom: 25 }}>제목 수정</Text>
-                            <Text style={{ fontSize: 12, marginBottom: 7, marginLeft: 250, color: '#808080' }}>10/20</Text>
+                            <Text style={{ position: 'absolute', top: 21, fontSize: 18, fontWeight: '600', }}>제목 수정</Text>
+                            <Text style={{ position: 'absolute', top: 62, fontSize: 12, marginLeft: 250, color: '#808080' }}>10/20</Text>
                             <TextInput
                                 style={{
+                                    position: 'absolute', top: 79,
                                     width: 298, height: 50, borderRadius: 10,
                                     borderWidth: 0.5, borderColor: '#CCCCCC', paddingLeft: 20, fontSize: 16
                                 }}
@@ -95,8 +95,8 @@ export default function App() {
                             />
                             <View style={{ flexDirection: 'row' }}>
                                 <TouchableOpacity onPress={() => setModalVisible(false)}>
-                                    <View style={[styles.modalBtn, { marginRight: 15, backgroundColor: '#DDDDDD' }]}>
-                                        <Text style={{ fontSize: 16 }}>취소</Text>
+                                    <View style={[styles.modalBtn, { right: 7, backgroundColor: '#DDDDDD' }]}>
+                                        <Text style={{ left: 7, fontSize: 16 }}>취소</Text>
                                     </View>
                                 </TouchableOpacity>
 
@@ -176,8 +176,8 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         justifyContent: 'center',
         alignItems: 'center',
-        top: 15,
-        bottom: 24,
+        position: 'absolute',
+        top: 144,
     }
 
 
