@@ -7,7 +7,6 @@ import {
   StyleSheet,
   Dimensions,
   Modal,
-  Alert,
 } from "react-native";
 import { Calendar as RNCalendar, DateData } from "react-native-calendars";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -18,7 +17,9 @@ import WheelPickerExpo from "react-native-wheel-picker-expo";
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 
 export default function Calendar() {
-  const modalRef = useRef<Modalize>(null);
+  const modalRef = useRef(null);
+  const [isDeleteConfirmVisible, setIsDeleteConfirmVisible] = useState(false);
+  const [deleteIdx, setDeleteIdx] = useState(null);
   const [selectedDate, setSelectedDate] = useState("2025-05-07");
   const [showAddModal, setShowAddModal] = useState(false);
   const [title, setTitle] = useState("");
@@ -27,11 +28,44 @@ export default function Calendar() {
   const [priority, setPriority] = useState("");
   const [memo, setMemo] = useState("");
   const [showTimePicker, setShowTimePicker] = useState(false);
-  const [schedules, setSchedules] = useState<{ [key: string]: any[] }>({});
+  const [schedules, setSchedules] = useState({});
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [titleRequired, setTitleRequired] = useState(false);
   const [timeRequired, setTimeRequired] = useState(false);
   const [priorityRequired, setPriorityRequired] = useState(false);
+
+  const confirmDelete = () => {
+    setSchedules((prev) => {
+      const updated = { ...prev };
+      updated[selectedDate] = updated[selectedDate].filter(
+        (_, i) => i !== deleteIdx
+      );
+      return updated;
+    });
+    setIsDeleteConfirmVisible(false);
+    setDeleteIdx(null);
+  };
+
+  const formatTime = (hour, minute) => {
+    const h = parseInt(hour, 10);
+    const m = parseInt(minute, 10);
+    const ampm = h < 12 ? "오전" : "오후";
+    const displayHour = h % 12 === 0 ? 12 : h % 12;
+    return `${ampm} ${displayHour}:${minute}`;
+  };
+
+  const getPriorityColor = (priority) => {
+    switch (priority) {
+      case "매우 중요":
+        return "#FFB7B7";
+      case "보통":
+        return "#FFCB82";
+      case "중요하지 않음":
+        return "#B7C3FF";
+      default:
+        return "#888";
+    }
+  };
 
   const hourList = Array.from({ length: 24 }, (_, i) =>
     `${i}`.padStart(2, "0")
@@ -40,12 +74,12 @@ export default function Calendar() {
     `${i}`.padStart(2, "0")
   );
 
-  const formatHeaderDate = (dateString: string) => {
+  const formatHeaderDate = (dateString) => {
     const [year, month] = dateString.split("-");
     return `${year}년 ${month}월`;
   };
 
-  const onDayPress = (day: DateData) => {
+  const onDayPress = (day) => {
     setSelectedDate(day.dateString);
     setIsModalVisible(true);
     modalRef.current?.open();
@@ -90,23 +124,9 @@ export default function Calendar() {
     resetForm();
   };
 
-  const handleDelete = (index: number) => {
-    Alert.alert("삭제 확인", "정말 삭제하시겠습니까?", [
-      { text: "취소", style: "cancel" },
-      {
-        text: "삭제",
-        style: "destructive",
-        onPress: () => {
-          setSchedules((prev) => {
-            const updated = { ...prev };
-            updated[selectedDate] = updated[selectedDate].filter(
-              (_, i) => i !== index
-            );
-            return updated;
-          });
-        },
-      },
-    ]);
+  const handleDelete = (index) => {
+    setDeleteIdx(index);
+    setIsDeleteConfirmVisible(true);
   };
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -155,15 +175,34 @@ export default function Calendar() {
                 )
                 .map((item, idx) => (
                   <View key={idx} style={styles.scheduleItem}>
-                    <Text style={styles.scheduleTime}>
-                      {item.hour}:{item.minute}
-                    </Text>
+                    <View style={styles.scheduleTimeWrapper}>
+                      {formatTime(item.hour, item.minute)
+                        .split(" ")
+                        .map((part, i) => (
+                          <Text key={i} style={styles.scheduleTime}>
+                            {part}
+                          </Text>
+                        ))}
+                    </View>
+
                     <View style={{ flex: 1 }}>
                       <Text style={styles.scheduleTitle}>{item.title}</Text>
-                      <Text style={styles.priorityText}>{item.priority}</Text>
+                      <Text
+                        style={{
+                          fontSize: 14,
+                          fontWeight: "500",
+                          color: getPriorityColor(item.priority),
+                          marginTop: 2,
+                        }}
+                      >
+                        {item.priority}
+                      </Text>
                       <Text style={styles.memoText}>{item.memo}</Text>
                     </View>
-                    <Pressable onPress={() => handleDelete(idx)}>
+                    <Pressable
+                      onPress={() => handleDelete(idx)}
+                      style={styles.trashBtn}
+                    >
                       <Ionicons name="trash-outline" size={20} color="#888" />
                     </Pressable>
                   </View>
@@ -341,6 +380,38 @@ export default function Calendar() {
           </Modal>
         )}
       </View>
+      {isDeleteConfirmVisible && (
+        <Modal transparent animationType="fade">
+          <View style={styles.confirmOverlay}>
+            <View style={styles.confirmBox}>
+              <Ionicons
+                name="warning-outline"
+                size={40}
+                color="#666"
+                style={{ marginBottom: 8 }}
+              />
+              <Text style={styles.confirmTitle}>정말 삭제 하시겠습니까?</Text>
+              <Text style={styles.confirmSubtitle}>
+                삭제하시면 복구가 불가능합니다.
+              </Text>
+              <View style={styles.confirmBtnRow}>
+                <Pressable
+                  style={styles.confirmCancelBtn}
+                  onPress={() => setIsDeleteConfirmVisible(false)}
+                >
+                  <Text style={styles.confirmCancelText}>취소</Text>
+                </Pressable>
+                <Pressable
+                  style={styles.confirmDeleteBtn}
+                  onPress={confirmDelete}
+                >
+                  <Text style={styles.confirmDeleteText}>삭제</Text>
+                </Pressable>
+              </View>
+            </View>
+          </View>
+        </Modal>
+      )}
     </GestureHandlerRootView>
   );
 }
@@ -366,6 +437,7 @@ const styles = StyleSheet.create({
     minHeight: SCREEN_HEIGHT * 0.5,
   },
   modalDate: {
+    color: "#191919",
     fontSize: 20,
     fontWeight: "bold",
     marginBottom: 12,
@@ -478,10 +550,90 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "flex-start",
     gap: 12,
+    paddingVertical: 24,
+    borderBottomWidth: 1,
+    borderBottomColor: "#eee",
+  },
+  scheduleTime: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#777",
+    paddingRight: 24,
+  },
+  scheduleTitle: {
+    color: "#191919",
+    fontWeight: "bold",
+    fontSize: 20,
+  },
+  priorityText: { fontSize: 14, color: "#666", marginTop: 2 },
+  memoText: { fontSize: 14, color: "#888", marginTop: 2 },
+  scheduleTimeWrapper: {
+    flexDirection: "column",
+    alignItems: "flex-start",
+    justifyContent: "flex-end",
+    minWidth: 40,
+    height: 40,
+  },
+  trashBtn: {
+    paddingTop: 10,
+    justifyContent: "flex-start",
+  },
+  confirmOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.4)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  confirmBox: {
+    width: "80%",
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    padding: 20,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  confirmTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#191919",
+    marginBottom: 4,
+  },
+  confirmSubtitle: {
+    fontSize: 13,
+    color: "#666",
     marginBottom: 16,
   },
-  scheduleTime: { fontWeight: "bold", fontSize: 16, width: 60 },
-  scheduleTitle: { fontWeight: "bold", fontSize: 16 },
-  priorityText: { fontSize: 14, color: "#666", marginTop: 2 },
-  memoText: { fontSize: 13, color: "#888", marginTop: 2 },
+  confirmBtnRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
+  },
+  confirmCancelBtn: {
+    flex: 1,
+    paddingVertical: 12,
+    backgroundColor: "#eee",
+    borderRadius: 8,
+    alignItems: "center",
+    marginRight: 8,
+  },
+  confirmCancelText: {
+    color: "#333",
+    fontSize: 15,
+  },
+  confirmDeleteBtn: {
+    flex: 1,
+    paddingVertical: 12,
+    backgroundColor: "#FF5A5A",
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  confirmDeleteText: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 15,
+  },
 });
