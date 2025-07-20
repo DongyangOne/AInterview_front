@@ -1,17 +1,27 @@
-'use client';
-import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, Image, KeyboardAvoidingView, Platform } from 'react-native';
-import { useRouter } from 'expo-router';
+"use client";
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  SafeAreaView,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+} from "react-native";
+import { useRouter } from "expo-router";
 
 export default function ChangePasswordScreen() {
   const router = useRouter();
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [isMatch, setIsMatch] = useState(true);
 
   useEffect(() => {
-    setIsMatch(newPassword === confirmPassword || confirmPassword === '');
+    setIsMatch(newPassword === confirmPassword || confirmPassword === "");
   }, [newPassword, confirmPassword]);
 
   const isValid = newPassword.length >= 8 && isMatch;
@@ -19,7 +29,7 @@ export default function ChangePasswordScreen() {
   const handleSubmit = () => {
     if (!isValid) return;
     // 🔐 비밀번호 변경 API 호출
-    console.log('비밀번호 변경 완료');
+    console.log("비밀번호 변경 완료");
     router.back();
   };
 
@@ -29,7 +39,7 @@ export default function ChangePasswordScreen() {
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}>
           <Image
-            source={require('../assets/icons/arrow1.png')}
+            source={require("../assets/icons/arrow1.png")}
             style={styles.backIcon}
             resizeMode="contain"
           />
@@ -40,7 +50,7 @@ export default function ChangePasswordScreen() {
 
       <KeyboardAvoidingView
         style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
         keyboardVerticalOffset={80}
       >
         {/* 입력 폼 */}
@@ -80,7 +90,10 @@ export default function ChangePasswordScreen() {
       {/* 확인 버튼 - 화면 하단 고정 */}
       <View style={styles.bottomButtonWrapper}>
         <TouchableOpacity
-          style={[styles.button, { backgroundColor: isValid ? 'purple' : '#ccc' }]}
+          style={[
+            styles.button,
+            { backgroundColor: isValid ? "purple" : "#ccc" },
+          ]}
           disabled={!isValid}
           onPress={handleSubmit}
         >
@@ -92,37 +105,57 @@ export default function ChangePasswordScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff', paddingTop: 40, paddingHorizontal: 20 },
-  header: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20
+  container: {
+    flex: 1,
+    backgroundColor: "#fff",
+    paddingTop: 40,
+    paddingHorizontal: 20,
   },
-  backIcon: { width: 24, height: 24 },
-  title: { fontSize: 16, fontWeight: 'bold' },
-  form: { flex: 1 },
-  label: { fontSize: 14, fontWeight: 'bold', marginBottom: 6 },
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    height: 56,
+    marginBottom: 36,
+  },
+  backIcon: {
+    width: 24,
+    height: 48,
+  },
+  title: {
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  form: {
+    flex: 1,
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: "bold",
+    marginBottom: 6,
+  },
   input: {
     height: 44,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: "#ddd",
     borderRadius: 6,
     paddingHorizontal: 12,
     marginBottom: 14,
   },
-  error: { color: 'red', fontSize: 12, marginBottom: 10 },
+  error: { color: "red", fontSize: 12, marginBottom: 10 },
   bottomButtonWrapper: {
-    position: 'absolute',
+    position: "absolute",
     left: 20,
     right: 20,
     bottom: 30,
-    backgroundColor: 'transparent',
+    backgroundColor: "transparent",
   },
   button: {
     height: 48,
     borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     // marginTop: 8, // 필요 없음
   },
-  buttonText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
+  buttonText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
 });
-
