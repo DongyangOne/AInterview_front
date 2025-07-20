@@ -63,7 +63,7 @@ export default function MyPage() {
 
         <TouchableOpacity
           style={styles.row}
-          onPress={() => router.push("/change-nickname")}
+          onPress={() => router.push("/screens/change-nickname")}
         >
           <Text style={styles.label}>닉네임</Text>
           <View style={styles.right}>
