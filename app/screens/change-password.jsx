@@ -1,7 +1,17 @@
-'use client';
-import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, Image, KeyboardAvoidingView, Platform } from 'react-native';
-import { useRouter } from 'expo-router';
+"use client";
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  SafeAreaView,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+} from "react-native";
+import { useRouter } from "expo-router";
 
 // 비밀번호 유효성 검사 함수
 function validatePassword(password) {
@@ -12,9 +22,9 @@ function validatePassword(password) {
 
 export default function ChangePasswordScreen() {
   const router = useRouter();
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [isMatch, setIsMatch] = useState(true);
   const [showFormatError, setShowFormatError] = useState(false);
 
@@ -24,7 +34,7 @@ export default function ChangePasswordScreen() {
     } else {
       setShowFormatError(false);
     }
-    setIsMatch(newPassword === confirmPassword || confirmPassword === '');
+    setIsMatch(newPassword === confirmPassword || confirmPassword === "");
   }, [newPassword, confirmPassword]);
 
   const isValid =
@@ -38,7 +48,11 @@ export default function ChangePasswordScreen() {
       setShowFormatError(true);
       return;
     }
-    if (newPassword.length >= 8 && newPassword.length <= 16 && !validatePassword(newPassword)) {
+    if (
+      newPassword.length >= 8 &&
+      newPassword.length <= 16 &&
+      !validatePassword(newPassword)
+    ) {
       setShowFormatError(true);
       return;
     }
@@ -46,7 +60,7 @@ export default function ChangePasswordScreen() {
       return;
     }
     setShowFormatError(false);
-    console.log('비밀번호 변경 완료');
+    console.log("비밀번호 변경 완료");
     router.back();
   };
 
@@ -55,7 +69,7 @@ export default function ChangePasswordScreen() {
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}>
           <Image
-            source={require('../assets/icons/arrow1.png')}
+            source={require("../../assets/icons/arrow1.png")}
             style={styles.backIcon}
             resizeMode="25"
           />
@@ -66,7 +80,7 @@ export default function ChangePasswordScreen() {
 
       <KeyboardAvoidingView
         style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
         keyboardVerticalOffset={80}
       >
         <View style={styles.form}>
@@ -111,32 +125,52 @@ export default function ChangePasswordScreen() {
       </KeyboardAvoidingView>
 
       <View style={styles.bottomButtonWrapper}>
-<TouchableOpacity
-  style={styles.button}
-  disabled={!isValid}
-  onPress={handleSubmit}
->
-  <Text style={styles.buttonText}>확인</Text>
-</TouchableOpacity>
-
+        <TouchableOpacity
+          style={styles.button}
+          disabled={!isValid}
+          onPress={handleSubmit}
+        >
+          <Text style={styles.buttonText}>확인</Text>
+        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff', paddingTop: 40, paddingHorizontal: 32 },
-  header: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20
+  container: {
+    flex: 1,
+    backgroundColor: "#fff",
+    paddingTop: 40,
+    paddingHorizontal: 32,
   },
-  backIcon: { width: 24, height: 24 },
-  title: { fontSize: 20, fontWeight: '400' },
-  form: { flex: 1 },
-  label: { fontSize: 16, fontWeight: 'bold', marginBottom: 16 },
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    height: 56,
+    marginBottom: 36,
+  },
+  backIcon: {
+    width: 24,
+    height: 48,
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: "400",
+  },
+  form: {
+    flex: 1,
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: "bold",
+    marginBottom: 16,
+  },
   input: {
     height: 44,
     borderWidth: 1,
-    borderColor: '#CCCCCC',
+    borderColor: "#CCCCCC",
     borderRadius: 6,
     paddingHorizontal: 12,
     marginBottom: 0,
@@ -144,30 +178,36 @@ const styles = StyleSheet.create({
   input2: {
     height: 44,
     borderWidth: 1,
-    borderColor: '#CCCCCC',
+    borderColor: "#CCCCCC",
     borderRadius: 6,
     paddingHorizontal: 12,
     marginBottom: 0,
   },
   fixedGap: {
     height: 33, // 무조건 33px!
-    justifyContent: 'center',
+    justifyContent: "center",
   },
-  error: { color: '#FF5151', fontSize: 12, marginBottom: 0, marginLeft: 4, textAlignVertical: 'center' },
+  error: {
+    color: "#FF5151",
+    fontSize: 12,
+    marginBottom: 0,
+    marginLeft: 4,
+    textAlignVertical: "center",
+  },
   bottomButtonWrapper: {
-    position: 'absolute',
+    position: "absolute",
     left: 32,
     right: 32,
     bottom: 30,
-    backgroundColor: 'transparent',
+    backgroundColor: "transparent",
   },
-button: {
-  height: 48,
-  borderRadius: 8,
-  justifyContent: 'center',
-  alignItems: 'center',
-  backgroundColor: '#5900FF',
-},
+  button: {
+    height: 48,
+    borderRadius: 8,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#5900FF",
+  },
 
-  buttonText: { color: '#FFFFFF', fontWeight: 'bold', fontSize: 16 },
+  buttonText: { color: "#FFFFFF", fontWeight: "bold", fontSize: 16 },
 });
