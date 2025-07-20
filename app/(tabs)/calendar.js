@@ -18,7 +18,7 @@ import WheelPickerExpo from "react-native-wheel-picker-expo";
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 
 export default function Calendar() {
-  const modalRef = useRef<Modalize>(null);
+  const modalRef = useRef < Modalize > null;
   const [selectedDate, setSelectedDate] = useState("2025-05-07");
   const [showAddModal, setShowAddModal] = useState(false);
   const [title, setTitle] = useState("");
@@ -27,7 +27,7 @@ export default function Calendar() {
   const [priority, setPriority] = useState("");
   const [memo, setMemo] = useState("");
   const [showTimePicker, setShowTimePicker] = useState(false);
-  const [schedules, setSchedules] = useState<{ [key: string]: any[] }>({});
+  const [schedules, setSchedules] = useState({});
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [titleRequired, setTitleRequired] = useState(false);
   const [timeRequired, setTimeRequired] = useState(false);
@@ -40,12 +40,12 @@ export default function Calendar() {
     `${i}`.padStart(2, "0")
   );
 
-  const formatHeaderDate = (dateString: string) => {
+  const formatHeaderDate = (dateString) => {
     const [year, month] = dateString.split("-");
     return `${year}년 ${month}월`;
   };
 
-  const onDayPress = (day: DateData) => {
+  const onDayPress = (day) => {
     setSelectedDate(day.dateString);
     setIsModalVisible(true);
     modalRef.current?.open();
@@ -90,7 +90,7 @@ export default function Calendar() {
     resetForm();
   };
 
-  const handleDelete = (index: number) => {
+  const handleDelete = (index) => {
     Alert.alert("삭제 확인", "정말 삭제하시겠습니까?", [
       { text: "취소", style: "cancel" },
       {
