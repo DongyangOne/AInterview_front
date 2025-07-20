@@ -1,21 +1,29 @@
-'use client';
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Switch, SafeAreaView, Image } from 'react-native';
-import { useRouter } from 'expo-router';
+"use client";
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Switch,
+  SafeAreaView,
+  Image,
+} from "react-native";
+import { useRouter } from "expo-router";
 
 export default function SettingsScreen() {
   const [isEnabled, setIsEnabled] = useState(false);
   const router = useRouter();
 
-  const toggleSwitch = () => setIsEnabled(previousState => !previousState);
+  const toggleSwitch = () => setIsEnabled((previousState) => !previousState);
 
   return (
     <SafeAreaView style={styles.container}>
       {/* 헤더 */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
+        <TouchableOpacity onPress={() => router.push("/(tabs)/myPage")}>
           <Image
-            source={require('../assets/icons/arrow1.png')}
+            source={require("../../assets/icons/arrow1.png")}
             style={styles.backIcon}
             resizeMode="20"
           />
@@ -30,8 +38,8 @@ export default function SettingsScreen() {
         <TouchableOpacity style={styles.row}>
           <Text style={styles.label}>알림 수신 설정</Text>
           <Switch
-            trackColor={{ false: '#ccc', true: '#8e44ad' }}
-            thumbColor={isEnabled ? '#fff' : '#fff'}
+            trackColor={{ false: "#ccc", true: "#8e44ad" }}
+            thumbColor={isEnabled ? "#fff" : "#fff"}
             ios_backgroundColor="#ccc"
             onValueChange={toggleSwitch}
             value={isEnabled}
@@ -42,10 +50,13 @@ export default function SettingsScreen() {
       {/* 기타 */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>기타</Text>
-        <TouchableOpacity style={styles.row} onPress={() => router.push('/change-password')}>
+        <TouchableOpacity
+          style={styles.row}
+          onPress={() => router.push("/change-password")}
+        >
           <Text style={styles.label}>비밀번호 변경</Text>
           <Image
-            source={require('../assets/icons/arrow2.png')}
+            source={require("../../assets/icons/arrow2.png")}
             style={styles.arrowIcon}
             resizeMode="contain"
           />
@@ -56,22 +67,31 @@ export default function SettingsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff', paddingTop: 40, paddingHorizontal: 32 },
-  header: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20
+  container: {
+    flex: 1,
+    backgroundColor: "#fff",
+    paddingTop: 40,
+    paddingHorizontal: 32,
   },
-  title: { fontSize: 20, fontWeight: 'regular' },
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    height: 56,
+    marginBottom: 20,
+  },
+  title: { fontSize: 20, fontWeight: "regular" },
   section: { marginBottom: 30 },
-  sectionTitle: { fontSize: 16, fontWeight: 'bold', marginBottom: 10 },
+  sectionTitle: { fontSize: 16, fontWeight: "bold", marginBottom: 10 },
   row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#D9D9D9', // 구분선 컬러 변경
+    borderBottomColor: "#D9D9D9", // 구분선 컬러 변경
   },
-  label: { fontSize: 16, fontWeight:'Medium', color: '#000000' },
+  label: { fontSize: 16, fontWeight: "Medium", color: "#000000" },
   arrowIcon: {
     width: 18,
     height: 18,
@@ -79,6 +99,6 @@ const styles = StyleSheet.create({
   },
   backIcon: {
     width: 24,
-    height: 24,
+    height: 48,
   },
 });
