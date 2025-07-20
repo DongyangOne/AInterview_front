@@ -52,7 +52,7 @@ export default function SettingsScreen() {
         <Text style={styles.sectionTitle}>기타</Text>
         <TouchableOpacity
           style={styles.row}
-          onPress={() => router.push("/change-password")}
+          onPress={() => router.push("/screens/change-password")}
         >
           <Text style={styles.label}>비밀번호 변경</Text>
           <Image
