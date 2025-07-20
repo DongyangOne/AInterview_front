@@ -1,22 +1,32 @@
-'use client';
-import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, Image, KeyboardAvoidingView, Platform } from 'react-native';
-import { useRouter } from 'expo-router';
+"use client";
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  SafeAreaView,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+} from "react-native";
+import { useRouter } from "expo-router";
 
 export default function ChangeNicknameScreen() {
   const router = useRouter();
-  const [nickname, setNickname] = useState('');
+  const [nickname, setNickname] = useState("");
   const [isValid, setIsValid] = useState(true);
 
   useEffect(() => {
     const nicknameRegex = /^[a-z0-9가-힣]{2,8}$/i;
-    setIsValid(nickname === '' || nicknameRegex.test(nickname));
+    setIsValid(nickname === "" || nicknameRegex.test(nickname));
   }, [nickname]);
 
   const handleSubmit = () => {
-    if (!isValid || nickname === '') return;
+    if (!isValid || nickname === "") return;
     // ✅ 닉네임 저장 처리 (예: 서버 API 요청)
-    console.log('변경된 닉네임:', nickname);
+    console.log("변경된 닉네임:", nickname);
     router.back();
   };
 
@@ -26,7 +36,7 @@ export default function ChangeNicknameScreen() {
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}>
           <Image
-            source={require('../assets/icons/arrow1.png')}
+            source={require("../../assets/icons/arrow1.png")}
             style={styles.backIcon}
             resizeMode="25"
           />
@@ -37,7 +47,7 @@ export default function ChangeNicknameScreen() {
 
       <KeyboardAvoidingView
         style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
         keyboardVerticalOffset={80}
       >
         <View style={styles.form}>
@@ -57,52 +67,65 @@ export default function ChangeNicknameScreen() {
 
       {/* 확인 버튼 - 하단 고정 */}
       <View style={styles.bottomButtonWrapper}>
-<TouchableOpacity
-  style={styles.button}
-  disabled={!isValid || nickname === ''}
-  onPress={handleSubmit}
->
-  <Text style={styles.buttonText}>확인</Text>
-</TouchableOpacity>
-
+        <TouchableOpacity
+          style={styles.button}
+          disabled={!isValid || nickname === ""}
+          onPress={handleSubmit}
+        >
+          <Text style={styles.buttonText}>확인</Text>
+        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff', paddingTop: 40, paddingHorizontal: 32 },
-  header: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 36
+  container: {
+    flex: 1,
+    backgroundColor: "#fff",
+    paddingTop: 40,
+    paddingHorizontal: 32,
   },
-  backIcon: { width: 24, height: 24 },
-  title: { fontSize: 20, fontWeight: 'Regular' },
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    height: 56,
+    marginBottom: 36,
+  },
+  backIcon: { width: 24, height: 48 },
+  title: { fontSize: 20, fontWeight: "Regular" },
   form: { flex: 1 },
-  label: { fontSize: 16, fontWeight: 'bold', marginBottom: 16,color:'#808080'},
+  label: {
+    fontSize: 16,
+    fontWeight: "bold",
+    marginBottom: 16,
+    color: "#808080",
+  },
   input: {
     height: 44,
     borderWidth: 0.5,
-    borderColor: '#CCCCCC',
+    borderColor: "#CCCCCC",
     borderRadius: 6,
     paddingHorizontal: 12,
     marginBottom: 8,
-    color:'#808080'
+    color: "#808080",
   },
-  error: { color: '#FF5151', fontSize: 12, marginBottom: 10 },
+  error: { color: "#FF5151", fontSize: 12, marginBottom: 10 },
   bottomButtonWrapper: {
-    position: 'absolute',
+    position: "absolute",
     left: 20,
     right: 20,
     bottom: 30,
-    backgroundColor: 'transparent',
+    backgroundColor: "transparent",
   },
-button: {
-  height: 48,
-  borderRadius: 8,
-  justifyContent: 'center',
-  alignItems: 'center',
-  backgroundColor: '#5900FF',   // ← 이 줄 추가!
-},
+  button: {
+    height: 48,
+    borderRadius: 8,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#5900FF", // ← 이 줄 추가!
+  },
 
-  buttonText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
+  buttonText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
 });
