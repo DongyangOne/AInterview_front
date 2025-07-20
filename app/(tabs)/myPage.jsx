@@ -163,9 +163,25 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
   },
-  label: { fontSize: 16, color: "#000000", fontFamily: "Pretendard-Medium" },
-  value: { fontSize: 14, color: "#808080", fontFamily: "Pretendard-Medium" },
-  right: { flexDirection: "row", alignItems: "center", gap: 4 },
+  label: {
+    fontSize: 16,
+    color: "#000000",
+    fontFamily: "Pretendard-Medium",
+  },
+  value: {
+    fontSize: 14,
+    color: "#808080",
+    fontFamily: "Pretendard-Medium",
+  },
+  right: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
 
-  arrowIcon: { width: 18, height: 18, marginLeft: 4 },
+  arrowIcon: {
+    width: 18,
+    height: 18,
+    marginLeft: 4,
+  },
 });
