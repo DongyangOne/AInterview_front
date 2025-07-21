@@ -38,7 +38,7 @@ const styles = StyleSheet.create({
     height: 182,
     position: "absolute",
     top: 50,
-    right: 1, // <- SafeAreaView padding에 맞추기
+    right: 1,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,

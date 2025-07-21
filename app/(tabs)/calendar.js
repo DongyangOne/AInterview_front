@@ -18,7 +18,7 @@ import WheelPickerExpo from "react-native-wheel-picker-expo";
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 
 export default function Calendar() {
-  const modalRef = useRef < Modalize > null;
+  const modalRef = useRef(null);
   const [selectedDate, setSelectedDate] = useState("2025-05-07");
   const [showAddModal, setShowAddModal] = useState(false);
   const [title, setTitle] = useState("");
