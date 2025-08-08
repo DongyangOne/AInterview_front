@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   Text,
   View,
@@ -7,7 +7,7 @@ import {
   ScrollView,
   StyleSheet,
 } from "react-native";
-
+import axios from "axios";
 function RoundedBar({
   value = 0,
   height = 7,
@@ -38,6 +38,24 @@ function MainFeedback() {
   const [shouldScroll, setShouldScroll] = useState(false);
   const scrollRef = useRef(null);
   const [textBoxHeight, setTextBoxHeight] = useState(227);
+  const [feedback, setFeedback] = useState([]);
+
+  useEffect(() => {
+    axios
+      .get("http://183.101.17.181:3001/feedback/recent", {
+        params: { userId: 1 },
+      })
+      .then((res) => {
+        if (res.data && res.data.success) {
+          console.log(res.data.data);
+          setFeedback(res.data.data);
+        }
+      })
+      .catch((error) => {
+        console.error("데이터 가져오기 실패:", error);
+        alert("데이터 가져오기 실패");
+      });
+  }, []);
 
   const evaluationData = [
     { label: "업무이해도", percent: 77 },
@@ -57,16 +75,24 @@ function MainFeedback() {
     setTextBoxHeight((prev) => (prev === 227 ? 412 : 227));
     setShouldScroll(true);
   };
-
+  const firstfb = feedback?.[0];
   return (
     <View style={[styles.container, { minHeight: textBoxHeight }]}>
       {/* 헤더 영역 */}
       <View style={styles.headerRow}>
         <View style={styles.titleSection}>
-          <Text style={styles.title}>aa 회사 면접</Text>
-          <Text style={styles.date}>2025.07.07</Text>
+          <Text style={styles.title}>
+            {firstfb?.title ? firstfb.title : "로딩 중"}
+          </Text>
+          <Text style={styles.date}>
+            {firstfb?.created_at
+              ? new Date(firstfb.created_at).toLocaleDateString()
+              : "로딩 중"}
+          </Text>
         </View>
-        <Text style={styles.rightTime}>1일전</Text>
+        <Text style={styles.rightTime}>
+          {firstfb?.days_ago ? firstfb.days_ago : "로딩 중"}일 전
+        </Text>
       </View>
 
       {/* 퍼센트 바 */}
@@ -103,7 +129,10 @@ function MainFeedback() {
                     </Text>
                   ))}
                 </View>
-                <Text style={styles.detailText}>{item.b}</Text>
+                <Text style={styles.detailText}>
+                  {firstfb?.content ? firstfb.content : "로딩 중"}
+                </Text>
+                {/**아직 해당 db에 값이 없어서 임시 출력 */}
                 <Text style={styles.detailText}>{item.c}</Text>
               </View>
             ))}
