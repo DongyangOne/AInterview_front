@@ -1,19 +1,48 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
-  TextInput,
-  ScrollView,
-  TouchableOpacity,
-  Image,
+  View, Text, StyleSheet, TextInput, ScrollView, TouchableOpacity, Image,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
+import axios from "axios";
 
 export default function FeedbackDetail() {
-  const [memo, setMemo] = useState("오늘은 표정이 좋았던 것 같다.");
+  const [memo, setMemo] = useState("");
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+  const [loading, setLoading] = useState(true);
+
   const router = useRouter();
+
+  // 실제 값으로 교체
+  const userId = "1";
+  const feedbackId = "34";
+
+  useEffect(() => {
+    const fetchFeedback = async () => {
+      try {
+        const res = await axios.get(`http://183.101.17.181:3001/feedback/${userId}/${feedbackId}`);
+        // res.data.data가 단일 객체임!
+        const feedback = res.data.data;
+        setMemo(feedback.memo || "");
+        setTitle(feedback.title || "");
+        setContent(feedback.content || "");
+      } catch (error) {
+        console.error("피드백 조회 실패:", error.response?.data || error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchFeedback();
+  }, []);
+
+  if (loading) {
+    return (
+      <SafeAreaView style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#fff" }}>
+        <Text>로딩중...</Text>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
@@ -23,7 +52,7 @@ export default function FeedbackDetail() {
           <Image
             source={require("../../assets/icons/arrow1.png")}
             style={styles.headerIcon}
-            resizeMode="25"
+            resizeMode="contain"
           />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>피드백 상세</Text>
@@ -40,32 +69,8 @@ export default function FeedbackDetail() {
         contentContainerStyle={styles.container}
         keyboardShouldPersistTaps="handled"
       >
-        <Text style={styles.title}>피드백 및 평가</Text>
-
-        <View style={styles.section}>
-          <Text style={styles.labelGood}>장점</Text>
-          <Text style={styles.bodyText}>
-            사용자는 바른자세를 잘 유지하고 있으며, 표정 또한 좋은 모습을 보였고
-            말투도 적절한 속도였습니다.
-          </Text>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.labelBad}>단점</Text>
-          <Text style={styles.bodyText}>
-            반면, 사용자는 자신감에 있어 많이 부족한 모습을 보였으며
-            업무이해도에 있어서 대답을 많이 못하는 모습을 보였고 위기대처에 대한
-            문답 또한 적절하지 못한 대답을 하였어요!
-          </Text>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.labelTip}>피드백</Text>
-          <Text style={styles.bodyText}>
-            면접에 자신감을 갖고 하는 것도 좋은 방법입니다!
-          </Text>
-        </View>
-
+        <Text style={styles.title}>{title}</Text>
+        <Text style={styles.bodyText}>{content}</Text>
         <Text style={styles.memoTitle}>메모</Text>
         <TextInput
           style={styles.memoInput}
