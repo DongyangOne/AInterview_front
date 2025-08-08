@@ -8,60 +8,33 @@ import {
   FlatList,
   Pressable,
 } from "react-native";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import AlignModal from "../../components/Modal/AlignModal";
 import EditListModal from "../../components/Modal/EditListModal";
 import { useRouter } from "expo-router";
-const feedbackList = [
-  {
-    id: "1",
-    date: "2025년 6월 27일",
-    title: "삼성 회사 면접",
-    memo: "앞으로 자신감, 위기대처능력, 업무이...",
-    pin: "Y",
-  },
-  {
-    id: "2",
-    date: "2025년 5월 13일",
-    title: "LG 1차 면접",
-    memo: "침착하고 간결한 말투 필요",
-    pin: "N",
-  },
-  {
-    id: "3",
-    date: "2025년 6월 27일",
-    title: "삼성 회사 면접",
-    memo: "앞으로 자신감, 위기대처능력, 업무이...",
-    pin: "Y",
-  },
-  {
-    id: "4",
-    date: "2025년 5월 13일",
-    title: "LG 1차 면접",
-    memo: "침착하고 간결한 말투 필요",
-    pin: "N",
-  },
-  {
-    id: "5",
-    date: "2025년 5월 13일",
-    title: "LG 1차 면접",
-    memo: "침착하고 간결한 말투 필요",
-    pin: "N",
-  },
-  {
-    id: "6",
-    date: "2025년 6월 27일",
-    title: "삼성 회사 면접",
-    memo: "앞으로 자신감, 위기대처능력, 업무이...",
-    pin: "Y",
-  },
-];
 
 export default function Feedback() {
+  const [feedbackList, setFeedbackList] = useState([]);
   const [open, setOpen] = useState(false);
   const [openModalItemId, setOpenModalItemId] = useState(null);
   const route = useRouter();
+
+  useEffect(() => {
+    fetch("http://183.101.17.181:3001/feedback/1")
+      .then(res => res.json())
+      .then(data => {
+        const mappedData = data.data.map(item => ({
+          id: item.notice_id.toString(),
+          date: new Date(item.created_at).toLocaleDateString("ko-KR"),
+          title: item.title,
+          memo: item.content,
+          pin: item.is_read === "N" ? "Y" : "N",
+        }));
+        setFeedbackList(mappedData);
+      })
+      .catch(err => console.error(err));
+  }, []);
 
   const sortedList = [...feedbackList].sort((a, b) => {
     if (a.pin === "Y" && b.pin !== "Y") return -1;
