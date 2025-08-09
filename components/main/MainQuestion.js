@@ -2,11 +2,12 @@ import { Text, View, StyleSheet } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useEffect, useState } from "react";
 import axios from "axios";
-
+import { REACT_APP_API_TODAY_QUESTION } from "@env";
 export default function MainQuestion() {
   const [questToday, setQuestToday] = useState("");
 
   useEffect(() => {
+    const QuestionAPI = REACT_APP_API_TODAY_QUESTION;
     const getQuestion = async () => {
       const today = new Date().toLocaleDateString("ko-KR");
       try {
@@ -15,9 +16,7 @@ export default function MainQuestion() {
 
         // 1. 날짜가 다르거나, 저장된 질문 자체가 없을 때 무조건 새로 가져옴
         if (lastDate !== today || !TodayQuest) {
-          const res = await axios.get(
-            "http://183.101.17.181:3001/question/today"
-          );
+          const res = await axios.get(`${QuestionAPI}`);
           const question = res.data.data[0].question;
           console.log("새 질문 받아옴:", question);
           setQuestToday(question);
