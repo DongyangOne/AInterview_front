@@ -52,7 +52,7 @@ export default function FeedbackResult() {
         </View>
 
         <View style={styles.headerRow}>
-          <Text style={styles.topTitle}>ONE 회사 면접</Text>
+          <Text style={styles.topTitle}>회사 면접 연습</Text>
           <Text style={styles.date}>{formattedDate}</Text>
         </View>
       </View>
@@ -62,7 +62,7 @@ export default function FeedbackResult() {
       <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
         <View style={styles.container}>
           <Text style={styles.graphTitle}>사용자 분석 그래프</Text>
-          <View style={styles.graphWrapper}>
+          {/* <View style={styles.graphWrapper}>
             <Image
               source={require("../../assets/images/feedbackresult.png")}
               style={styles.graphImage}
@@ -81,25 +81,29 @@ export default function FeedbackResult() {
             <Text style={[styles.graphLabel, styles.labelBottomRight]}>
               업무이해도
             </Text>
-          </View>
+          </View> */}
+          <Image
+            source={require("../../assets/images/image2.png")}
+            style={styles.graphImage}
+          />
           <Text style={styles.improvementText}>
-            저번보다 <Text style={styles.highlight}>자세</Text>가 더 좋아졌어요!
+            오늘의 면접은 <Text style={styles.highlight}>표정</Text>이 좋지
+            않아요.
           </Text>
           <Text style={styles.feedbackTitle}>피드백 및 평가</Text>
           <Text style={styles.labelGood}>장점</Text>
           <Text style={styles.bodyText}>
-            사용자는 바른자세를 잘 유지하고 있으며, 표정 또한 좋은 모습을 보였고
-            말투도 적절한 속도였습니다.
+            사용자는 바른자세를 잘 유지하고 있습니다.
           </Text>
           <Text style={styles.labelBad}>단점</Text>
           <Text style={styles.bodyText}>
-            반면, 사용자는 자신감에 있어 많이 부족한 모습을 보였으며
-            업무이해도에 있어서 대답을 많이 못하는 모습을 보였고 위기대처에 대한
-            문답 또한 적절하지 못한 대답을 하였어요!
+            반면, 사용자는 표정이 불안정해 보였으며, 말투에서 좋지 않은 버릇이
+            종종 나오는 것 같습니다.
           </Text>
           <Text style={styles.labelTip}>피드백</Text>
           <Text style={styles.bodyText}>
-            면접에 자신감을 갖고 하는 것도 좋은 방법입니다!
+            한 곳을 집중하여 응시해보는 것이 어떨까요? 고정되지 않은 시선처리는
+            면접자가 불안하게 보일 수 있습니다.
           </Text>
           <Text style={styles.memoTitle}>메모</Text>
           <TextInput
@@ -208,7 +212,7 @@ const styles = StyleSheet.create({
   },
   graphImage: {
     width: "100%",
-    height: "100%",
+    height: 300,
     resizeMode: "contain",
   },
   graphLabel: {

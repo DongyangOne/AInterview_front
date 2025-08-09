@@ -17,7 +17,7 @@ import { CameraView, useCameraPermissions } from "expo-camera";
 import CustomModal from "../components/Modal/Close";
 
 const { width } = Dimensions.get("window");
-const PROGRESS_DURATION = 30;
+const PROGRESS_DURATION = 15;
 
 export default function Interviewing() {
   const router = useRouter();
@@ -139,11 +139,12 @@ export default function Interviewing() {
   }
 
   return (
-    <ImageBackground
-      source={require("../assets/images/interviewface.png")}
-      style={styles.background}
-      resizeMode="cover"
-    >
+    <>
+      {/* <ImageBackground
+        source={require("../assets/images/interviewface.png")}
+        style={styles.background}
+        resizeMode="cover"
+      > */}
       <CameraView
         ref={cameraRef}
         style={StyleSheet.absoluteFill}
@@ -179,7 +180,8 @@ export default function Interviewing() {
         </View>
         <Text style={styles.timerText}>남은 시간 {timeLeft}초</Text>
       </View>
-    </ImageBackground>
+      {/* </ImageBackground> */}
+    </>
   );
 }
 

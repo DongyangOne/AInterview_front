@@ -85,7 +85,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 32, // <- 좌우 마진 32
+    paddingHorizontal: 32,
     backgroundColor: "#fff",
   },
   headerIcon: {
