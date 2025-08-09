@@ -7,42 +7,36 @@ export default function MainQuestion() {
   const [questToday, setQuestToday] = useState("");
 
   useEffect(() => {
-    const fetchQuestion = async () => {
-      const today = new Date().toLocaleDateString();
+    const getQuestion = async () => {
+      const today = new Date().toLocaleDateString("ko-KR");
       try {
         const lastDate = await AsyncStorage.getItem("lastDate");
         const TodayQuest = await AsyncStorage.getItem("questToday");
 
-        console.log("lastDate:", lastDate);
-        console.log("TodayQuest:", TodayQuest);
-
-        if (lastDate !== today) {
-          // 날짜 다르면 새로운 질문 요청
+        // 1. 날짜가 다르거나, 저장된 질문 자체가 없을 때 무조건 새로 가져옴
+        if (lastDate !== today || !TodayQuest) {
           const res = await axios.get(
             "http://183.101.17.181:3001/question/today"
           );
-          const question = res.data.data.question;
-
+          const question = res.data.data[0].question;
           console.log("새 질문 받아옴:", question);
-
           setQuestToday(question);
           await AsyncStorage.setItem("lastDate", today);
           await AsyncStorage.setItem("questToday", question);
+          console.log(today);
+          console.log(question);
         } else {
-          // 날짜 같으면 저장된 질문 사용
-          if (TodayQuest) {
-            console.log("저장된 질문 사용");
-            setQuestToday(TodayQuest);
-          } else {
-            console.log("저장된 질문 없음");
-          }
+          // 2. 오늘 날짜고 저장된 질문 있으면 그걸 사용
+          setQuestToday(TodayQuest);
+          console.log("저장된 질문:", questToday);
+          console.log("저장된 날짜:", today);
         }
       } catch (err) {
         console.error("오류발생", err);
       }
     };
 
-    fetchQuestion();
+    getQuestion();
   }, []);
 
   return (
@@ -54,7 +48,6 @@ export default function MainQuestion() {
     </View>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     width: "100%",
