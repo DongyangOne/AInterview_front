@@ -13,22 +13,30 @@ import MainFeedback from "../../components/main/MainFeedback";
 import MainQuestion from "../../components/main/MainQuestion";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
+import axios from "axios";
+import { API_URL } from "@env";
 export default function Home() {
   const scrollRef = useRef(null);
   const router = useRouter();
   const [weekSchedules, setWeekSchedules] = useState("0");
 
   useEffect(() => {
-    AsyncStorage.getItem("weekSchedules")
-      .then((value) => {
-        if (value !== null) {
-          setWeekSchedules(value);
-        }
-      })
-      .catch((err) => {
-        console.error("AsyncStorage getItem error:", err);
-      });
+    const fetchData = async () => {
+      try {
+        const res = await axios.get(`${API_URL}/calendar/thisweek`, {
+          params: { userId: 1 },
+        });
+
+        const count = res.data.data.map((item) => ({
+          id: item.calendar_id.toString(),
+        }));
+        setWeekSchedules(count.length.toString());
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchData();
   }, []);
 
   return (

@@ -41,12 +41,6 @@ function WeeklyCalendar() {
           return date >= weekStart && date <= weekEnd;
         });
 
-        // 개수 저장
-        await AsyncStorage.setItem(
-          "weekSchedules",
-          weeklyEvents.length.toString()
-        );
-
         const scheduleMap = {};
         weeklyEvents.forEach((item) => {
           const date = new Date(item.time);
