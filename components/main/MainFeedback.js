@@ -8,6 +8,7 @@ import {
   StyleSheet,
 } from "react-native";
 import axios from "axios";
+import { API_URL } from "@env";
 function RoundedBar({
   value = 0,
   height = 7,
@@ -33,22 +34,33 @@ function RoundedBar({
     </View>
   );
 }
-
+function formatDate(dateStr) {
+  if (!dateStr) return "";
+  const dateObj = new Date(dateStr);
+  const year = dateObj.getFullYear();
+  const month = String(dateObj.getMonth() + 1).padStart(2, "0");
+  const day = String(dateObj.getDate()).padStart(2, "0");
+  return `${year}.${month}.${day}`;
+}
 function MainFeedback() {
   const [shouldScroll, setShouldScroll] = useState(false);
   const scrollRef = useRef(null);
   const [textBoxHeight, setTextBoxHeight] = useState(227);
   const [feedback, setFeedback] = useState([]);
+  const [fetime, setFetime] = useState("");
 
   useEffect(() => {
+    console.log(API_URL);
     axios
-      .get("http://183.101.17.181:3001/feedback/recent", {
+      .get(`${API_URL}/feedback/recent`, {
         params: { userId: 1 },
       })
       .then((res) => {
         if (res.data && res.data.success) {
           console.log(res.data.data);
           setFeedback(res.data.data);
+          const apiDate = res.data.data[0]?.created_at;
+          setFetime(formatDate(apiDate)); // 날짜 형식 고정해서 저장
         }
       })
       .catch((error) => {
@@ -84,11 +96,7 @@ function MainFeedback() {
           <Text style={styles.title}>
             {firstfb?.title ? firstfb.title : "로딩 중"}
           </Text>
-          <Text style={styles.date}>
-            {firstfb?.created_at
-              ? new Date(firstfb.created_at).toLocaleDateString()
-              : "로딩 중"}
-          </Text>
+          <Text style={styles.date}>{fetime ? fetime : "로딩 중"}</Text>
         </View>
         <Text style={styles.rightTime}>
           {firstfb?.days_ago ? firstfb.days_ago : "로딩 중"}일 전
