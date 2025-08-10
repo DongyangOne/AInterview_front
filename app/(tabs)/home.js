@@ -13,15 +13,17 @@ import MainFeedback from "../../components/main/MainFeedback";
 import MainQuestion from "../../components/main/MainQuestion";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+
 export default function Home() {
   const scrollRef = useRef(null);
   const router = useRouter();
-  const [weekSchedules, setWeekSchedulse] = useState("0");
+  const [weekSchedules, setWeekSchedules] = useState("0");
+
   useEffect(() => {
     AsyncStorage.getItem("weekSchedules")
       .then((value) => {
         if (value !== null) {
-          setWeekSchedulse(value);
+          setWeekSchedules(value);
         }
       })
       .catch((err) => {
@@ -57,7 +59,6 @@ export default function Home() {
         ref={scrollRef}
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
-        keyboardShouldPersistTaps="handled"
       >
         <View style={styles.container}>
           <Text style={styles.greeting}>닉네임님,</Text>

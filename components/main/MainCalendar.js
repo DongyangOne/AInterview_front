@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Text, View, TouchableOpacity, StyleSheet } from "react-native";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { API_URL } from "@env";
 
 // 이번 주(일~토) 날짜 배열 반환
 function getCurrentWeekDates() {
@@ -16,74 +17,51 @@ function getCurrentWeekDates() {
   });
 }
 
-// 주간 달력 컴포넌트
 function WeeklyCalendar() {
   const weekDates = getCurrentWeekDates();
   const today = new Date();
   const [schedules, setSchedules] = useState({});
 
   useEffect(() => {
-    axios
-      .get("http://183.101.17.181:3001/calendar/thisweek", {
-        params: { userId: 1 },
-      })
-      .then((res) => {
-        const scheduleMap = {};
-        const weekStart = new Date(weekDates[0]);
-        weekStart.setHours(0, 0, 0, 0); // 자정 시작
-
-        const weekEnd = new Date(weekDates[6]);
-        weekEnd.setHours(23, 59, 59, 999); // 하루 끝
-        //가져온 값의 길이를 스토리지에 저장
-        const getcount = res.data.data.length;
-        //문자열로 변환
-        AsyncStorage.setItem("weekSchedules", getcount.toString());
-
-        console.log("갯수", getcount);
-        console.log("0", weekStart.toLocaleString("ko-KR"));
-
-        console.log("6", weekEnd);
-        res.data.data.forEach((item) => {
-          const date = new Date(item.time);
-          console.log(
-            "받아온 시간 한국시간 버전",
-            date.toLocaleDateString("ko-KR", {
-              year: "numeric",
-              month: "2-digit",
-              day: "2-digit",
-              hour: "2-digit",
-              minute: "2-digit",
-              second: "2-digit",
-              hour12: false,
-            })
-          );
-
-          // 이번 주 범위 체크
-          if (
-            //이번주 시작 시간보다 크고  이번주 마지막 시간보다 작을 때 작동
-            date.getTime() >= weekStart.getTime() &&
-            date.getTime() <= weekEnd.getTime()
-          ) {
-            console.log("시작", weekStart.getTime());
-            console.log("마지막", weekEnd.getTime());
-            //2025.8.8 14:00
-            console.log("밀리초", date.getTime());
-
-            //요일 숫자로 반환
-            const dayIndex = date.getDay();
-            //해당 날짜 배열 없을 시 생성
-            if (!scheduleMap[dayIndex]) {
-              scheduleMap[dayIndex] = [];
-            }
-            //배열에 값 추가
-            scheduleMap[dayIndex].push(item.title);
-          }
+    const fetchData = async () => {
+      try {
+        const res = await axios.get(`${API_URL}/calendar/thisweek`, {
+          params: { userId: 1 },
         });
+
+        // 이번 주 시작/끝
+        const weekStart = new Date(weekDates[0]);
+        weekStart.setHours(0, 0, 0, 0);
+        const weekEnd = new Date(weekDates[6]);
+        weekEnd.setHours(23, 59, 59, 999);
+
+        // 이번 주 일정만 필터링
+        const weeklyEvents = res.data.data.filter((item) => {
+          const date = new Date(item.time); //가져온 값의 시간
+          return date >= weekStart && date <= weekEnd;
+        });
+
+        // 개수 저장
+        await AsyncStorage.setItem(
+          "weekSchedules",
+          weeklyEvents.length.toString()
+        );
+
+        const scheduleMap = {};
+        weeklyEvents.forEach((item) => {
+          const date = new Date(item.time);
+          const dayIndex = date.getDay(); // 0:일,~6:토
+          if (!scheduleMap[dayIndex]) scheduleMap[dayIndex] = [];
+          scheduleMap[dayIndex].push(item.title);
+        });
+
         setSchedules(scheduleMap);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchData();
   }, []);
 
   return (
@@ -134,15 +112,13 @@ function WeeklyCalendar() {
   );
 }
 
-function MainCalendar() {
+export default function MainCalendar() {
   return (
     <View>
       <WeeklyCalendar />
     </View>
   );
 }
-
-export default MainCalendar;
 
 const styles = StyleSheet.create({
   calendarContainer: {
