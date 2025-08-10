@@ -10,6 +10,7 @@ import {
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import axios from "axios";
 
 export default function Login() {
   const router = useRouter();
@@ -21,12 +22,14 @@ export default function Login() {
 
   const [idError, setIdError] = useState("");
   const [pwError, setPwError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     const checkKeepLogin = async () => {
       const keep = await AsyncStorage.getItem("keepLogin");
-      const user = await AsyncStorage.getItem("loggedInUser");
-      if (keep === "true" && user) {
+      const token = await AsyncStorage.getItem("token");
+      const userId = await AsyncStorage.getItem("userId");
+      if (keep === "true" && token && userId) {
         router.replace("/(tabs)/home");
       }
     };
@@ -34,39 +37,48 @@ export default function Login() {
   }, []);
 
   const handleLogin = async () => {
-    // setIdError("");
-    // setPwError("");
+    if (submitting) return;
+    setIdError("");
+    setPwError("");
 
-    // const storedData = await AsyncStorage.getItem("users");
-    // const users = storedData
-    //   ? (JSON.parse(storedData) as {
-    //       id: string;
-    //       password: string;
-    //       nickname: string;
-    //     }[])
-    //   : [];
+    if (!id.trim()) {
+      setIdError("아이디를 입력해 주세요.");
+      return;
+    }
+    if (!pw) {
+      setPwError("비밀번호를 입력해 주세요.");
+      return;
+    }
 
-    // const user = users.find((u) => u.id === id);
+    setSubmitting(true);
+    try {
+      const res = await axios.post("http://183.101.17.181:3001/sign/login", {
+        loginUserId: id.trim(),
+        password: pw,
+      });
 
-    // if (!user) {
-    //   setIdError("존재하지 않는 아이디입니다.");
-    //   return;
-    // }
+      await AsyncStorage.setItem("userId", id.trim());
+      if (keepLogin) {
+        await AsyncStorage.setItem("keepLogin", "true");
+        await AsyncStorage.setItem(
+          "loggedInUser",
+          JSON.stringify({ id: id.trim() })
+        );
+      } else {
+        await AsyncStorage.removeItem("keepLogin");
+        await AsyncStorage.removeItem("loggedInUser");
+      }
 
-    // if (user.password !== pw) {
-    //   setPwError("비밀번호를 확인해 주세요.");
-    //   return;
-    // }
+      if (res?.data?.token) {
+        await AsyncStorage.setItem("accessToken", res.data.token);
+      }
 
-    // if (keepLogin) {
-    //   await AsyncStorage.setItem("keepLogin", "true");
-    //   await AsyncStorage.setItem("loggedInUser", JSON.stringify(user));
-    // } else {
-    //   await AsyncStorage.removeItem("keepLogin");
-    //   await AsyncStorage.removeItem("loggedInUser");
-    // }
-
-    router.replace("/(tabs)/home");
+      router.replace("/(tabs)/home");
+    } catch {
+      setIdError("아이디 또는 비밀번호를 확인해 주세요.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -79,7 +91,6 @@ export default function Login() {
             resizeMode="contain"
           />
         </TouchableOpacity>
-
         <Text style={styles.headerText}>로그인</Text>
       </View>
       <View style={styles.inputWrap}>
@@ -90,6 +101,7 @@ export default function Login() {
           value={id}
           onChangeText={setId}
           autoCapitalize="none"
+          editable={!submitting}
         />
         {idError !== "" && <Text style={styles.error}>{idError}</Text>}
       </View>
@@ -103,10 +115,12 @@ export default function Login() {
             secureTextEntry={!showPw}
             value={pw}
             onChangeText={setPw}
+            editable={!submitting}
           />
           <TouchableOpacity
             style={styles.eyeContainer}
             onPress={() => setShowPw(!showPw)}
+            disabled={submitting}
           >
             <Ionicons
               name={showPw ? "eye" : "eye-off"}
@@ -121,6 +135,7 @@ export default function Login() {
       <TouchableOpacity
         style={styles.keepWrap}
         onPress={() => setKeepLogin(!keepLogin)}
+        disabled={submitting}
       >
         <Ionicons
           name={keepLogin ? "checkbox" : "square-outline"}
@@ -130,8 +145,14 @@ export default function Login() {
         <Text style={styles.keepText}>로그인 유지</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.loginBtn} onPress={handleLogin}>
-        <Text style={styles.loginBtnText}>로그인</Text>
+      <TouchableOpacity
+        style={[styles.loginBtn, submitting && { opacity: 0.6 }]}
+        onPress={handleLogin}
+        disabled={submitting}
+      >
+        <Text style={styles.loginBtnText}>
+          {submitting ? "로그인 중..." : "로그인"}
+        </Text>
       </TouchableOpacity>
 
       <View style={styles.socialWrap}>
@@ -193,14 +214,8 @@ const styles = StyleSheet.create({
     fontWeight: "400",
     color: "#191919",
   },
-  inputWrap: {
-    marginBottom: 20,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: "500",
-    marginBottom: 8,
-  },
+  inputWrap: { marginBottom: 20 },
+  label: { fontSize: 14, fontWeight: "500", marginBottom: 8 },
   input: {
     backgroundColor: "#fff",
     borderRadius: 8,
@@ -210,29 +225,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     paddingRight: 40,
   },
-  passwordRow: {
-    position: "relative",
-    justifyContent: "center",
-  },
-  eyeContainer: {
-    position: "absolute",
-    right: 10,
-    top: 12,
-  },
-  error: {
-    color: "#e11d48",
-    fontSize: 12,
-    marginTop: 4,
-  },
-  keepWrap: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 24,
-  },
-  keepText: {
-    marginLeft: 8,
-    fontSize: 14,
-  },
+  passwordRow: { position: "relative", justifyContent: "center" },
+  eyeContainer: { position: "absolute", right: 10, top: 12 },
+  error: { color: "#e11d48", fontSize: 12, marginTop: 4 },
+  keepWrap: { flexDirection: "row", alignItems: "center", marginBottom: 24 },
+  keepText: { marginLeft: 8, fontSize: 14 },
   loginBtn: {
     backgroundColor: "#5900FF",
     paddingVertical: 16,
@@ -240,11 +237,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 36,
   },
-  loginBtnText: {
-    color: "#fff",
-    fontSize: 14,
-    fontWeight: "bold",
-  },
+  loginBtnText: { color: "#fff", fontSize: 14, fontWeight: "bold" },
   socialWrap: {
     flexDirection: "row",
     justifyContent: "space-around",
@@ -257,19 +250,9 @@ const styles = StyleSheet.create({
     borderRadius: 22,
     overflow: "hidden",
   },
-  divider: {
-    height: 1,
-    backgroundColor: "#ddd",
-    marginBottom: 32,
-  },
-  signUpWrap: {
-    alignItems: "center",
-  },
-  signUpText: {
-    fontSize: 14,
-    color: "#666",
-    marginBottom: 12,
-  },
+  divider: { height: 1, backgroundColor: "#ddd", marginBottom: 32 },
+  signUpWrap: { alignItems: "center" },
+  signUpText: { fontSize: 14, color: "#666", marginBottom: 12 },
   signUpBtn: {
     backgroundColor: "#111",
     paddingVertical: 14,
@@ -277,9 +260,5 @@ const styles = StyleSheet.create({
     alignItems: "center",
     width: "100%",
   },
-  signUpBtnText: {
-    color: "#fff",
-    fontSize: 14,
-    fontWeight: "bold",
-  },
+  signUpBtnText: { color: "#fff", fontSize: 14, fontWeight: "bold" },
 });
