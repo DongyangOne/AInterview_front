@@ -27,7 +27,10 @@ export default function Login() {
     const checkKeepLogin = async () => {
       const keep = await AsyncStorage.getItem("keepLogin");
       const token = await AsyncStorage.getItem("token");
-      const userId = await AsyncStorage.getItem("userId");
+
+      const storedUserId = await AsyncStorage.getItem("userId");
+      const userId = storedUserId ? Number(storedUserId) : null;
+
       if (keep === "true" && token && userId) {
         router.replace("/(tabs)/home");
       }
@@ -56,8 +59,15 @@ export default function Login() {
       });
 
       const token = res?.data?.token || res?.data?.accessToken || "";
-      await AsyncStorage.setItem("userId", loginUserId);
-      if (token) await AsyncStorage.setItem("token", token);
+      const numericUserId = res?.data?.userId;
+
+      if (numericUserId != null) {
+        await AsyncStorage.setItem("userId", String(numericUserId));
+      }
+
+      if (token) {
+        await AsyncStorage.setItem("token", token);
+      }
 
       if (keepLogin) {
         await AsyncStorage.setItem("keepLogin", "true");
