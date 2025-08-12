@@ -8,6 +8,7 @@ import {
   StyleSheet,
 } from "react-native";
 import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_URL } from "@env";
 function RoundedBar({
   value = 0,
@@ -50,23 +51,26 @@ function MainFeedback() {
   const [fetime, setFetime] = useState("");
 
   useEffect(() => {
-    console.log(API_URL);
-    axios
-      .get(`${API_URL}/feedback/recent`, {
-        params: { userId: 1 },
-      })
-      .then((res) => {
+    const fetchData = async () => {
+      try {
+        console.log(API_URL);
+        const usersId = await AsyncStorage.getItem("userId");
+        console.log(usersId);
+        const res = await axios.get(`${API_URL}/feedback/recent`, {
+          params: { userId: usersId },
+        });
         if (res.data && res.data.success) {
-          console.log(res.data.data);
           setFeedback(res.data.data);
           const apiDate = res.data.data[0]?.created_at;
-          setFetime(formatDate(apiDate)); // 날짜 형식 고정해서 저장
+          setFetime(formatDate(apiDate));
         }
-      })
-      .catch((error) => {
+      } catch (error) {
         console.error("데이터 가져오기 실패:", error);
         alert("데이터 가져오기 실패");
-      });
+      }
+    };
+
+    fetchData();
   }, []);
 
   const evaluationData = [
