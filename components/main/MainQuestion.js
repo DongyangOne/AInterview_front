@@ -2,7 +2,6 @@ import { Text, View, StyleSheet } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { API_URL } from "@env";
 
 export default function MainQuestion() {
   const [questToday, setQuestToday] = useState("");
@@ -15,7 +14,9 @@ export default function MainQuestion() {
         const TodayQuest = await AsyncStorage.getItem("questToday");
         // 1. 날짜가 다르거나, 저장된 질문 자체가 없을 때 무조건 새로 가져옴
         if (lastDate !== today || !TodayQuest) {
-          const res = await axios.get(`${API_URL}/question/today`);
+          const res = await axios.get(
+            `${process.env.EXPO_PUBLIC_API_URL}/question/today`
+          );
           const question = res.data.data[0].question;
           console.log("새 질문 받아옴:", question);
           setQuestToday(question);

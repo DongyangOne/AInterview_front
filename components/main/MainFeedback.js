@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { API_URL } from "@env";
+
 function RoundedBar({
   value = 0,
   height = 7,
@@ -53,12 +53,14 @@ function MainFeedback() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        console.log(API_URL);
         const usersId = await AsyncStorage.getItem("userId");
         console.log(usersId);
-        const res = await axios.get(`${API_URL}/feedback/recent`, {
-          params: { userId: usersId },
-        });
+        const res = await axios.get(
+          `${process.env.EXPO_PUBLIC_API_URL}/feedback/recent`,
+          {
+            params: { userId: usersId },
+          }
+        );
         if (res.data && res.data.success) {
           setFeedback(res.data.data);
           const apiDate = res.data.data[0]?.created_at;

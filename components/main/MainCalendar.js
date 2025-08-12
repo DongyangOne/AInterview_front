@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { Text, View, TouchableOpacity, StyleSheet } from "react-native";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { API_URL } from "@env";
 
 // 이번 주(일~토) 날짜 배열 반환
 function getCurrentWeekDates() {
@@ -26,9 +25,12 @@ function WeeklyCalendar() {
     const fetchData = async () => {
       try {
         const usersId = await AsyncStorage.getItem("userId");
-        const res = await axios.get(`${API_URL}/calendar/thisweek`, {
-          params: { userId: usersId },
-        });
+        const res = await axios.get(
+          `${process.env.EXPO_PUBLIC_API_URL}/calendar/thisweek`,
+          {
+            params: { userId: usersId },
+          }
+        );
 
         // 이번 주 시작/끝
         const weekStart = new Date(weekDates[0]);

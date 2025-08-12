@@ -11,7 +11,6 @@ import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
-import { API_URL } from "@env";
 
 export default function Login() {
   const router = useRouter();
@@ -54,7 +53,7 @@ export default function Login() {
     }
 
     await axios
-      .post(`${API_URL}/sign/login`, {
+      .post(`${process.env.EXPO_PUBLIC_API_URL}/sign/login`, {
         loginUserId,
         password: pw,
       })
