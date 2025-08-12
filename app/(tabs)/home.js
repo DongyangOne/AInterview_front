@@ -23,7 +23,7 @@ export default function Home() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const usersId = AsyncStorage.getItem("userId");
+        const usersId = await AsyncStorage.getItem("userId");
         const res = await axios.get(`${API_URL}/calendar/thisweek`, {
           params: { userId: usersId },
         });
