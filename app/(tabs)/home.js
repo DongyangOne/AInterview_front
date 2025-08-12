@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   Text,
   View,
@@ -12,10 +12,33 @@ import MainCalendar from "../../components/main/MainCalendar";
 import MainFeedback from "../../components/main/MainFeedback";
 import MainQuestion from "../../components/main/MainQuestion";
 import { useRouter } from "expo-router";
-
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import axios from "axios";
+import { API_URL } from "@env";
 export default function Home() {
   const scrollRef = useRef(null);
   const router = useRouter();
+  const [weekSchedules, setWeekSchedules] = useState("0");
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const usersId = await AsyncStorage.getItem("userId");
+        const res = await axios.get(`${API_URL}/calendar/thisweek`, {
+          params: { userId: usersId },
+        });
+
+        const count = res.data.data.map((item) => ({
+          id: item.calendar_id.toString(),
+        }));
+        setWeekSchedules(count.length.toString());
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
@@ -45,13 +68,16 @@ export default function Home() {
         ref={scrollRef}
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
-        keyboardShouldPersistTaps="handled"
       >
         <View style={styles.container}>
           <Text style={styles.greeting}>닉네임님,</Text>
           <Text style={styles.interviewInfo}>
-            이번 주에 면접 <Text style={styles.accent}>2개</Text>가 예정되어
-            있어요.
+            이번 주에 면접
+            <Text style={styles.accent}>
+              {" "}
+              {weekSchedules ? weekSchedules : "로딩 중"}개
+            </Text>
+            가 예정되어 있어요.
           </Text>
           <View style={styles.calendarBox}>
             <MainCalendar />
