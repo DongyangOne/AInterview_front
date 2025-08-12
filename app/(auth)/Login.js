@@ -11,6 +11,7 @@ import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
+import { API_URL } from "@env";
 
 export default function Login() {
   const router = useRouter();
@@ -27,7 +28,10 @@ export default function Login() {
     const checkKeepLogin = async () => {
       const keep = await AsyncStorage.getItem("keepLogin");
       const token = await AsyncStorage.getItem("token");
-      const userId = await AsyncStorage.getItem("userId");
+
+      const storedUserId = await AsyncStorage.getItem("userId");
+      const userId = storedUserId ? Number(storedUserId) : null;
+
       if (keep === "true" && token && userId) {
         router.replace("/(tabs)/home");
       }
@@ -50,7 +54,7 @@ export default function Login() {
     }
 
     await axios
-      .post("http://183.101.17.181:3001/sign/login", {
+      .post(`${API_URL}/sign/login`, {
         loginUserId,
         password: pw,
       })
