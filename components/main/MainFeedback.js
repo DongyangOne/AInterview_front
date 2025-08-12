@@ -179,7 +179,7 @@ function MainFeedback() {
     <View style={[styles.container, { minHeight: textBoxHeight }]}>
       {/* 화살표 버튼 */}
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Text style={{ fontSize: 25, color: "#191919" }}>
+        <Text style={{ fontSize: 16, color: "#191919" }}>
           최근 피드백이 없습니다.
         </Text>
       </View>
