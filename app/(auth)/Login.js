@@ -53,37 +53,29 @@ export default function Login() {
       return;
     }
 
-    try {
-      const res = await axios.post("http://183.101.17.181:3001/sign/login", {
+    await axios
+      .post(`${API_URL}/sign/login`, {
         loginUserId,
         password: pw,
+      })
+      .then(async (res) => {
+        console.log(res.data.userId);
+        AsyncStorage.setItem("userId", String(res.data.userId));
+        if (keepLogin) {
+          await AsyncStorage.setItem("keepLogin", "true");
+        } else {
+          await AsyncStorage.removeItem("keepLogin");
+        }
+
+        router.replace("/(tabs)/home");
+      })
+      .catch((error) => {
+        if (error.status === 404) {
+          setIdError("존재하지 않는 아이디입니다.");
+        } else {
+          setPwError("비밀번호를 확인해 주세요.");
+        }
       });
-
-      const token = res?.data?.token || res?.data?.accessToken || "";
-      const numericUserId = res?.data?.userId;
-
-      if (numericUserId != null) {
-        await AsyncStorage.setItem("userId", String(numericUserId));
-      }
-
-      if (token) {
-        await AsyncStorage.setItem("token", token);
-      }
-
-      if (keepLogin) {
-        await AsyncStorage.setItem("keepLogin", "true");
-      } else {
-        await AsyncStorage.removeItem("keepLogin");
-      }
-
-      router.replace("/(tabs)/home");
-    } catch (e) {
-      if (e?.response?.status === 404) {
-        setIdError("존재하지 않는 아이디입니다.");
-      } else {
-        setPwError("비밀번호를 확인해 주세요.");
-      }
-    }
   };
 
   return (
