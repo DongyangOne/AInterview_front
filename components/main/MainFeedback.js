@@ -92,9 +92,11 @@ function MainFeedback() {
     setShouldScroll(true);
   };
   const firstfb = feedback?.[0];
-  return (
+  console.log("가져온 데이터", firstfb);
+  return firstfb ? (
     <View style={[styles.container, { minHeight: textBoxHeight }]}>
       {/* 헤더 영역 */}
+
       <View style={styles.headerRow}>
         <View style={styles.titleSection}>
           <Text style={styles.title}>
@@ -170,6 +172,32 @@ function MainFeedback() {
           style={styles.arrowImage}
         />
       </TouchableOpacity>
+    </View>
+  ) : (
+    <View style={[styles.container, { minHeight: textBoxHeight }]}>
+      {/* 화살표 버튼 */}
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Text style={{ fontSize: 25, color: "#191919" }}>
+          최근 피드백이 없습니다.
+        </Text>
+      </View>
+      {/* <TouchableOpacity
+        style={[
+          styles.arrowBtn,
+          { marginTop: textBoxHeight === 412 ? 8 : "auto" },
+        ]}
+        onPress={toggleTextHeight}
+        activeOpacity={0.7}
+      >
+        <Image
+          source={
+            textBoxHeight === 227
+              ? require("../../assets/icons/arow.png")
+              : require("../../assets/icons/main_arrow.png")
+          }
+          style={styles.arrowImage}
+        />
+      </TouchableOpacity> */}
     </View>
   );
 }
