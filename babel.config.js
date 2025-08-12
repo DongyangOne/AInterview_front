@@ -9,7 +9,7 @@ module.exports = function (api) {
         {
           envName: "APP_ENV",
           moduleName: "@env",
-          path: ".env.local",
+          path: ".env.local", // 사용할 .env 파일 경로
           blocklist: null,
           allowlist: null,
           blacklist: null,

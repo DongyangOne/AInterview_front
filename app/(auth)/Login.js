@@ -10,6 +10,7 @@ import {
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import axios from "axios";
 
 export default function Login() {
   const router = useRouter();
@@ -25,8 +26,9 @@ export default function Login() {
   useEffect(() => {
     const checkKeepLogin = async () => {
       const keep = await AsyncStorage.getItem("keepLogin");
-      const user = await AsyncStorage.getItem("loggedInUser");
-      if (keep === "true" && user) {
+      const token = await AsyncStorage.getItem("token");
+      const userId = await AsyncStorage.getItem("userId");
+      if (keep === "true" && token && userId) {
         router.replace("/(tabs)/home");
       }
     };
@@ -34,39 +36,42 @@ export default function Login() {
   }, []);
 
   const handleLogin = async () => {
-    // setIdError("");
-    // setPwError("");
+    setIdError("");
+    setPwError("");
 
-    // const storedData = await AsyncStorage.getItem("users");
-    // const users = storedData
-    //   ? (JSON.parse(storedData) as {
-    //       id: string;
-    //       password: string;
-    //       nickname: string;
-    //     }[])
-    //   : [];
+    const loginUserId = id.trim();
+    if (!loginUserId) {
+      setIdError("아이디를 입력해 주세요.");
+      return;
+    }
+    if (!pw) {
+      setPwError("비밀번호를 입력해 주세요.");
+      return;
+    }
 
-    // const user = users.find((u) => u.id === id);
+    await axios
+      .post("http://183.101.17.181:3001/sign/login", {
+        loginUserId,
+        password: pw,
+      })
+      .then(async (res) => {
+        console.log(res.data.userId);
+        AsyncStorage.setItem("userId", String(res.data.userId));
+        if (keepLogin) {
+          await AsyncStorage.setItem("keepLogin", "true");
+        } else {
+          await AsyncStorage.removeItem("keepLogin");
+        }
 
-    // if (!user) {
-    //   setIdError("존재하지 않는 아이디입니다.");
-    //   return;
-    // }
-
-    // if (user.password !== pw) {
-    //   setPwError("비밀번호를 확인해 주세요.");
-    //   return;
-    // }
-
-    // if (keepLogin) {
-    //   await AsyncStorage.setItem("keepLogin", "true");
-    //   await AsyncStorage.setItem("loggedInUser", JSON.stringify(user));
-    // } else {
-    //   await AsyncStorage.removeItem("keepLogin");
-    //   await AsyncStorage.removeItem("loggedInUser");
-    // }
-
-    router.replace("/(tabs)/home");
+        router.replace("/(tabs)/home");
+      })
+      .catch((error) => {
+        if (error.status === 404) {
+          setIdError("존재하지 않는 아이디입니다.");
+        } else {
+          setPwError("비밀번호를 확인해 주세요.");
+        }
+      });
   };
 
   return (
