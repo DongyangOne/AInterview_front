@@ -25,8 +25,9 @@ function WeeklyCalendar() {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        const usersId = AsyncStorage.getItem("userId");
         const res = await axios.get(`${API_URL}/calendar/thisweek`, {
-          params: { userId: 1 },
+          params: { userId: usersId },
         });
 
         // 이번 주 시작/끝
