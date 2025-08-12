@@ -110,11 +110,7 @@ function WeeklyCalendar() {
 }
 
 export default function MainCalendar() {
-  return (
-    <View>
-      <WeeklyCalendar />
-    </View>
-  );
+  return <WeeklyCalendar />;
 }
 
 const styles = StyleSheet.create({

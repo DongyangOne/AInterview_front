@@ -19,10 +19,11 @@ export default function Home() {
   const scrollRef = useRef(null);
   const router = useRouter();
   const [weekSchedules, setWeekSchedules] = useState("0");
-
+  const [nickname, setNickname] = useState(null);
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setNickname(await AsyncStorage.getItem("NickName"));
         const usersId = await AsyncStorage.getItem("userId");
         const res = await axios.get(
           `${process.env.EXPO_PUBLIC_API_URL}/calendar/thisweek`,
@@ -73,7 +74,7 @@ export default function Home() {
         contentContainerStyle={styles.scrollContent}
       >
         <View style={styles.container}>
-          <Text style={styles.greeting}>닉네임님,</Text>
+          <Text style={styles.greeting}>{nickname}님,</Text>
           <Text style={styles.interviewInfo}>
             이번 주에 면접
             <Text style={styles.accent}>
