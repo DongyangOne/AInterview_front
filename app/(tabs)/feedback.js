@@ -8,7 +8,7 @@ import EditListModal from "../../components/Modal/EditListModal";
 import { useRouter } from "expo-router";
 import axios from "axios";
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {API_URL} from '@env';
+import { API_URL } from '@env';
 
 //const USER_ID = "1"; // 고정
 
@@ -24,13 +24,18 @@ export default function Feedback() {
   useEffect(() => {
     async function fetchData() {
       try {
-//        const userId = await AsyncStorage.getItem("userId");
+        const usersId = await AsyncStorage.getItem("userId");
+
+        console.log(usersId);
         const userId = 1;
-        if (!userId) {
+        if (!usersId) {
           console.log("userId가 저장되어 있지 않습니다.");
           return;
         }
-        const res = await fetch(`${API_URL}/feedback/${userId}`);
+        //API 요청 보내기
+        const res = await axios.get(`${API_URL}/feedback`, {
+          params: { userId: usersId }, // userId를 쿼리 파라미터로 전송
+        });
         const data = await res.json();
 
         const mappedData = data.data.map(item => ({
@@ -49,14 +54,14 @@ export default function Feedback() {
 
     fetchData();
   }, []);
-const filteredList = useMemo(() => {
-  if (!searchText.trim()) return feedbackList;
+  const filteredList = useMemo(() => {
+    if (!searchText.trim()) return feedbackList;
 
-  const lowerSearch = searchText.trim().toLowerCase();
-const normalize = str => str.trim().toLowerCase();
+    const lowerSearch = searchText.trim().toLowerCase();
+    const normalize = str => str.trim().toLowerCase();
 
 
-  return feedbackList.filter(item => {
+    return feedbackList.filter(item => {
       return (
         normalize(item.title).includes(lowerSearch) ||
         item.date.includes(lowerSearch)
@@ -80,11 +85,16 @@ const normalize = str => str.trim().toLowerCase();
   // PATCH: pin / unpin
   const togglePin = async (item) => {
     const willPin = item.pin !== "Y";
-//    const userId = await AsyncStorage.getItem("userId");
-    const userId = "1";
+    const usersId = await AsyncStorage.getItem("userId");
+
+    // 2️⃣ API 요청 보내기
+    const res = await axios.get(`${API_URL}/feedback`, {
+      params: { userId: usersId }, // userId를 쿼리 파라미터로 전송
+    });
+    //    const userId = "1";
     const url = willPin
-      ? `${API_URL}/feedback/pin/${userId}/${item.id}`
-      : `${API_URL}/feedback/unpin/${userId}/${item.id}`;
+      ? `${API_URL}/feedback/pin/${usersId}/${item.id}`
+      : `${API_URL}/feedback/unpin/${usersId}/${item.id}`;
 
     try {
       setLoadingId(item.id);
@@ -93,8 +103,13 @@ const normalize = str => str.trim().toLowerCase();
       setFeedbackList(prev =>
         prev.map(v => (v.id === item.id ? { ...v, pin: willPin ? "Y" : "N" } : v))
       );
+      const usersId = await AsyncStorage.getItem("userId");
 
-      const res = await axios.patch(url);  // 여기 한 번만 호출
+      // 2️⃣ API 요청 보내기
+      const res = await axios.get(`${API_URL}/feedback`, {
+        params: { userId: usersId }, // userId를 쿼리 파라미터로 전송
+      });
+      //      const res = await axios.patch(url);  // 여기 한 번만 호출
 
 
       console.log("서버 응답:", res.data);
@@ -128,9 +143,9 @@ const normalize = str => str.trim().toLowerCase();
 
       <View style={styles.search}>
         <TextInput style={styles.searchInput} placeholder="제목, 날짜, 메모 검색"
-         value={searchText}
-           onChangeText={setSearchText}
-/>
+          value={searchText}
+          onChangeText={setSearchText}
+        />
         <Image source={require("../../assets/icons/search.png")} style={{ width: 24, height: 24 }} />
       </View>
 
@@ -143,7 +158,7 @@ const normalize = str => str.trim().toLowerCase();
             source={open ? require("../../assets/icons/arrow_down.png") : require("../../assets/icons/arrow_up.png")}
           />
         </Pressable>
-        {open ? <AlignModal setOpen={setOpen} setMode={mode}/> : null}
+        {open ? <AlignModal setOpen={setOpen} setMode={mode} /> : null}
       </View>
 
       <FlatList
@@ -204,7 +219,7 @@ const normalize = str => str.trim().toLowerCase();
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "white", paddingHorizontal: 32, },
+  container: { flex: 1, backgroundColor: "white", paddingHorizontal: 32, zIndex: 20000 },
   head: { height: 60, alignItems: "center", justifyContent: "center" },
   search: {
     flexDirection: "row",

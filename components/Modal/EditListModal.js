@@ -17,14 +17,25 @@ const EditListModal = ({
   const [titleModalVisible, setTitleModalVisible] = useState(false);
   const [memoModalVisible, setMemoModalVisible] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
-const handleDelete = () => {
+  const handleDelete = () => {
     setFeedbacks((prevFeedbacks) =>
       prevFeedbacks.filter((item) => item.id !== selectedId)
     );
     setModalVisible(false);
   };
 
+
   const [inputText, setInputText] = useState("");
+  const [titleNum, setTitleNum] = useState(0);
+  const [memoNum, setMemoNum] = useState(0);
+
+  useEffect(() => {
+      setTitleNum(inputText.length);
+    }, [inputText]);
+  useEffect(() => {
+    setMemoNum(inputText.length);
+  }, [inputText]);
+
   const [feedbacks, setFeedbacks] = useState([
     { id: 1, memo: "기존 메모1" },
     { id: 2, memo: "기존 메모2" },
@@ -41,6 +52,20 @@ const handleDelete = () => {
       setInputText(item?.memo || "");
     }
   }, [isModalVisible, item]);
+
+
+    if(titleNum>20) {
+    alert("범위를 초과하였습니다");
+    }
+    else {
+    }
+    if(memoNum>=50) {
+    alert("범위를 초과하였습니다");
+    }
+    else {
+    }
+
+
 
   return (
     <View style={styles.container}>
@@ -87,6 +112,7 @@ const handleDelete = () => {
             alignItems: 'center',
           }}>
             <Text style={{ fontSize: 18, fontWeight: '600', marginBottom: 15 }}>제목 수정</Text>
+            <Text style={{ fontSize: 12, marginBottom: 7, marginLeft: 240, color: '#808080' }}>{titleNum}/20</Text>
             <TextInput
               style={{
                 width: 300, height: 50, borderRadius: 10,
@@ -94,9 +120,10 @@ const handleDelete = () => {
               }}
               value={inputText}
               onChangeText={setInputText}
+//              setTitleNum={inputText}
             />
             <View style={{ flexDirection: 'row' }}>
-              <TouchableOpacity onPress={() => setTitleModalVisible(false)}>
+              <TouchableOpacity onPress={() => {setTitleModalVisible(false), setTitleNum(0)}}>
                 <View style={[styles.modalBtn, { marginRight: 15, marginTop: 15, backgroundColor: '#DDDDDD' }]}>
                   <Text style={{ fontSize: 16 }}>취소</Text>
                 </View>
@@ -151,14 +178,16 @@ const handleDelete = () => {
             alignItems: 'center',
           }}>
             <Text style={{ fontSize: 18, fontWeight: 600, marginBottom: 15 }}>메모 수정</Text>
-            <Text style={{ fontSize: 12, marginBottom: 7, marginLeft: 240, color: '#808080' }}>10/50</Text>
+            <Text style={{ fontSize: 12, marginBottom: 7, marginLeft: 240, color: '#808080' }}>{memoNum}/50</Text>
             <TextInput style={{
               width: 295, height: 230, borderRadius: 10,
               borderWidth: 0.5, borderColor: '#CCCCCC', paddingLeft: 20,
-              paddingBottom: 170, fontSize: 16, multiline: 'true'
-            }} placeholder='메모를 작성해주세요' onChangeText={setInputText} />
+              paddingBottom: 170, fontSize: 16, multiline: 'true',
+            }} placeholder='메모를 작성해주세요'
+            onChangeText={setInputText}
+            />
             <View style={{ flexDirection: 'row', }}>
-              <TouchableOpacity onPress={() => setMemoModalVisible(false)}>
+              <TouchableOpacity onPress={() => {setMemoModalVisible(false), setMemoNum(0)}}>
                 <View style={[styles.modalBtn, { marginRight: 15, marginTop: 15, backgroundColor: '#DDDDDD' }]}>
                   <Text style={{ fontSize: 16, }}>취소</Text>
                 </View>
@@ -184,82 +213,82 @@ const handleDelete = () => {
       </Modal>
 
       <Pressable
-       onPress={() => {
-                 setMemoModalVisible(true);
-                 setInputText(item.title);
-                 setSelectedId(item.id);
-               }}
-       style={styles.wrapText}
-       >
+        onPress={() => {
+          setMemoModalVisible(true);
+          setInputText(item.title);
+          setSelectedId(item.id);
+        }}
+        style={styles.wrapText}
+      >
         <Text style={styles.text}>기록 삭제</Text>
       </Pressable>
       <Modal
-                animationType="fade"
-                transparent={true}
-                visible={deleteModalVisible}
-                onRequestClose={() => setDeleteModalVisible(false)}
-              >
+        animationType="fade"
+        transparent={true}
+        visible={deleteModalVisible}
+        onRequestClose={() => setDeleteModalVisible(false)}
+      >
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <View
+            style={{
+              width: 350,
+              height: 215,
+              padding: 20,
+              backgroundColor: "white",
+              borderRadius: 10,
+              elevation: 5,
+              alignItems: "center",
+            }}
+          >
+            <Image
+              source={require("../../assets/images/tri.png")}
+              style={{ width: 50, height: 50 }}
+            />
+
+            <Text style={{ fontSize: 20, fontWeight: "600", marginTop: 20 }}>
+              정말 삭제 하시겠습니까?
+            </Text>
+            <Text style={{ fontSize: 14, color: "#808080", marginTop: 5 }}>
+              삭제하시면 복구가 불가합니다.
+            </Text>
+
+            <View style={{ flexDirection: "row" }}>
+              <TouchableOpacity onPress={() => setDeleteModalVisible(false)}>
                 <View
-                  style={{
-                    flex: 1,
-                    backgroundColor: "rgba(0, 0, 0, 0.5)",
-                    justifyContent: "center",
-                    alignItems: "center",
-                  }}
+                  style={[
+                    styles.modalBtn,
+                    {
+                      marginRight: 15,
+                      marginTop: 15,
+                      backgroundColor: "#DDDDDD",
+                    },
+                  ]}
                 >
-                  <View
-                    style={{
-                      width: 350,
-                      height: 215,
-                      padding: 20,
-                      backgroundColor: "white",
-                      borderRadius: 10,
-                      elevation: 5,
-                      alignItems: "center",
-                    }}
-                  >
-                    <Image
-                      source={require("../../assets/images/tri.png")}
-                      style={{ width: 50, height: 50 }}
-                    />
-
-                    <Text style={{ fontSize: 20, fontWeight: "600", marginTop: 20 }}>
-                      정말 삭제 하시겠습니까?
-                    </Text>
-                    <Text style={{ fontSize: 14, color: "#808080", marginTop: 5 }}>
-                      삭제하시면 복구가 불가합니다.
-                    </Text>
-
-                    <View style={{ flexDirection: "row" }}>
-                      <TouchableOpacity onPress={() => setDeleteModalVisible(false)}>
-                        <View
-                          style={[
-                            styles.modalBtn,
-                            {
-                              marginRight: 15,
-                              marginTop: 15,
-                              backgroundColor: "#DDDDDD",
-                            },
-                          ]}
-                        >
-                          <Text style={{ fontSize: 16 }}>취소</Text>
-                        </View>
-                      </TouchableOpacity>
-
-                      <TouchableOpacity onPress={handleDelete}>
-                        <View
-                          style={[
-                            styles.modalBtn,
-                            { marginTop: 15, backgroundColor: "#FF3B30" },
-                          ]}
-                        >
-                          <Text style={{ fontSize: 16, color: "white" }}>삭제</Text>
-                        </View>
-                      </TouchableOpacity>
-                    </View>
-                  </View>
+                  <Text style={{ fontSize: 16 }}>취소</Text>
                 </View>
-              </Modal>
+              </TouchableOpacity>
+
+              <TouchableOpacity onPress={handleDelete}>
+                <View
+                  style={[
+                    styles.modalBtn,
+                    { marginTop: 15, backgroundColor: "#FF3B30" },
+                  ]}
+                >
+                  <Text style={{ fontSize: 16, color: "white" }}>삭제</Text>
+                </View>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
