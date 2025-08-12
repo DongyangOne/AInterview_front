@@ -1,4 +1,4 @@
-import { API_URL } from '@env';
+import { EXPO_PUBLIC_API_URL } from '@env';
 import React, { useState, useEffect } from "react";
 import {
   View,
@@ -16,37 +16,33 @@ export default function SettingsScreen() {
   const [isEnabled, setIsEnabled] = useState(false);
   const router = useRouter();
 
-  // 1. 페이지 진입 시 서버의 푸시 상태 가져오기
   useEffect(() => {
     const fetchPushStatus = async () => {
       try {
-        const res = await axios.get(`${API_URL}/user/setAppPush`);
-        // 서버 status는 대문자 "Y"/"N"을 기대
-        if (res.data && typeof res.data.status === "string") {
-          setIsEnabled(res.data.status === "Y");
-        }
+        const res = await axios.get(`${EXPO_PUBLIC_API_URL}/user/setAppPush`);
+        setIsEnabled(res.data.status === "Y");
       } catch (err) {
-        console.log("상태 불러오기 실패:", err);
+        setIsEnabled(false);
       }
     };
     fetchPushStatus();
   }, []);
 
-  // 2. 스위치 변경 시 서버에도 저장
   const toggleSwitch = async () => {
     const newEnabled = !isEnabled;
     setIsEnabled(newEnabled);
 
     try {
-      const res = await axios.get(
-        `${API_URL}/user/setAppPush`
-      );
-
+      const statusParam = newEnabled ? "Y" : "N";
+      const res = await axios.get(`${process.env.EXPO_PUBLIC_API_URL}/user/setAppPush`, {
+        params: { status: statusParam } // 상태값을 서버로 전달
+      });
       if (res.data && res.data.success) {
-        console.log("현재 서버 상태:", res.data.status);
+        setIsEnabled(res.data.status === "Y"); // 서버 응답 기준으로 세팅
+        console.log("서버에 저장된 상태:", res.data.status);
         console.log("서버 메시지:", res.data.message);
       } else {
-        setIsEnabled(isEnabled); // 실패시 복구
+        setIsEnabled(isEnabled); // 실패 시 이전 값 복구
         console.log("API failure:", res.data);
       }
     } catch (err) {
@@ -127,7 +123,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: "#D9D9D9", // 구분선 컬러 변경
+    borderBottomColor: "#D9D9D9",
   },
   label: { fontSize: 16, fontWeight: "Medium", color: "#000000" },
   arrowIcon: {
