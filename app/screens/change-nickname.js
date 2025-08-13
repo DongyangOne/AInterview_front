@@ -1,3 +1,4 @@
+import { EXPO_PUBLIC_API_URL } from '@env';
 "use client";
 import React, { useState, useEffect } from "react";
 import {
@@ -10,24 +11,45 @@ import {
   Image,
   KeyboardAvoidingView,
   Platform,
+  Alert,
 } from "react-native";
 import { useRouter } from "expo-router";
+import axios from "axios";
 
 export default function ChangeNicknameScreen() {
   const router = useRouter();
   const [nickname, setNickname] = useState("");
   const [isValid, setIsValid] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const nicknameRegex = /^[a-z0-9가-힣]{2,8}$/i;
     setIsValid(nickname === "" || nicknameRegex.test(nickname));
   }, [nickname]);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!isValid || nickname === "") return;
-    // ✅ 닉네임 저장 처리 (예: 서버 API 요청)
-    console.log("변경된 닉네임:", nickname);
-    router.back();
+    setLoading(true);
+    try {
+      // 실제 API 요청 (POST)
+      const response = await axios.post(`${process.env.EXPO_PUBLIC_API_URL}/user/changeName`, {
+        newName: nickname,
+      });
+      if (response.data.success) {
+        Alert.alert("성공", `닉네임이 ${nickname}(으)로 변경되었습니다.`, [
+          { text: "확인", onPress: () => router.back() },
+        ]);
+      } else {
+        Alert.alert("실패", response.data.message || "닉네임 변경에 실패했습니다.");
+      }
+    } catch (error) {
+      Alert.alert("에러", "서버와의 통신에 실패했습니다.");
+      console.log(error)
+      console.log(error.response)
+      console.log(error.request)
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -38,7 +60,7 @@ export default function ChangeNicknameScreen() {
           <Image
             source={require("../../assets/icons/arrow1.png")}
             style={styles.backIcon}
-            resizeMode="25"
+            resizeMode="contain"
           />
         </TouchableOpacity>
         <Text style={styles.title}>닉네임 변경</Text>
@@ -69,10 +91,10 @@ export default function ChangeNicknameScreen() {
       <View style={styles.bottomButtonWrapper}>
         <TouchableOpacity
           style={styles.button}
-          disabled={!isValid || nickname === ""}
+          disabled={!isValid || nickname === "" || loading}
           onPress={handleSubmit}
         >
-          <Text style={styles.buttonText}>확인</Text>
+          <Text style={styles.buttonText}>{loading ? "처리 중..." : "확인"}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -124,8 +146,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#5900FF", // ← 이 줄 추가!
+    backgroundColor: "#5900FF",
   },
-
   buttonText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
 });
