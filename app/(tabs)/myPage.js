@@ -1,4 +1,4 @@
-import { API_URL } from '@env';
+import { EXPO_PUBLIC_API_URL } from '@env';
 "use client";
 import axios from 'axios';
 import React, { useState, useEffect } from "react";
@@ -26,7 +26,7 @@ export default function MyPage() {
       try {
         setError('');
         const res = await axios.get(
-          `${API_URL}/myPage/myInfo`,
+          `${process.env.EXPO_PUBLIC_API_URL}/myPage/myInfo`,
           {
             params: { userId: 1 },
             withCredentials: true
