@@ -19,7 +19,7 @@ export default function SettingsScreen() {
   useEffect(() => {
     const fetchPushStatus = async () => {
       try {
-        const res = await axios.get(`${EXPO_PUBLIC_API_URL}/user/setAppPush`);
+        const res = await axios.get(`${process.env.EXPO_PUBLIC_API_URL}/user/getAppPush`);
         setIsEnabled(res.data.status === "Y");
       } catch (err) {
         setIsEnabled(false);
@@ -69,7 +69,7 @@ export default function SettingsScreen() {
       {/* 알림 설정 */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>알림</Text>
-        <TouchableOpacity style={styles.row}>
+        <View style={styles.row}>
           <Text style={styles.label}>알림 수신 설정</Text>
           <Switch
             trackColor={{ false: "#ccc", true: "#8e44ad" }}
@@ -78,7 +78,7 @@ export default function SettingsScreen() {
             onValueChange={toggleSwitch}
             value={isEnabled}
           />
-        </TouchableOpacity>
+        </View>
       </View>
 
       {/* 기타 */}
