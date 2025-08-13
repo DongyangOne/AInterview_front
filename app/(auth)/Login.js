@@ -23,6 +23,10 @@ export default function Login() {
   const [idError, setIdError] = useState("");
   const [pwError, setPwError] = useState("");
 
+  const RAW_BASE =
+    process.env.EXPO_PUBLIC_API_BASE_URL || "http://183.101.17.181:3001";
+  const BASE_URL = String(RAW_BASE).replace(/\/$/, "");
+
   useEffect(() => {
     const checkKeepLogin = async () => {
       const keep = await AsyncStorage.getItem("keepLogin");
@@ -43,39 +47,34 @@ export default function Login() {
     setPwError("");
 
     const loginUserId = id.trim();
-    if (!loginUserId) {
-      setIdError("아이디를 입력해 주세요.");
-      return;
-    }
-    if (!pw) {
-      setPwError("비밀번호를 입력해 주세요.");
-      return;
-    }
+    if (!loginUserId) return setIdError("아이디를 입력해 주세요.");
+    if (!pw) return setPwError("비밀번호를 입력해 주세요.");
 
-    await axios
-      .post(`${process.env.EXPO_PUBLIC_API_URL}/sign/login`, {
+    const BASE = (
+      process.env.EXPO_PUBLIC_API_BASE_URL ||
+      process.env.EXPO_PUBLIC_API_URL ||
+      "http://183.101.17.181:3001"
+    ).replace(/\/$/, "");
+
+    try {
+      const { data } = await axios.post(`${BASE}/sign/login`, {
         loginUserId,
         password: pw,
-      })
-      .then(async (res) => {
-        console.log(res.data.userId);
-        AsyncStorage.setItem("userId", String(res.data.userId));
-        AsyncStorage.setItem("NickName", res.data.nickname);
-        if (keepLogin) {
-          await AsyncStorage.setItem("keepLogin", "true");
-        } else {
-          await AsyncStorage.removeItem("keepLogin");
-        }
-
-        router.replace("/(tabs)/home");
-      })
-      .catch((error) => {
-        if (error.status === 404) {
-          setIdError("존재하지 않는 아이디입니다.");
-        } else {
-          setPwError("비밀번호를 확인해 주세요.");
-        }
       });
+
+      await AsyncStorage.setItem("userId", String(data.userId));
+      if (data.nickname) await AsyncStorage.setItem("NickName", data.nickname);
+      if (data.token) await AsyncStorage.setItem("token", data.token);
+      if (keepLogin) await AsyncStorage.setItem("keepLogin", "true");
+      else await AsyncStorage.removeItem("keepLogin");
+
+      router.replace("/(tabs)/home");
+    } catch (err) {
+      const s = err?.response?.status;
+      if (s === 404) setIdError("존재하지 않는 아이디입니다.");
+      else if (s === 401) setPwError("비밀번호를 확인해 주세요.");
+      console.log("[login:error]", s, err?.response?.data || err?.message);
+    }
   };
 
   return (
