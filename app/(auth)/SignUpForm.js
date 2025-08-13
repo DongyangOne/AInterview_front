@@ -22,48 +22,73 @@ export default function SignUpForm() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [agreePush, setAgreePush] = useState(false);
-
   const [idError, setIdError] = useState("");
   const [nicknameError, setNicknameError] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [confirmPasswordError, setConfirmPasswordError] = useState("");
   const [termsError, setTermsError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [idCheckOk, setIdCheckOk] = useState(null);
 
   const badWords = ["욕", "fuck", "shit", "바보", "멍청이"];
-  const containsBadWord = (text) =>
-    badWords.some((word) => text.includes(word));
+  const containsBadWord = (t) => badWords.some((w) => t.includes(w));
+
+  const RAW_BASE =
+    process.env.EXPO_PUBLIC_API_BASE_URL || "http://183.101.17.181:3001";
+  const BASE_URL = String(RAW_BASE).replace(/\/$/, "");
+
+  const api = axios.create({
+    baseURL: BASE_URL,
+    timeout: 10000,
+    headers: { "Content-Type": "application/json", Accept: "application/json" },
+  });
 
   const checkDuplicateId = async () => {
     const trimmedId = id.trim();
 
     if (!trimmedId) {
       setIdError("아이디를 입력해 주세요.");
-      return;
-    } else if (!/^[A-Za-z0-9]{3,15}$/.test(trimmedId)) {
+      setIdCheckOk(null);
+      return false;
+    }
+    if (!/^[A-Za-z0-9]{3,15}$/.test(trimmedId)) {
       setIdError("아이디는 3~15자의 영문자, 숫자만 사용할 수 있어요.");
-      return;
+      setIdCheckOk(null);
+      return false;
     }
 
+    setSubmitting(true);
     try {
-      const res = await axios.post(
-        "http://183.101.17.181:3001/sign/userIdCheck",
-        {
-          loginUserId: trimmedId,
-        }
+      const res = await api.post("/sign/userIdCheck", {
+        loginUserId: trimmedId,
+      });
+      if (res.status === 200) {
+        setIdError("");
+        setIdCheckOk(true);
+        return true;
+      }
+      setIdCheckOk(false);
+      return false;
+    } catch (err) {
+      console.log(
+        "[userIdCheck:error]",
+        err.message,
+        err.response?.status,
+        err.response?.data
       );
-      const ok =
-        res?.data === true ||
-        res?.data?.idCheck === true ||
-        res?.data?.available === true ||
-        res?.data?.ok === true;
-      setIdError(ok ? "" : "사용할 수 없는 아이디예요.");
-    } catch {
-      setIdError("중복 확인 중 오류가 발생했어요.");
+      if (err?.response?.status === 409) {
+        setIdError(err.response.data?.message || "이미 사용 중인 아이디예요.");
+      }
+      setIdCheckOk(false);
+      return false;
+    } finally {
+      setSubmitting(false);
     }
   };
 
   const validate = async () => {
+    if (submitting) return;
+
     let valid = true;
     setIdError("");
     setNicknameError("");
@@ -106,36 +131,47 @@ export default function SignUpForm() {
       setTermsError("이용약관에 동의해 주세요.");
       valid = false;
     }
+
     if (!valid) return;
 
+    if (idCheckOk !== true) {
+      const ok = await checkDuplicateId();
+      if (!ok) return;
+    }
+
     try {
-      const res = await axios.post(
-        "http://183.101.17.181:3001/sign/signup",
-        {
-          loginUserId: id.trim(),
-          nickname: nickname.trim(),
-          password,
-          passwordCheck: confirmPassword,
-          service: "app",
-          appPush: agreePush,
-          idCheck: true,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-        }
-      );
+      setSubmitting(true);
+
+      const payload = {
+        loginUserId: id.trim(),
+        nickname: nickname.trim(),
+        password,
+        passwordCheck: confirmPassword,
+        service: agreeTerms ? "Y" : "N",
+        appPush: agreePush ? "Y" : "N",
+        idCheck: idCheckOk === true ? "Y" : "N",
+      };
+
+      const res = await api.post("/sign/signup", payload);
 
       await AsyncStorage.setItem("userId", id.trim());
       if (res?.data?.token)
         await AsyncStorage.setItem("accessToken", res.data.token);
+
       router.replace("/Login");
     } catch (e) {
-      if (e.response?.data?.message) {
-        setConfirmPasswordError(e.response.data.message);
+      const s = e.response?.status;
+      const m = e.response?.data?.message;
+
+      if (typeof m === "string") {
+        if (m.includes("약관")) setTermsError(m);
+        else if (m.includes("닉네임")) setNicknameError(m);
+        else if (m.includes("아이디")) setIdError(m);
+        else if (m.includes("비밀번호")) setConfirmPasswordError(m);
       }
+      console.log("[signup:error]", s, e.response?.data || e.message);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -151,6 +187,7 @@ export default function SignUpForm() {
         </TouchableOpacity>
         <Text style={styles.headerText}>회원가입</Text>
       </View>
+
       <ScrollView>
         <Text style={styles.label}>아이디</Text>
         <View style={styles.inputRow}>
@@ -158,7 +195,11 @@ export default function SignUpForm() {
             style={styles.inputFull}
             placeholder="3~15자 영대소문자, 숫자 사용 가능"
             value={id}
-            onChangeText={setId}
+            onChangeText={(t) => {
+              setId(t);
+              setIdCheckOk(null);
+              setIdError("");
+            }}
             autoCapitalize="none"
             editable={!submitting}
           />
