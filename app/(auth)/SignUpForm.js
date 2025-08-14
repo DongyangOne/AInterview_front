@@ -41,37 +41,27 @@ export default function SignUpForm() {
 
     if (!trimmedId) {
       setIdError("아이디를 입력해 주세요.");
-      setIdCheckOk(null);
-      return false;
-    }
-    if (!/^[A-Za-z0-9]{3,15}$/.test(trimmedId)) {
+      return;
+    } else if (!/^[A-Za-z0-9]{3,15}$/.test(trimmedId)) {
       setIdError("아이디는 3~15자의 영문자, 숫자만 사용할 수 있어요.");
-      setIdCheckOk(null);
-      return false;
+      return;
     }
 
-    if (!BASE_URL) return false;
-
-    setSubmitting(true);
     try {
-      const res = await axios.post(`${BASE_URL}/sign/userIdCheck`, {
-        loginUserId: trimmedId,
-      });
-      if (res.status === 200) {
-        setIdError("");
-        setIdCheckOk(true);
-        return true;
-      }
-      setIdCheckOk(false);
-      return false;
-    } catch (err) {
-      if (err?.response?.status === 409) {
-        setIdError(err.response.data?.message || "이미 사용 중인 아이디예요.");
-      }
-      setIdCheckOk(false);
-      return false;
-    } finally {
-      setSubmitting(false);
+      const res = await axios.post(
+        `${process.env.EXPO_PUBLIC_API_URL}/sign/userIdCheck`,
+        {
+          loginUserId: trimmedId,
+        }
+      );
+      const ok =
+        res?.data === true ||
+        res?.data?.idCheck === true ||
+        res?.data?.available === true ||
+        res?.data?.ok === true;
+      setIdError(ok ? "" : "사용할 수 없는 아이디예요.");
+    } catch {
+      setIdError("중복 확인 중 오류가 발생했어요.");
     }
   };
 
@@ -131,35 +121,33 @@ export default function SignUpForm() {
     if (!BASE_URL) return;
 
     try {
-      setSubmitting(true);
-
-      const payload = {
-        loginUserId: id.trim(),
-        nickname: nickname.trim(),
-        password,
-        passwordCheck: confirmPassword,
-        service: agreeTerms ? "Y" : "N",
-        appPush: agreePush ? "Y" : "N",
-        idCheck: idCheckOk === true ? "Y" : "N",
-      };
-
-      const res = await axios.post(`${BASE_URL}/sign/signup`, payload);
+      const res = await axios.post(
+        `${process.env.EXPO_PUBLIC_API_URL}/sign/signup`,
+        {
+          loginUserId: id.trim(),
+          nickname: nickname.trim(),
+          password,
+          passwordCheck: confirmPassword,
+          service: "app",
+          appPush: agreePush,
+          idCheck: true,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+        }
+      );
 
       await AsyncStorage.setItem("userId", id.trim());
       if (res?.data?.token)
         await AsyncStorage.setItem("accessToken", res.data.token);
-
       router.replace("/Login");
     } catch (e) {
-      const m = e.response?.data?.message;
-      if (typeof m === "string") {
-        if (m.includes("약관")) setTermsError(m);
-        else if (m.includes("닉네임")) setNicknameError(m);
-        else if (m.includes("아이디")) setIdError(m);
-        else if (m.includes("비밀번호")) setConfirmPasswordError(m);
+      if (e.response?.data?.message) {
+        setConfirmPasswordError(e.response.data.message);
       }
-    } finally {
-      setSubmitting(false);
     }
   };
 
