@@ -1,4 +1,3 @@
-import { EXPO_PUBLIC_API_URL } from '@env';
 "use client";
 import axios from 'axios';
 import React, { useState, useEffect } from "react";
