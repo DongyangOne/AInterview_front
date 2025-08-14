@@ -11,6 +11,7 @@ import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
+import { API_URL } from "@env";
 
 export default function Login() {
   const router = useRouter();
@@ -23,15 +24,12 @@ export default function Login() {
   const [idError, setIdError] = useState("");
   const [pwError, setPwError] = useState("");
 
-  const RAW_BASE =
-    process.env.EXPO_PUBLIC_API_BASE_URL || "http://183.101.17.181:3001";
-  const BASE_URL = String(RAW_BASE).replace(/\/$/, "");
+  const BASE_URL = String(API_URL || "").replace(/\/$/, "");
 
   useEffect(() => {
     const checkKeepLogin = async () => {
       const keep = await AsyncStorage.getItem("keepLogin");
       const token = await AsyncStorage.getItem("token");
-
       const storedUserId = await AsyncStorage.getItem("userId");
       const userId = storedUserId ? Number(storedUserId) : null;
 
@@ -50,14 +48,10 @@ export default function Login() {
     if (!loginUserId) return setIdError("아이디를 입력해 주세요.");
     if (!pw) return setPwError("비밀번호를 입력해 주세요.");
 
-    const BASE = (
-      process.env.EXPO_PUBLIC_API_BASE_URL ||
-      process.env.EXPO_PUBLIC_API_URL ||
-      "http://183.101.17.181:3001"
-    ).replace(/\/$/, "");
+    if (!BASE_URL) return;
 
     try {
-      const { data } = await axios.post(`${BASE}/sign/login`, {
+      const { data } = await axios.post(`${BASE_URL}/sign/login`, {
         loginUserId,
         password: pw,
       });
@@ -73,7 +67,6 @@ export default function Login() {
       const s = err?.response?.status;
       if (s === 404) setIdError("존재하지 않는 아이디입니다.");
       else if (s === 401) setPwError("비밀번호를 확인해 주세요.");
-      console.log("[login:error]", s, err?.response?.data || err?.message);
     }
   };
 
