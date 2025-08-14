@@ -2,23 +2,6 @@ module.exports = function (api) {
   api.cache(true);
   return {
     presets: ["babel-preset-expo"],
-    plugins: ["react-native-reanimated/plugin",
-    [
-    "module:react-native-dotenv",
-    {
-    envName: "APP_ENV",
-    moduleName: "@env",
-    path: ".env.local", // 사용할 .env 파일 경로
-    blocklist: null,
-    allowlist: null,
-    blacklist: null,
-    whitelist: null,
-    safe: false,
-    allowUndefined: true,
-    verbose: false,
-    },
-    ],
-    ],
-
+    plugins: ["react-native-reanimated/plugin"],
   };
 };
