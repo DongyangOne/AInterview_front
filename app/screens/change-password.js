@@ -15,7 +15,8 @@ import { useRouter } from "expo-router";
 
 // 비밀번호 유효성 검사 함수
 function validatePassword(password) {
-  const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,16}$/;
+  // 8~16자, 대소문자/숫자/특수문자 사용 가능
+  const regex = /^[A-Za-z\d\W_]{8,16}$/;
   return regex.test(password);
 }
 
