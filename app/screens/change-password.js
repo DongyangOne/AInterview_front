@@ -15,7 +15,6 @@ import { useRouter } from "expo-router";
 
 // 비밀번호 유효성 검사 함수
 function validatePassword(password) {
-  // 8~16자, 대소문자/숫자/특수문자 사용 가능
   const regex = /^[A-Za-z\d\W_]{8,16}$/;
   return regex.test(password);
 }
@@ -66,6 +65,21 @@ export default function ChangePasswordScreen() {
       alert("비밀번호 변경 완료");
       router.back();
     } catch (error) {
+      // -- 1. 서버 error 배열 검사
+      const errArr = error?.response?.data?.error ?? [];
+      if (
+        Array.isArray(errArr) &&
+        errArr.some(
+          (e) =>
+            e.includes("현재 비밀번호") ||
+            e.includes("틀렸") ||
+            e.includes("일치하지 않습니다")
+        )
+      ) {
+        setCurrentPwError("비밀번호가 일치하지 않습니다.");
+        return;
+      }
+      // -- 2. 기존 message도 검사 (백업)
       const msg = error?.response?.data?.message ?? "";
       if (
         msg.includes("현재 비밀번호") ||
@@ -73,7 +87,10 @@ export default function ChangePasswordScreen() {
         msg.includes("틀림")
       ) {
         setCurrentPwError("비밀번호가 일치하지 않습니다.");
-      } else if (msg) {
+        return;
+      }
+      // -- 3. 나머지는 apiError로 화면 하단에
+      if (msg) {
         setApiError(msg);
       } else {
         setApiError("비밀번호 변경 중 오류가 발생했습니다.");
@@ -106,11 +123,12 @@ export default function ChangePasswordScreen() {
             secureTextEntry
             placeholder="현재 비밀번호"
             value={currentPassword}
-            onChangeText={t => {
+            onChangeText={(t) => {
               setCurrentPassword(t);
               setCurrentPwError("");
             }}
           />
+          {/* 바로 아래에 currentPwError 표시!! */}
           {currentPwError ? (
             <Text style={styles.error}>{currentPwError}</Text>
           ) : null}
@@ -122,7 +140,7 @@ export default function ChangePasswordScreen() {
             secureTextEntry
             placeholder="8~16자 영대소문자, 숫자, 특수문자 사용 가능"
             value={newPassword}
-            onChangeText={t => {
+            onChangeText={(t) => {
               setNewPassword(t);
               setFormatError("");
               setMatchError("");
@@ -139,7 +157,7 @@ export default function ChangePasswordScreen() {
             secureTextEntry
             placeholder="새 비밀번호 확인"
             value={confirmPassword}
-            onChangeText={t => {
+            onChangeText={(t) => {
               setConfirmPassword(t);
               setMatchError("");
             }}
@@ -147,17 +165,13 @@ export default function ChangePasswordScreen() {
           {matchError && confirmPassword.length > 0 ? (
             <Text style={styles.error}>{matchError}</Text>
           ) : null}
-          {/* 기타 API 오류 메세지 (예: 서버 에러) */}
           {apiError ? (
             <Text style={styles.error}>{apiError}</Text>
           ) : null}
         </View>
       </KeyboardAvoidingView>
       <View style={styles.bottomButtonWrapper}>
-        <TouchableOpacity
-          style={styles.button}
-          onPress={handleSubmit}
-        >
+        <TouchableOpacity style={styles.button} onPress={handleSubmit}>
           <Text style={styles.buttonText}>확인</Text>
         </TouchableOpacity>
       </View>
@@ -165,6 +179,7 @@ export default function ChangePasswordScreen() {
   );
 }
 
+// (스타일 부분은 동일)
 const styles = StyleSheet.create({
   container: {
     flex: 1,
