@@ -15,7 +15,7 @@ export default function MainQuestion() {
         // 1. 날짜가 다르거나, 저장된 질문 자체가 없을 때 무조건 새로 가져옴
         if (lastDate !== today || !TodayQuest) {
           const res = await axios.get(
-            `${process.env.EXPO_PUBLIC_API_URL}/question/today`
+            `${process.env.EXPO_PUBLIC_API_URL}/mainpage/question`
           );
           const question = res.data.data[0].question;
           console.log("새 질문 받아옴:", question);
