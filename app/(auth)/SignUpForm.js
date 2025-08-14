@@ -12,6 +12,7 @@ import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
 import axios from "axios";
+import { API_URL } from "@env";
 
 export default function SignUpForm() {
   const router = useRouter();
@@ -33,15 +34,7 @@ export default function SignUpForm() {
   const badWords = ["욕", "fuck", "shit", "바보", "멍청이"];
   const containsBadWord = (t) => badWords.some((w) => t.includes(w));
 
-  const RAW_BASE =
-    process.env.EXPO_PUBLIC_API_BASE_URL || "http://183.101.17.181:3001";
-  const BASE_URL = String(RAW_BASE).replace(/\/$/, "");
-
-  const api = axios.create({
-    baseURL: BASE_URL,
-    timeout: 10000,
-    headers: { "Content-Type": "application/json", Accept: "application/json" },
-  });
+  const BASE_URL = String(API_URL || "").replace(/\/$/, "");
 
   const checkDuplicateId = async () => {
     const trimmedId = id.trim();
@@ -57,9 +50,11 @@ export default function SignUpForm() {
       return false;
     }
 
+    if (!BASE_URL) return false;
+
     setSubmitting(true);
     try {
-      const res = await api.post("/sign/userIdCheck", {
+      const res = await axios.post(`${BASE_URL}/sign/userIdCheck`, {
         loginUserId: trimmedId,
       });
       if (res.status === 200) {
@@ -70,12 +65,6 @@ export default function SignUpForm() {
       setIdCheckOk(false);
       return false;
     } catch (err) {
-      console.log(
-        "[userIdCheck:error]",
-        err.message,
-        err.response?.status,
-        err.response?.data
-      );
       if (err?.response?.status === 409) {
         setIdError(err.response.data?.message || "이미 사용 중인 아이디예요.");
       }
@@ -139,6 +128,8 @@ export default function SignUpForm() {
       if (!ok) return;
     }
 
+    if (!BASE_URL) return;
+
     try {
       setSubmitting(true);
 
@@ -152,7 +143,7 @@ export default function SignUpForm() {
         idCheck: idCheckOk === true ? "Y" : "N",
       };
 
-      const res = await api.post("/sign/signup", payload);
+      const res = await axios.post(`${BASE_URL}/sign/signup`, payload);
 
       await AsyncStorage.setItem("userId", id.trim());
       if (res?.data?.token)
@@ -160,16 +151,13 @@ export default function SignUpForm() {
 
       router.replace("/Login");
     } catch (e) {
-      const s = e.response?.status;
       const m = e.response?.data?.message;
-
       if (typeof m === "string") {
         if (m.includes("약관")) setTermsError(m);
         else if (m.includes("닉네임")) setNicknameError(m);
         else if (m.includes("아이디")) setIdError(m);
         else if (m.includes("비밀번호")) setConfirmPasswordError(m);
       }
-      console.log("[signup:error]", s, e.response?.data || e.message);
     } finally {
       setSubmitting(false);
     }
