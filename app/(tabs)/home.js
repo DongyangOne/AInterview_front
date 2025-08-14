@@ -16,6 +16,31 @@ import { useRouter } from "expo-router";
 export default function Home() {
   const scrollRef = useRef(null);
   const router = useRouter();
+  const [weekSchedules, setWeekSchedules] = useState("0");
+  const [nickname, setNickname] = useState(null);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setNickname(await AsyncStorage.getItem("NickName"));
+        const usersId = await AsyncStorage.getItem("userId");
+        const res = await axios.get(
+          `${process.env.EXPO_PUBLIC_API_URL}/mainpage/calendar`,
+          {
+            params: { userId: usersId },
+          }
+        );
+
+        const count = res.data.data.map((item) => ({
+          id: item.calendar_id.toString(),
+        }));
+        setWeekSchedules(count.length.toString());
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>

@@ -38,6 +38,33 @@ function MainFeedback() {
   const [shouldScroll, setShouldScroll] = useState(false);
   const scrollRef = useRef(null);
   const [textBoxHeight, setTextBoxHeight] = useState(227);
+  const [feedback, setFeedback] = useState([]);
+  const [fetime, setFetime] = useState("");
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const usersId = await AsyncStorage.getItem("userId");
+        console.log(usersId);
+        const res = await axios.get(
+          `${process.env.EXPO_PUBLIC_API_URL}/mainpage/feedback`,
+          {
+            params: { userId: usersId },
+          }
+        );
+        if (res.data && res.data.success) {
+          setFeedback(res.data.data);
+          const apiDate = res.data.data[0]?.created_at;
+          setFetime(formatDate(apiDate));
+        }
+      } catch (error) {
+        console.error("데이터 가져오기 실패:", error);
+        alert("데이터 가져오기 실패");
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const evaluationData = [
     { label: "업무이해도", percent: 77 },
