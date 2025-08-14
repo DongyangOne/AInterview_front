@@ -12,7 +12,6 @@ import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
 import axios from "axios";
-import { API_URL } from "@env";
 
 export default function SignUpForm() {
   const router = useRouter();
@@ -29,11 +28,9 @@ export default function SignUpForm() {
   const [confirmPasswordError, setConfirmPasswordError] = useState("");
   const [termsError, setTermsError] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [idCheckOk, setIdCheckOk] = useState(null);
 
   const badWords = ["욕", "fuck", "shit", "바보", "멍청이"];
   const containsBadWord = (t) => badWords.some((w) => t.includes(w));
-  const BASE_URL = String(API_URL || "").replace(/\/$/, "");
 
   const checkDuplicateId = async () => {
     const trimmedId = id.trim();
@@ -112,11 +109,6 @@ export default function SignUpForm() {
 
     if (!valid) return;
 
-    if (idCheckOk !== true) {
-      const ok = await checkDuplicateId();
-      if (!ok) return;
-    }
-
     if (!BASE_URL) return;
 
     try {
@@ -126,10 +118,8 @@ export default function SignUpForm() {
           loginUserId: id.trim(),
           nickname: nickname.trim(),
           password,
-          passwordCheck: confirmPassword,
           service: "app",
           appPush: agreePush,
-          idCheck: true,
         },
         {
           headers: {
@@ -147,6 +137,8 @@ export default function SignUpForm() {
       if (e.response?.data?.message) {
         setConfirmPasswordError(e.response.data.message);
       }
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -172,7 +164,6 @@ export default function SignUpForm() {
             value={id}
             onChangeText={(t) => {
               setId(t);
-              setIdCheckOk(null);
               setIdError("");
             }}
             autoCapitalize="none"
