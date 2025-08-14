@@ -31,42 +31,28 @@ export default function Feedback() {
       try {
         const usersId = await AsyncStorage.getItem("userId");
 
-        //테스트
-        console.log("usersId:", usersId);
-        // const url = `${process.env.EXPO_PUBLIC_API_URL}/feedback/pin/1/1`;
-        // console.log("요청 URL:", url);
-
-        // try {
-        //   const res = await axios.patch(url);
-        //   console.log("응답:", res.data);
-        // } catch (e) {
-        //   console.error("에러:", e.response?.status, e.response?.data);
-        // }
-        // const url = `${process.env.EXPO_PUBLIC_API_URL}/feedback?userId=${usersId}`;
-        // console.log("요청 URL:", url);
-
-        //여기까지 테스트
-
-        // console.log(usersId);
+        console.log(usersId);
         if (!usersId) {
           console.log("userId가 저장되어 있지 않습니다.");
           return;
         }
         //API 요청 보내기
-        // const res = await axios.get(`${process.env.EXPO_PUBLIC_API_URL}/feedback`, {
-        //   params: { userId: usersId }, // userId를 쿼리 파라미터로 전송
-        // });
+
         const url = `${process.env.EXPO_PUBLIC_API_URL}/feedback/${usersId}`;
         const res = await axios.get(url);
 
         const data = res.data;
 
         const mappedData = data.data.map((item) => ({
-          id: item.notice_id.toString(),
-          date: new Date(item.created_at).toLocaleDateString("ko-KR"),
+          id: item.id.toString(),
+          date: new Date(item.created_at).toLocaleDateString("ko-KR", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          }),
           title: item.title,
-          memo: item.content,
-          pin: item.is_read === "N" ? "Y" : "N",
+          memo: item.memo,
+          // pin: item.is_read === "N" ? "Y" : "N",
         }));
 
         setFeedbackList(mappedData);
@@ -109,8 +95,8 @@ export default function Feedback() {
     const usersId = await AsyncStorage.getItem("userId");
 
     const url = willPin
-      ? `${process.env.EXPO_PUBLIC_API_URL}/feedback/pin/1/1`
-      : `${process.env.EXPO_PUBLIC_API_URL}/feedback/unpin/1/1`;
+      ? `${process.env.EXPO_PUBLIC_API_URL}/feedback/pin/${usersId}/${item.id}`
+      : `${process.env.EXPO_PUBLIC_API_URL}/feedback/unpin/${usersId}/${item.id}`;
     const res = await axios.patch(url);
 
     try {
