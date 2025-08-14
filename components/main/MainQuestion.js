@@ -1,4 +1,7 @@
 import { Text, View, StyleSheet } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useEffect, useState } from "react";
+import axios from "axios";
 
 export default function MainQuestion() {
   const [questToday, setQuestToday] = useState("");
@@ -39,12 +42,11 @@ export default function MainQuestion() {
     <View style={styles.container}>
       <Text style={styles.questionTitle}>오늘의 질문</Text>
       <Text style={styles.questionContent}>
-        가장 최선을 다했던 경험은 무엇인가요?
+        {questToday ? questToday : "로딩 중..."}
       </Text>
     </View>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     width: "100%",

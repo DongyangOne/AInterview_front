@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   Text,
   View,
@@ -7,33 +7,18 @@ import {
   ScrollView,
   StyleSheet,
 } from "react-native";
+import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import RoundedBar from "./RoundedBar";
 
-function RoundedBar({
-  value = 0,
-  height = 7,
-  backgroundColor = "#E4E4E4",
-  barColor = "#5900FF",
-}) {
-  const percent = Math.max(0, Math.min(100, value));
-  return (
-    <View
-      style={[
-        styles.barContainer,
-        { height, backgroundColor, borderRadius: height / 2 },
-      ]}
-    >
-      <View
-        style={{
-          width: `${percent}%`,
-          height: "100%",
-          backgroundColor: barColor,
-          borderRadius: height / 2,
-        }}
-      />
-    </View>
-  );
+function formatDate(dateStr) {
+  if (!dateStr) return "";
+  const dateObj = new Date(dateStr);
+  const year = dateObj.getFullYear();
+  const month = String(dateObj.getMonth() + 1).padStart(2, "0");
+  const day = String(dateObj.getDate()).padStart(2, "0");
+  return `${year}.${month}.${day}`;
 }
-
 function MainFeedback() {
   const [shouldScroll, setShouldScroll] = useState(false);
   const scrollRef = useRef(null);
@@ -84,16 +69,22 @@ function MainFeedback() {
     setTextBoxHeight((prev) => (prev === 227 ? 412 : 227));
     setShouldScroll(true);
   };
-
-  return (
+  const firstfb = feedback?.[0];
+  console.log("가져온 데이터", firstfb);
+  return firstfb ? (
     <View style={[styles.container, { minHeight: textBoxHeight }]}>
       {/* 헤더 영역 */}
+
       <View style={styles.headerRow}>
         <View style={styles.titleSection}>
-          <Text style={styles.title}>aa 회사 면접</Text>
-          <Text style={styles.date}>2025.07.07</Text>
+          <Text style={styles.title}>
+            {firstfb?.title ? firstfb.title : "로딩 중"}
+          </Text>
+          <Text style={styles.date}>{fetime ? fetime : "로딩 중"}</Text>
         </View>
-        <Text style={styles.rightTime}>1일전</Text>
+        <Text style={styles.rightTime}>
+          {firstfb?.days_ago ? firstfb.days_ago : "로딩 중"}일 전
+        </Text>
       </View>
 
       {/* 퍼센트 바 */}
@@ -130,7 +121,10 @@ function MainFeedback() {
                     </Text>
                   ))}
                 </View>
-                <Text style={styles.detailText}>{item.b}</Text>
+                <Text style={styles.detailText}>
+                  {firstfb?.content ? firstfb.content : "로딩 중"}
+                </Text>
+                {/**아직 해당 db에 값이 없어서 임시 출력 */}
                 <Text style={styles.detailText}>{item.c}</Text>
               </View>
             ))}
@@ -156,6 +150,32 @@ function MainFeedback() {
           style={styles.arrowImage}
         />
       </TouchableOpacity>
+    </View>
+  ) : (
+    <View style={[styles.container, { minHeight: textBoxHeight }]}>
+      {/* 화살표 버튼 */}
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Text style={{ fontSize: 16, color: "#191919" }}>
+          최근 피드백이 없습니다.
+        </Text>
+      </View>
+      {/* <TouchableOpacity
+        style={[
+          styles.arrowBtn,
+          { marginTop: textBoxHeight === 412 ? 8 : "auto" },
+        ]}
+        onPress={toggleTextHeight}
+        activeOpacity={0.7}
+      >
+        <Image
+          source={
+            textBoxHeight === 227
+              ? require("../../assets/icons/arow.png")
+              : require("../../assets/icons/main_arrow.png")
+          }
+          style={styles.arrowImage}
+        />
+      </TouchableOpacity> */}
     </View>
   );
 }

@@ -1,5 +1,7 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Text, View, TouchableOpacity, StyleSheet } from "react-native";
+import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // 이번 주(일~토) 날짜 배열 반환
 function getCurrentWeekDates() {
@@ -14,15 +16,6 @@ function getCurrentWeekDates() {
   });
 }
 
-// 날짜별 일정 데이터 예시
-const schedules = {
-  0: "회의",
-  2: "면접",
-  4: "프로젝트",
-  5: "프로젝트",
-};
-
-// 주간 달력 컴포넌트
 function WeeklyCalendar() {
   const weekDates = getCurrentWeekDates();
   const today = new Date();
@@ -87,20 +80,26 @@ function WeeklyCalendar() {
             {isToday ? (
               <>
                 <View style={styles.todayCircle}>
-                  {isToday && scheduleText && <View style={styles.todayDot} />}
+                  {scheduleText && <View style={styles.todayDot} />}
                   <Text style={styles.todayDateText}>{date.getDate()}</Text>
                 </View>
-                {scheduleText && (
-                  <Text style={styles.scheduleText}>{scheduleText}</Text>
-                )}
+                {scheduleText &&
+                  scheduleText.map((t, i) => (
+                    <Text key={i} style={styles.scheduleText}>
+                      {t}
+                    </Text>
+                  ))}
               </>
             ) : (
               <>
                 {scheduleText && <View style={styles.dot} />}
                 <Text style={styles.normalDateText}>{date.getDate()}</Text>
-                {scheduleText && (
-                  <Text style={styles.scheduleText}>{scheduleText}</Text>
-                )}
+                {scheduleText &&
+                  scheduleText.map((t, i) => (
+                    <Text key={i} style={styles.scheduleText}>
+                      {t}
+                    </Text>
+                  ))}
               </>
             )}
           </TouchableOpacity>
@@ -110,15 +109,9 @@ function WeeklyCalendar() {
   );
 }
 
-function MainCalendar() {
-  return (
-    <View>
-      <WeeklyCalendar />
-    </View>
-  );
+export default function MainCalendar() {
+  return <WeeklyCalendar />;
 }
-
-export default MainCalendar;
 
 const styles = StyleSheet.create({
   calendarContainer: {
