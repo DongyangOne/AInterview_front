@@ -10,6 +10,7 @@ import {
   Image,
 } from "react-native";
 import { useRouter } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import Logout from "../../components/Modal/Logout";
 import AccountDelete from "../../components/Modal/AccountDelete";
 
@@ -20,14 +21,16 @@ export default function MyPage() {
   const [myInfo, setMyInfo] = useState(null);
   const [error, setError] = useState('');
 
+
   useEffect(() => {
     const fetchMyInfo = async () => {
       try {
+        const usersId = await AsyncStorage.getItem("userId");
         setError('');
         const res = await axios.get(
           `${process.env.EXPO_PUBLIC_API_URL}/myPage/myInfo`,
           {
-            params: { userId: 1 },
+            params: { userId: usersId },
             withCredentials: true
           }
         );
