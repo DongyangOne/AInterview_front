@@ -177,6 +177,28 @@ export default function Feedback() {
         data={sortedList}
         keyExtractor={(item) => item.id}
         showsVerticalScrollIndicator={false}
+        removeClippedSubviews={false}
+        CellRendererComponent={(props) => {
+          const { index, style, children, ...rest } = props;
+          const item = sortedList[index];
+          const isOpen = item?.id === openModalItemId;
+
+          return (
+            <View
+              {...rest}
+              style={[
+                style,
+                {
+                  zIndex: isOpen ? 10000 : 0,
+                  elevation: isOpen ? 10000 : 0,
+                  overflow: "visible",
+                },
+              ]}
+            >
+              {children}
+            </View>
+          );
+        }}
         renderItem={({ item }) => {
           const isModalVisible = openModalItemId === item.id;
           const isPinned = item.pin === "Y";
@@ -184,9 +206,16 @@ export default function Feedback() {
           return (
             <Pressable
               onPress={() => route.push("/screens/FeedbackDetail")}
-              style={[styles.contentBox, { position: "relative" }]}
+              style={[
+                styles.contentBox,
+                {
+                  position: "relative",
+                  overflow: "visible",
+                  zIndex: isModalVisible ? 9999 : 0,
+                  elevation: isModalVisible ? 9999 : 0,
+                },
+              ]}
             >
-              {/* 보라색 저장 아이콘: pin일 때만 표시 */}
               {isPinned && (
                 <Image
                   source={require("../../assets/icons/bookmark.png")}
@@ -229,16 +258,30 @@ export default function Feedback() {
                       left: 0,
                       right: 0,
                       bottom: 0,
-                      zIndex: 9999,
+                      zIndex: 10000,
+                      elevation: 10000,
+                      overflow: "visible",
                     }}
+                    pointerEvents="box-none"
                   >
-                    <EditListModal
-                      item={item}
-                      setOpenModalItemId={setOpenModalItemId}
-                      isModalVisible={isModalVisible}
-                      isPinned={isPinned}
-                      onTogglePin={() => togglePin(item)}
-                    />
+                    <View
+                      style={{
+                        position: "absolute",
+                        top: 0,
+                        right: 1,
+                        zIndex: 10000,
+                        elevation: 10000,
+                        overflow: "visible",
+                      }}
+                    >
+                      <EditListModal
+                        item={item}
+                        setOpenModalItemId={setOpenModalItemId}
+                        isModalVisible={isModalVisible}
+                        isPinned={isPinned}
+                        onTogglePin={() => togglePin(item)}
+                      />
+                    </View>
                   </View>
                 ) : null}
               </View>
