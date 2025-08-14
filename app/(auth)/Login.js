@@ -60,6 +60,7 @@ export default function Login() {
       .then(async (res) => {
         console.log(res.data.userId);
         AsyncStorage.setItem("userId", String(res.data.userId));
+        AsyncStorage.setItem("NickName", res.data.nickname);
         if (keepLogin) {
           await AsyncStorage.setItem("keepLogin", "true");
         } else {

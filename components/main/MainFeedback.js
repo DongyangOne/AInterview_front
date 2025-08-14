@@ -9,32 +9,8 @@ import {
 } from "react-native";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import RoundedBar from "./RoundedBar";
 
-function RoundedBar({
-  value = 0,
-  height = 7,
-  backgroundColor = "#E4E4E4",
-  barColor = "#5900FF",
-}) {
-  const percent = Math.max(0, Math.min(100, value));
-  return (
-    <View
-      style={[
-        styles.barContainer,
-        { height, backgroundColor, borderRadius: height / 2 },
-      ]}
-    >
-      <View
-        style={{
-          width: `${percent}%`,
-          height: "100%",
-          backgroundColor: barColor,
-          borderRadius: height / 2,
-        }}
-      />
-    </View>
-  );
-}
 function formatDate(dateStr) {
   if (!dateStr) return "";
   const dateObj = new Date(dateStr);
@@ -179,7 +155,7 @@ function MainFeedback() {
     <View style={[styles.container, { minHeight: textBoxHeight }]}>
       {/* 화살표 버튼 */}
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Text style={{ fontSize: 25, color: "#191919" }}>
+        <Text style={{ fontSize: 16, color: "#191919" }}>
           최근 피드백이 없습니다.
         </Text>
       </View>
