@@ -1,4 +1,3 @@
-import { EXPO_PUBLIC_API_URL } from '@env';
 import React, { useState, useEffect } from "react";
 import {
   View,
