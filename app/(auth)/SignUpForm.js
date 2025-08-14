@@ -33,7 +33,6 @@ export default function SignUpForm() {
 
   const badWords = ["욕", "fuck", "shit", "바보", "멍청이"];
   const containsBadWord = (t) => badWords.some((w) => t.includes(w));
-
   const BASE_URL = String(API_URL || "").replace(/\/$/, "");
 
   const checkDuplicateId = async () => {
