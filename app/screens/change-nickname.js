@@ -21,20 +21,37 @@ export default function ChangeNicknameScreen() {
   const [nickname, setNickname] = useState("");
   const [isValid, setIsValid] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [userId, setUserId] = useState("");
 
   useEffect(() => {
     const nicknameRegex = /^[a-z0-9가-힣]{2,8}$/i;
     setIsValid(nickname === "" || nicknameRegex.test(nickname));
   }, [nickname]);
 
+  useEffect(() => {
+    const fetchUserId = async () => {
+      try {
+        const id = await AsyncStorage.getItem("userId");
+        console.log("userId from storage:", id);
+        if (id) setUserId(id);
+      } catch (error) {
+        console.log("유저 ID 불러오기 실패", error);
+      }
+    };
+    fetchUserId();
+  }, []);
+
   const handleSubmit = async () => {
-    if (!isValid || nickname === "") return;
+    if (!isValid || nickname === "" || userId === "") return;
     setLoading(true);
     try {
-      // 실제 API 요청 (POST)
-      const response = await axios.post(`${process.env.EXPO_PUBLIC_API_URL}/user/changeName`, {
-        newName: nickname,
-      });
+      const response = await axios.post(
+        `${process.env.EXPO_PUBLIC_API_URL}/user/changeName`,
+        {
+          userId: userId,
+          newName: nickname,
+        }
+      );
       if (response.data.success) {
         await AsyncStorage.setItem("NickName", nickname);
         Alert.alert("성공", `닉네임이 ${nickname}(으)로 변경되었습니다.`, [
@@ -45,9 +62,7 @@ export default function ChangeNicknameScreen() {
       }
     } catch (error) {
       Alert.alert("에러", "서버와의 통신에 실패했습니다.");
-      console.log(error)
-      console.log(error.response)
-      console.log(error.request)
+      console.log(error);
     } finally {
       setLoading(false);
     }
