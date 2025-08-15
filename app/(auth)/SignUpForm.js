@@ -45,26 +45,22 @@ export default function SignUpForm() {
     }
 
     try {
-      const res = await axios.post(
+      const { status } = await axios.post(
         `${process.env.EXPO_PUBLIC_API_URL}/sign/userIdCheck`,
         { loginUserId: trimmedId }
       );
 
-      const ok =
-        res?.data === true ||
-        res?.data?.idCheck === true ||
-        res?.data?.available === true ||
-        res?.data?.ok === true;
-
-      setIdError(ok ? "" : "이미 사용 중인 아이디예요.");
+      if (status === 200) {
+        setIdError("");
+      }
     } catch (err) {
-      const status = err?.response?.status;
-      const msg = err?.response?.data?.message;
+      const s = err?.response?.status;
+      const m = err?.response?.data?.message;
 
-      if (status === 409) {
-        setIdError(msg || "이미 사용 중인 아이디예요.");
+      if (s === 409) {
+        setIdError(m || "이미 사용 중인 아이디예요.");
       } else {
-        console.log("[userIdCheck:error]", status, msg || err?.message);
+        console.log("[userIdCheck:error]", s, m || err?.message);
         setIdError("");
       }
     }
@@ -125,8 +121,8 @@ export default function SignUpForm() {
           loginUserId: id.trim(),
           nickname: nickname.trim(),
           password,
-          service: "app",
-          appPush: agreePush,
+          service: agreeTerms ? "Y" : "N",
+          appPush: agreePush ? "Y" : "N",
         },
         {
           headers: {
