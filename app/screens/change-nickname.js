@@ -13,6 +13,7 @@ import {
   Alert,
 } from "react-native";
 import { useRouter } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 
 export default function ChangeNicknameScreen() {
@@ -35,8 +36,9 @@ export default function ChangeNicknameScreen() {
         newName: nickname,
       });
       if (response.data.success) {
+        await AsyncStorage.setItem("NickName", nickname);
         Alert.alert("성공", `닉네임이 ${nickname}(으)로 변경되었습니다.`, [
-          { text: "확인", onPress: () => router.back() },
+          { text: "확인", onPress: () => router.replace("/home") },
         ]);
       } else {
         Alert.alert("실패", response.data.message || "닉네임 변경에 실패했습니다.");
