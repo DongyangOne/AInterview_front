@@ -30,7 +30,6 @@ export default function SignUpForm() {
   const [submitting, setSubmitting] = useState(false);
 
   const badWords = ["욕", "fuck", "shit", "바보", "멍청이"];
-
   const containsBadWord = (t) => badWords.some((w) => t.includes(w));
 
   const checkDuplicateId = async () => {
