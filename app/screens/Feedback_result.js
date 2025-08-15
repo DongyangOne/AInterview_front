@@ -1,5 +1,6 @@
-import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import { useRouter, useLocalSearchParams } from "expo-router";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 import {
   View,
   Text,
@@ -25,18 +26,85 @@ const formattedDate = today
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 export default function FeedbackResult() {
-  const [memo, setMemo] = useState("");
   const route = useRouter();
+
+  // 메모
+  const [memo, setMemo] = useState("");
+
+  // 장점/단점/피드백 상태
+  const [pros, setPros] = useState("");
+  const [cons, setCons] = useState("");
+  const [tip, setTip] = useState("");
+
+  // 로딩/에러
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  // /feedback/[userId]/[feedbackId] 경로 파라미터
+  const params = useLocalSearchParams();
+  const userId = Array.isArray(params.userId) ? params.userId[0] : params.userId;
+  const feedbackId = Array.isArray(params.feedbackId) ? params.feedbackId[0] : params.feedbackId;
+
+  // axios 인스턴스 (env 사용)
+  const api = axios.create({
+    baseURL: process.env.EXPO_PUBLIC_API_URL || "",
+    timeout: 15000,
+  });
+
+  useEffect(() => {
+    if (!userId || !feedbackId) return;
+
+    const fetchFeedback = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const res = await api.get(
+          `/feedback/${encodeURIComponent(userId)}/${encodeURIComponent(feedbackId)}`
+        );
+        const data = res.data || {};
+
+        // 응답 키에 유연하게 매핑
+        setPros(
+          data.pros ??
+            data.advantages ??
+            data.strengths ??
+            data.good ??
+            data.goodPoint ??
+            ""
+        );
+        setCons(
+          data.cons ??
+            data.disadvantages ??
+            data.weaknesses ??
+            data.bad ??
+            data.badPoint ??
+            ""
+        );
+        setTip(
+          data.feedback ??
+            data.tip ??
+            data.comment ??
+            data.suggestion ??
+            data.advice ??
+            ""
+        );
+      } catch (e) {
+        setError("피드백을 불러오지 못했어요.");
+        console.warn(e?.response?.data || e?.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFeedback();
+  }, [userId, feedbackId]);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff", paddingTop: 0 }}>
       <View style={styles.container}>
         <View style={styles.topHeader}>
-          <TouchableOpacity
-            onPress={() => {
-              route.back();
-            }}
-          >
+          <TouchableOpacity onPress={() => route.back()}>
             <Image
               source={require("../../assets/icons/arrow.png")}
               style={styles.arrowIcon}
@@ -68,39 +136,59 @@ export default function FeedbackResult() {
               style={styles.graphImage}
             />
             <Text style={[styles.graphLabel, styles.labelTopLeft]}>자세</Text>
-            <Text style={[styles.graphLabel, styles.labelTopRight]}>
-              자신감
-            </Text>
+            <Text style={[styles.graphLabel, styles.labelTopRight]}>자신감</Text>
             <Text style={[styles.graphLabel, styles.labelLeft]}>표정</Text>
             <Text style={[styles.graphLabel, styles.labelRight]}>
               위기 대처{"\n"}능력
             </Text>
-            <Text style={[styles.graphLabel, styles.labelBottomLeft]}>
-              말투
-            </Text>
+            <Text style={[styles.graphLabel, styles.labelBottomLeft]}>말투</Text>
             <Text style={[styles.graphLabel, styles.labelBottomRight]}>
               업무이해도
             </Text>
           </View>
+
           <Text style={styles.improvementText}>
             저번보다 <Text style={styles.highlight}>자세</Text>가 더 좋아졌어요!
           </Text>
+
           <Text style={styles.feedbackTitle}>피드백 및 평가</Text>
+
+          {/* 장점 */}
           <Text style={styles.labelGood}>장점</Text>
           <Text style={styles.bodyText}>
-            사용자는 바른자세를 잘 유지하고 있으며, 표정 또한 좋은 모습을 보였고
-            말투도 적절한 속도였습니다.
+            {loading
+              ? "불러오는 중..."
+              : error
+              ? "장점을 표시할 수 없어요."
+              : pros?.trim()
+              ? pros
+              : "장점 데이터가 없습니다."}
           </Text>
+
+          {/* 단점 */}
           <Text style={styles.labelBad}>단점</Text>
           <Text style={styles.bodyText}>
-            반면, 사용자는 자신감에 있어 많이 부족한 모습을 보였으며
-            업무이해도에 있어서 대답을 많이 못하는 모습을 보였고 위기대처에 대한
-            문답 또한 적절하지 못한 대답을 하였어요!
+            {loading
+              ? "불러오는 중..."
+              : error
+              ? "단점을 표시할 수 없어요."
+              : cons?.trim()
+              ? cons
+              : "단점 데이터가 없습니다."}
           </Text>
+
+          {/* 피드백 */}
           <Text style={styles.labelTip}>피드백</Text>
           <Text style={styles.bodyText}>
-            면접에 자신감을 갖고 하는 것도 좋은 방법입니다!
+            {loading
+              ? "불러오는 중..."
+              : error
+              ? "피드백을 표시할 수 없어요."
+              : tip?.trim()
+              ? tip
+              : "피드백 데이터가 없습니다."}
           </Text>
+
           <Text style={styles.memoTitle}>메모</Text>
           <TextInput
             style={styles.memoInput}
@@ -109,6 +197,7 @@ export default function FeedbackResult() {
             value={memo}
             onChangeText={setMemo}
           />
+
           <View style={styles.buttonContainer}>
             <TouchableOpacity
               style={styles.deleteButton}
@@ -118,9 +207,7 @@ export default function FeedbackResult() {
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.saveButton}
-              onPress={() => {
-                route.push("/feedback");
-              }}
+              onPress={() => route.push("/feedback")}
             >
               <Text style={styles.saveButtonText}>피드백 저장</Text>
             </TouchableOpacity>

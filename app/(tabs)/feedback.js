@@ -214,7 +214,7 @@ export default function Feedback() {
 
           return (
             <Pressable
-              onPress={() => route.push("/screens/FeedbackDetail")}
+              onPress={() => route.push("/screens/Feedback_result")}
               style={[
                 styles.contentBox,
                 {
