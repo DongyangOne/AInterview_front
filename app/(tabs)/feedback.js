@@ -17,6 +17,7 @@ import { useRouter } from "expo-router";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import DeleteCheckModal from "../../components/Modal/DeleteModal";
+import MemoChangeModal from "../../components/Modal/MemoChangeModal";
 
 export default function Feedback() {
   const [feedbackList, setFeedbackList] = useState([]);
@@ -24,6 +25,7 @@ export default function Feedback() {
   const [mode, setMode] = useState("basic");
   const [openModalItemId, setOpenModalItemId] = useState(null);
   const [deleteModal, setDeleteModal] = useState(false);
+  const [memoModal, setMemoModal] = useState(false);
   const [loadingId, setLoadingId] = useState(null);
   const [searchText, setSearchText] = useState("");
   const route = useRouter();
@@ -137,6 +139,8 @@ export default function Feedback() {
 
   const openDeleteModal = () => setDeleteModal(true);
   const closeDeleteModal = () => setDeleteModal(false);
+  const openMemoModal = () => setMemoModal(true);
+  const closeMemoModal = () => setMemoModal(false);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -283,6 +287,7 @@ export default function Feedback() {
                         item={item}
                         setOpenModalItemId={setOpenModalItemId}
                         isModalVisible={isModalVisible}
+                        openMemoModal={openMemoModal}
                         openDeleteModal={openDeleteModal}
                         isPinned={isPinned}
                         onTogglePin={() => togglePin(item)}
@@ -301,6 +306,7 @@ export default function Feedback() {
         }}
       />
       <DeleteCheckModal visible={deleteModal} onCancel={closeDeleteModal} />
+      <MemoChangeModal visible={memoModal} onCancel={closeMemoModal} />
     </SafeAreaView>
   );
 }
