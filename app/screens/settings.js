@@ -1,5 +1,4 @@
-"use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -10,12 +9,46 @@ import {
   Image,
 } from "react-native";
 import { useRouter } from "expo-router";
+import axios from "axios";
 
 export default function SettingsScreen() {
   const [isEnabled, setIsEnabled] = useState(false);
   const router = useRouter();
 
-  const toggleSwitch = () => setIsEnabled((previousState) => !previousState);
+  useEffect(() => {
+    const fetchPushStatus = async () => {
+      try {
+        const res = await axios.get(`${process.env.EXPO_PUBLIC_API_URL}/user/getAppPush`);
+        setIsEnabled(res.data.status === "Y");
+      } catch (err) {
+        setIsEnabled(false);
+      }
+    };
+    fetchPushStatus();
+  }, []);
+
+  const toggleSwitch = async () => {
+    const newEnabled = !isEnabled;
+    setIsEnabled(newEnabled);
+
+    try {
+      const statusParam = newEnabled ? "Y" : "N";
+      const res = await axios.get(`${process.env.EXPO_PUBLIC_API_URL}/user/setAppPush`, {
+        params: { status: statusParam } // 상태값을 서버로 전달
+      });
+      if (res.data && res.data.success) {
+        setIsEnabled(res.data.status === "Y"); // 서버 응답 기준으로 세팅
+        console.log("서버에 저장된 상태:", res.data.status);
+        console.log("서버 메시지:", res.data.message);
+      } else {
+        setIsEnabled(isEnabled); // 실패 시 이전 값 복구
+        console.log("API failure:", res.data);
+      }
+    } catch (err) {
+      setIsEnabled(isEnabled);
+      console.log("API Error!", err);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -25,7 +58,7 @@ export default function SettingsScreen() {
           <Image
             source={require("../../assets/icons/arrow1.png")}
             style={styles.backIcon}
-            resizeMode="20"
+            resizeMode="contain"
           />
         </TouchableOpacity>
         <Text style={styles.title}>설정</Text>
@@ -35,16 +68,16 @@ export default function SettingsScreen() {
       {/* 알림 설정 */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>알림</Text>
-        <TouchableOpacity style={styles.row}>
+        <View style={styles.row}>
           <Text style={styles.label}>알림 수신 설정</Text>
           <Switch
             trackColor={{ false: "#ccc", true: "#8e44ad" }}
-            thumbColor={isEnabled ? "#fff" : "#fff"}
+            thumbColor="#fff"
             ios_backgroundColor="#ccc"
             onValueChange={toggleSwitch}
             value={isEnabled}
           />
-        </TouchableOpacity>
+        </View>
       </View>
 
       {/* 기타 */}
@@ -89,7 +122,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: "#D9D9D9", // 구분선 컬러 변경
+    borderBottomColor: "#D9D9D9",
   },
   label: { fontSize: 16, fontWeight: "Medium", color: "#000000" },
   arrowIcon: {
