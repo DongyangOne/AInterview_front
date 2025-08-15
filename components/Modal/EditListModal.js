@@ -1,6 +1,11 @@
 import { Pressable, StyleSheet, View, Text } from "react-native";
 
-const EditListModal = ({ item, setOpenModalItemId, isModalVisible }) => {
+const EditListModal = ({
+  item,
+  setOpenModalItemId,
+  isModalVisibl,
+  openDeleteModal,
+}) => {
   const onClick = () => {
     setOpenModalItemId(isModalVisible ? null : item);
   };
@@ -24,7 +29,7 @@ const EditListModal = ({ item, setOpenModalItemId, isModalVisible }) => {
       >
         <Text style={styles.text}>메모 수정</Text>
       </Pressable>
-      <Pressable onPress={onClick} style={styles.wrapText}>
+      <Pressable onPress={openDeleteModal} style={styles.wrapText}>
         <Text style={styles.text}>기록 삭제</Text>
       </Pressable>
     </View>
@@ -38,7 +43,10 @@ const styles = StyleSheet.create({
     height: 182,
     position: "absolute",
     top: 50,
-    right: 1, // <- SafeAreaView padding에 맞추기
+    right: 1,
+    zIndex: 10000,
+    elevation: 10000,
+    overflow: "visible",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
