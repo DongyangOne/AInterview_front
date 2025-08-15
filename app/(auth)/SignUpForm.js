@@ -11,6 +11,7 @@ import {
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
+import axios from "axios";
 
 export default function SignUpForm() {
   const router = useRouter();
@@ -27,12 +28,11 @@ export default function SignUpForm() {
   const [passwordError, setPasswordError] = useState("");
   const [confirmPasswordError, setConfirmPasswordError] = useState("");
   const [termsError, setTermsError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   const badWords = ["욕", "fuck", "shit", "바보", "멍청이"];
-
-  const containsBadWord = (text) => {
-    return badWords.some((word) => text.includes(word));
-  };
+  const containsBadWord = (text) =>
+    badWords.some((word) => text.includes(word));
 
   const checkDuplicateId = async () => {
     const trimmedId = id.trim();
@@ -46,30 +46,20 @@ export default function SignUpForm() {
     }
 
     try {
-      const usersJson = await AsyncStorage.getItem("users");
-      const users = usersJson ? JSON.parse(usersJson) : [];
-      const isDuplicate = users.some((user) => user.id === trimmedId);
-      setIdError(isDuplicate ? "사용할 수 없는 아이디예요." : "");
-    } catch (e) {
-      setIdError("중복 확인 중 오류가 발생했어요.");
-    }
-  };
-
-  const checkDuplicateNickname = async () => {
-    setNicknameError("");
-    const trimmedNickname = nickname.trim();
-    if (!trimmedNickname) return;
-    try {
-      const usersJson = await AsyncStorage.getItem("users");
-      const users = usersJson ? JSON.parse(usersJson) : [];
-      const isDuplicate = users.some(
-        (user) => user.nickname === trimmedNickname
+      const res = await axios.post(
+        "http://183.101.17.181:3001/sign/userIdCheck",
+        {
+          loginUserId: trimmedId,
+        }
       );
-      if (isDuplicate) {
-        setNicknameError("이미 사용 중인 닉네임이에요.");
-      }
-    } catch (e) {
-      console.error("닉네임 중복 확인 오류:", e);
+      const ok =
+        res?.data === true ||
+        res?.data?.idCheck === true ||
+        res?.data?.available === true ||
+        res?.data?.ok === true;
+      setIdError(ok ? "" : "사용할 수 없는 아이디예요.");
+    } catch {
+      setIdError("중복 확인 중 오류가 발생했어요.");
     }
   };
 
@@ -112,30 +102,40 @@ export default function SignUpForm() {
       setConfirmPasswordError("비밀번호가 일치하지 않아요.");
       valid = false;
     }
-
     if (!agreeTerms) {
       setTermsError("이용약관에 동의해 주세요.");
       valid = false;
     }
+    if (!valid) return;
 
-    const usersJson = await AsyncStorage.getItem("users");
-    const users = usersJson ? JSON.parse(usersJson) : [];
-    const isIdTaken = users.some((user) => user.id === id);
-    const isNicknameTaken = users.some((user) => user.nickname === nickname);
-    if (isIdTaken) {
-      setIdError("사용할 수 없는 아이디예요.");
-      valid = false;
-    }
-    if (isNicknameTaken) {
-      setNicknameError("이미 사용 중인 닉네임이에요.");
-      valid = false;
-    }
+    try {
+      const res = await axios.post(
+        "http://183.101.17.181:3001/sign/signup",
+        {
+          loginUserId: id.trim(),
+          nickname: nickname.trim(),
+          password,
+          passwordCheck: confirmPassword,
+          service: "app",
+          appPush: agreePush,
+          idCheck: true,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+        }
+      );
 
-    if (valid) {
-      const newUser = { id, nickname, password, agreePush };
-      const updatedUsers = [...users, newUser];
-      await AsyncStorage.setItem("users", JSON.stringify(updatedUsers));
+      await AsyncStorage.setItem("userId", id.trim());
+      if (res?.data?.token)
+        await AsyncStorage.setItem("accessToken", res.data.token);
       router.replace("/Login");
+    } catch (e) {
+      if (e.response?.data?.message) {
+        setConfirmPasswordError(e.response.data.message);
+      }
     }
   };
 
@@ -149,7 +149,6 @@ export default function SignUpForm() {
             resizeMode="contain"
           />
         </TouchableOpacity>
-
         <Text style={styles.headerText}>회원가입</Text>
       </View>
       <ScrollView>
@@ -160,8 +159,14 @@ export default function SignUpForm() {
             placeholder="3~15자 영대소문자, 숫자 사용 가능"
             value={id}
             onChangeText={setId}
+            autoCapitalize="none"
+            editable={!submitting}
           />
-          <TouchableOpacity style={styles.checkBtn} onPress={checkDuplicateId}>
+          <TouchableOpacity
+            style={styles.checkBtn}
+            onPress={checkDuplicateId}
+            disabled={submitting}
+          >
             <Text style={{ fontSize: 12 }}>중복확인</Text>
           </TouchableOpacity>
         </View>
@@ -175,7 +180,7 @@ export default function SignUpForm() {
           placeholder="2~8자 영대소문자, 한글, 숫자 사용 가능"
           value={nickname}
           onChangeText={setNickname}
-          onBlur={checkDuplicateNickname}
+          editable={!submitting}
         />
         <View style={styles.errorBox}>
           <Text style={styles.error}>{nicknameError}</Text>
@@ -188,6 +193,7 @@ export default function SignUpForm() {
           value={password}
           secureTextEntry
           onChangeText={setPassword}
+          editable={!submitting}
         />
         <View style={styles.errorBox}>
           <Text style={styles.error}>{passwordError}</Text>
@@ -200,13 +206,17 @@ export default function SignUpForm() {
           value={confirmPassword}
           secureTextEntry
           onChangeText={setConfirmPassword}
+          editable={!submitting}
         />
         <View style={styles.errorBox}>
           <Text style={styles.error}>{confirmPasswordError}</Text>
         </View>
 
         <View style={styles.checkRow}>
-          <TouchableOpacity onPress={() => setAgreeTerms(!agreeTerms)}>
+          <TouchableOpacity
+            onPress={() => setAgreeTerms(!agreeTerms)}
+            disabled={submitting}
+          >
             <Ionicons
               name={agreeTerms ? "checkbox" : "square-outline"}
               size={20}
@@ -226,7 +236,10 @@ export default function SignUpForm() {
         </View>
 
         <View style={styles.checkRow}>
-          <TouchableOpacity onPress={() => setAgreePush(!agreePush)}>
+          <TouchableOpacity
+            onPress={() => setAgreePush(!agreePush)}
+            disabled={submitting}
+          >
             <Ionicons
               name={agreePush ? "checkbox" : "square-outline"}
               size={20}
@@ -242,7 +255,11 @@ export default function SignUpForm() {
           </Text>
         </View>
 
-        <TouchableOpacity style={styles.submitBtn} onPress={validate}>
+        <TouchableOpacity
+          style={[styles.submitBtn, submitting && { opacity: 0.6 }]}
+          onPress={validate}
+          disabled={submitting}
+        >
           <Text style={styles.submitText}>회원가입</Text>
         </TouchableOpacity>
       </ScrollView>
@@ -274,11 +291,7 @@ const styles = StyleSheet.create({
     fontWeight: "400",
     color: "#191919",
   },
-  label: {
-    fontSize: 14,
-    fontWeight: "500",
-    marginTop: 20,
-  },
+  label: { fontSize: 14, fontWeight: "500", marginTop: 20 },
   input: {
     borderWidth: 1,
     borderColor: "#ccc",
@@ -287,10 +300,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginTop: 8,
   },
-  inputRow: {
-    position: "relative",
-    marginTop: 8,
-  },
+  inputRow: { position: "relative", marginTop: 8 },
   inputFull: {
     borderWidth: 1,
     borderColor: "#ccc",
@@ -308,27 +318,11 @@ const styles = StyleSheet.create({
     backgroundColor: "#eee",
     borderRadius: 6,
   },
-  errorBox: {
-    height: 18,
-    marginTop: 4,
-    justifyContent: "center",
-  },
-  error: {
-    color: "#e11d48",
-    fontSize: 12,
-  },
-  checkRow: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  checkText: {
-    fontSize: 13,
-    marginLeft: 8,
-  },
-  link: {
-    textDecorationLine: "underline",
-    color: "#5900FF",
-  },
+  errorBox: { height: 18, marginTop: 4, justifyContent: "center" },
+  error: { color: "#e11d48", fontSize: 12 },
+  checkRow: { flexDirection: "row", alignItems: "center" },
+  checkText: { fontSize: 13, marginLeft: 8 },
+  link: { textDecorationLine: "underline", color: "#5900FF" },
   submitBtn: {
     backgroundColor: "#111",
     paddingVertical: 14,
@@ -336,9 +330,5 @@ const styles = StyleSheet.create({
     marginTop: 28,
     alignItems: "center",
   },
-  submitText: {
-    color: "#fff",
-    fontSize: 14,
-    fontWeight: "bold",
-  },
+  submitText: { color: "#fff", fontSize: 14, fontWeight: "bold" },
 });
