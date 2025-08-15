@@ -32,7 +32,7 @@ function MainFeedback() {
         const usersId = await AsyncStorage.getItem("userId");
         console.log(usersId);
         const res = await axios.get(
-          `${process.env.EXPO_PUBLIC_API_URL}/mainpage/feedback`,
+          `${process.env.EXPO_PUBLIC_API_URL}/feedback/recent`,
           {
             params: { userId: usersId },
           }
