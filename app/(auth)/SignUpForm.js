@@ -38,7 +38,8 @@ export default function SignUpForm() {
     if (!trimmedId) {
       setIdError("아이디를 입력해 주세요.");
       return;
-    } else if (!/^[A-Za-z0-9]{3,15}$/.test(trimmedId)) {
+    }
+    if (!/^[A-Za-z0-9]{3,15}$/.test(trimmedId)) {
       setIdError("아이디는 3~15자의 영문자, 숫자만 사용할 수 있어요.");
       return;
     }
@@ -46,18 +47,26 @@ export default function SignUpForm() {
     try {
       const res = await axios.post(
         `${process.env.EXPO_PUBLIC_API_URL}/sign/userIdCheck`,
-        {
-          loginUserId: trimmedId,
-        }
+        { loginUserId: trimmedId }
       );
+
       const ok =
         res?.data === true ||
         res?.data?.idCheck === true ||
         res?.data?.available === true ||
         res?.data?.ok === true;
-      setIdError(ok ? "" : "사용할 수 없는 아이디예요.");
-    } catch {
-      setIdError("중복 확인 중 오류가 발생했어요.");
+
+      setIdError(ok ? "" : "이미 사용 중인 아이디예요.");
+    } catch (err) {
+      const status = err?.response?.status;
+      const msg = err?.response?.data?.message;
+
+      if (status === 409) {
+        setIdError(msg || "이미 사용 중인 아이디예요.");
+      } else {
+        console.log("[userIdCheck:error]", status, msg || err?.message);
+        setIdError("");
+      }
     }
   };
 
@@ -108,8 +117,6 @@ export default function SignUpForm() {
     }
 
     if (!valid) return;
-
-    if (!BASE_URL) return;
 
     try {
       const res = await axios.post(
