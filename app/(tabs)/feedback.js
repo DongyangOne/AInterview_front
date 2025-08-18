@@ -57,6 +57,7 @@ export default function Feedback() {
           title: item.title,
           memo: item.memo,
           // pin: item.is_read === "N" ? "Y" : "N",
+          pin: item.pin || "N",
         }));
 
         setFeedbackList(mappedData);
@@ -95,15 +96,20 @@ export default function Feedback() {
 
   // PATCH: pin / unpin
   const togglePin = async (item) => {
-    const willPin = item.pin !== "Y";
-    const usersId = await AsyncStorage.getItem("userId");
 
-    const url = willPin
-      ? `${process.env.EXPO_PUBLIC_API_URL}/feedback/pin/${usersId}/${item.id}`
-      : `${process.env.EXPO_PUBLIC_API_URL}/feedback/unpin/${usersId}/${item.id}`;
-    const res = await axios.patch(url);
+
 
     try {
+
+      const willPin = item.pin !== "Y";
+      const usersId = await AsyncStorage.getItem("userId");
+
+      const url = willPin
+        ? `${process.env.EXPO_PUBLIC_API_URL}/feedback/pin/${usersId}/${item.id}`
+        : `${process.env.EXPO_PUBLIC_API_URL}/feedback/unpin/${usersId}/${item.id}`;
+      const res = await axios.patch(url, {}); // body 추가
+      console.log("요청 URL:", url);
+      console.log("응답:", res.data);
       console.log("사용자 ID:", usersId);
       setLoadingId(item.id);
 
