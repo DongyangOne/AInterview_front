@@ -26,7 +26,7 @@ export default function Home() {
         setNickname(await AsyncStorage.getItem("NickName"));
         const usersId = await AsyncStorage.getItem("userId");
         const res = await axios.get(
-          `${process.env.EXPO_PUBLIC_API_URL}/mainpage/calendar`,
+          `${process.env.EXPO_PUBLIC_API_URL}/calendar/thisweek`,
           {
             params: { userId: usersId },
           }
