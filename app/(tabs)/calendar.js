@@ -15,6 +15,7 @@ import { Modalize } from "react-native-modalize";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import WheelPickerExpo from "react-native-wheel-picker-expo";
 import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 const SCREEN_PAD = 32;
@@ -28,8 +29,6 @@ const todayISO = () => {
   const d = String(now.getDate()).padStart(2, "0");
   return `${y}-${m}-${d}`;
 };
-
-const toServerTime = (isoDate, hh, mm) => `${isoDate} ${hh}:${mm}:00`;
 
 const importanceOut = { "매우 중요": "S", 보통: "I", "중요하지 않음": "N" };
 const importanceIn = (val) => {
@@ -89,7 +88,8 @@ export default function Calendar() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  const [userId] = useState("1");
+  const [userId, setUserId] = useState(null);
+
   const [isEditing, setIsEditing] = useState(false);
   const [editingIdx, setEditingIdx] = useState(null);
   const [editingId, setEditingId] = useState(null);
@@ -101,13 +101,39 @@ export default function Calendar() {
     String(new Date().getMonth() + 1).padStart(2, "0")
   );
 
+  useEffect(() => {
+    (async () => {
+      try {
+        const raw =
+          (await AsyncStorage.getItem("user")) ||
+          (await AsyncStorage.getItem("authUser")) ||
+          (await AsyncStorage.getItem("userId"));
+        let uid = null;
+        if (raw) {
+          const obj = (() => {
+            try {
+              return JSON.parse(raw);
+            } catch {
+              return raw;
+            }
+          })();
+          uid = obj?.user_id ?? obj?.id ?? obj ?? null;
+        }
+        if (uid != null) setUserId(String(uid));
+      } catch (e) {
+        console.log("[auth] userId load error", e?.message);
+      }
+    })();
+  }, []);
+
   const fetchMonth = async (iso = selectedDate) => {
-    if (!BASE) return;
+    if (!BASE || !userId) return;
     try {
       setLoading(true);
       const { year, month } = splitDate(iso);
       const { data } = await axios.get(`${BASE}/calendar/month`, {
-        params: { userId, year, month: Number(month) },
+        params: { userId, year, month: Number(month), _: Date.now() },
+        headers: { "Cache-Control": "no-cache" },
       });
       const byDay = {};
       (data?.data || []).forEach((row) => {
@@ -127,11 +153,18 @@ export default function Calendar() {
   };
 
   const fetchDay = async (iso = selectedDate) => {
-    if (!BASE) return;
+    if (!BASE || !userId) return;
     try {
       const { year, month, day } = splitDate(iso);
       const { data } = await axios.get(`${BASE}/calendar/day`, {
-        params: { userId, year, month: Number(month), day: Number(day) },
+        params: {
+          userId,
+          year,
+          month: Number(month),
+          day: Number(day),
+          _: Date.now(),
+        },
+        headers: { "Cache-Control": "no-cache" },
       });
       const list = normalizeList(data?.data);
       setSchedules((prev) => ({ ...prev, [iso]: list }));
@@ -148,6 +181,7 @@ export default function Calendar() {
       if (calId) {
         await axios.get(`${BASE}/calendar/delete`, {
           params: { calendar_id: calId },
+          headers: { "Cache-Control": "no-cache" },
         });
       }
       await fetchDay(selectedDate);
@@ -160,8 +194,11 @@ export default function Calendar() {
   };
 
   useEffect(() => {
+    if (!userId) return;
+    setSchedules({});
+    setSelectedDate(todayISO());
     fetchMonth(todayISO());
-  }, []);
+  }, [userId]);
 
   const formatTime = (h, m) => {
     const hourNum = parseInt(h, 10);
@@ -243,6 +280,10 @@ export default function Calendar() {
       Alert.alert("오류", "서버 주소가 설정되지 않았습니다.");
       return;
     }
+    if (!userId) {
+      Alert.alert("오류", "로그인 정보가 없습니다.");
+      return;
+    }
 
     try {
       setSaving(true);
@@ -250,19 +291,8 @@ export default function Calendar() {
       const { year, month, day } = splitDate(selectedDate);
       const timeHHMMSS = `${hour}:${minute}:00`;
       const timeFull = `${selectedDate} ${timeHHMMSS}`;
-      const importanceLabel = priority;
       const importanceCode = importanceOut[priority];
       const safeMemo = memo?.trim() ? memo : "-";
-
-      const baseParams = {
-        userId,
-        title,
-        memo: safeMemo,
-        year,
-        month: Number(month),
-        day: Number(day),
-        _: Date.now(),
-      };
 
       const isOk = (data) =>
         data?.affected === 1 ||
@@ -272,58 +302,25 @@ export default function Calendar() {
         data?.result === "success" ||
         data?.status === "OK";
 
-      let updated = false;
-      let lastResp = null;
+      let ok = false;
 
       if (isEditing && editingId) {
-        lastResp = await axios.get(`${BASE}/calendar/update`, {
+        const res = await axios.get(`${BASE}/calendar/update`, {
           params: {
-            ...baseParams,
+            userId,
             calendar_id: editingId,
+            title,
             time: timeFull,
             importance: importanceCode,
+            memo: safeMemo,
           },
           validateStatus: () => true,
           headers: { "Cache-Control": "no-cache" },
         });
-        console.log("[update#1]", lastResp?.status, lastResp?.data);
+        console.log("[update]", res?.status, res?.data);
+        ok = isOk(res?.data);
 
-        if (!isOk(lastResp?.data)) {
-          const enc = encodeURIComponent;
-          const urlPath =
-            `${BASE}/calendar/update` +
-            `/userId/${enc(userId)}` +
-            `/calendar_id/${enc(editingId)}` +
-            `/title/${enc(title)}` +
-            `/time/${enc(timeFull)}` +
-            `/importance/${enc(importanceCode)}` +
-            `/memo/${enc(safeMemo)}`;
-
-          lastResp = await axios.get(urlPath, {
-            params: { year, month: Number(month), day: Number(day) },
-            validateStatus: () => true,
-            headers: { "Cache-Control": "no-cache" },
-          });
-          console.log("[update#2]", lastResp?.status, lastResp?.data);
-
-          if (!isOk(lastResp?.data)) {
-            lastResp = await axios.get(`${BASE}/calendar/update`, {
-              params: {
-                ...baseParams,
-                calendar_id: editingId,
-                time: timeHHMMSS,
-                importance: importanceLabel,
-              },
-              validateStatus: () => true,
-              headers: { "Cache-Control": "no-cache" },
-            });
-            console.log("[update#3]", lastResp?.status, lastResp?.data);
-          }
-        }
-
-        updated = isOk(lastResp?.data);
-
-        if (updated) {
+        if (ok) {
           setSchedules((prev) => {
             const list = (prev[selectedDate] || []).slice();
             if (typeof editingIdx === "number" && list[editingIdx]) {
@@ -332,7 +329,7 @@ export default function Calendar() {
                 title,
                 hour,
                 minute,
-                priority: importanceIn(importanceCode),
+                priority,
                 memo: safeMemo,
               };
               return { ...prev, [selectedDate]: list };
@@ -341,37 +338,28 @@ export default function Calendar() {
           });
         }
       } else {
-        const addRes = await axios.get(`${BASE}/calendar/add`, {
+        const res = await axios.get(`${BASE}/calendar/add`, {
           params: {
-            ...baseParams,
+            userId,
+            title,
             time: timeFull,
             importance: importanceCode,
+            memo: safeMemo,
+            year,
+            month: Number(month),
+            day: Number(day),
           },
           validateStatus: () => true,
           headers: { "Cache-Control": "no-cache" },
         });
-        console.log("[add]", addRes?.status, addRes?.data);
-        updated = isOk(addRes?.data);
-        if (updated) {
-          setSchedules((prev) => {
-            const list = (prev[selectedDate] || []).slice();
-            list.push({
-              id: addRes?.data?.calendar_id || addRes?.data?.id,
-              title,
-              hour,
-              minute,
-              priority: importanceIn(importanceCode),
-              memo: safeMemo,
-            });
-            return { ...prev, [selectedDate]: list };
-          });
-        }
+        console.log("[add]", res?.status, res?.data);
+        ok = isOk(res?.data);
       }
 
       await fetchDay(selectedDate);
 
-      if (!updated) {
-        Alert.alert("오류", `업데이트 실패: ${JSON.stringify(lastResp?.data)}`);
+      if (!ok) {
+        Alert.alert("오류", "일정 저장/수정에 실패했습니다.");
         return;
       }
 
@@ -401,6 +389,7 @@ export default function Calendar() {
     setShowYMPicker(false);
     fetchMonth(next);
   };
+
   const calendarKey = selectedDate.slice(0, 7);
 
   const currYear = new Date().getFullYear();
