@@ -1,7 +1,7 @@
 import { useRouter, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import {View,Text,StyleSheet,TextInput,TouchableOpacity,Image,ScrollView,Dimensions} from "react-native";
+import {View,Text,StyleSheet,TextInput,TouchableOpacity,Image,ScrollView,Dimensions,Alert} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const today = new Date();
@@ -71,6 +71,26 @@ export default function FeedbackResult() {
 
     fetchFeedback();
   }, [userId, feedbackId]);
+
+const handleSaveMemo = async () => {
+  try {
+    setLoading(true);
+    await api.patch(
+      `/feedback/${encodeURIComponent(userId)}/${encodeURIComponent(feedbackId)}/memo`,
+      { memo },
+      {
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+    Alert.alert("성공", "메모가 저장되었습니다!");
+  } catch (e) {
+    console.warn("메모 저장 실패:", e?.response?.data || e?.message);
+    Alert.alert("에러", "메모 저장에 실패했습니다.");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff", paddingTop: 0 }}>
@@ -180,7 +200,7 @@ export default function FeedbackResult() {
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.saveButton}
-              onPress={() => route.push("/feedback")}
+              onPress={handleSaveMemo} // ✅ PATCH 실행
             >
               <Text style={styles.saveButtonText}>피드백 저장</Text>
             </TouchableOpacity>
@@ -190,6 +210,8 @@ export default function FeedbackResult() {
     </SafeAreaView>
   );
 }
+
+
 
 const styles = StyleSheet.create({
   container: {
@@ -278,24 +300,24 @@ const styles = StyleSheet.create({
     color: "#191919",
     fontWeight: "400",
   },
-  labelTopLeft: { top: -18, left: 48 },
-  labelTopRight: { top: -18, right: 38 },
-  labelLeft: { top: "42%", left: -44 },
-  labelRight: { top: "40%", right: -55, width: 68, textAlign: "center" },
-  labelBottomLeft: { bottom: -16, left: 54 },
-  labelBottomRight: { bottom: -16, right: 48 },
+  labelTopLeft: { top: -15, left: 38 },
+  labelTopRight: { top: -15, right: 30 },
+  labelLeft: { top: "42%", left: -40 },
+  labelRight: { top: "40%", right: -70, width: 68, textAlign: "center" },
+  labelBottomLeft: { bottom: -16, left: 40 },
+  labelBottomRight: { bottom: -16, right: 10 },
   improvementText: {
-    marginTop: 14,
+    marginTop:47,
     textAlign: "center",
     fontSize: 14,
     fontWeight: "500",
     color: "#808080",
     fontFamily: "Pretendard",
-    marginBottom: 10,
+    marginBottom: 93,
   },
   highlight: { color: "#5900FF" },
   feedbackTitle: {
-    marginTop: 36,
+    marginTop: 0,
     textAlign: "center",
     fontSize: 18,
     fontWeight: "400",
@@ -303,7 +325,7 @@ const styles = StyleSheet.create({
     fontFamily: "Pretendard",
   },
   labelGood: {
-    marginTop: 24,
+    marginTop: 21,
     color: "#A495CF",
     fontWeight: "600",
     fontFamily: "Pretendard",
@@ -328,7 +350,7 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
   memoTitle: {
-    marginTop: 32,
+    marginTop: 60,
     fontSize: 16,
     fontWeight: "500",
     textAlign: "center",
