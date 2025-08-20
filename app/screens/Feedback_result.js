@@ -1,16 +1,7 @@
 import { useRouter, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TextInput,
-  TouchableOpacity,
-  Image,
-  ScrollView,
-  Dimensions,
-} from "react-native";
+import {View,Text,StyleSheet,TextInput,TouchableOpacity,Image,ScrollView,Dimensions} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const today = new Date();
@@ -44,6 +35,7 @@ export default function FeedbackResult() {
   const params = useLocalSearchParams();
   const userId = Array.isArray(params.userId) ? params.userId[0] : params.userId;
   const feedbackId = Array.isArray(params.feedbackId) ? params.feedbackId[0] : params.feedbackId;
+  const title = Array.isArray(params.title) ? params.title[0] : params.title;
 
   // axios 인스턴스 (env 사용)
   const api = axios.create({
@@ -62,33 +54,13 @@ export default function FeedbackResult() {
         const res = await api.get(
           `/feedback/${encodeURIComponent(userId)}/${encodeURIComponent(feedbackId)}`
         );
-        const data = res.data || {};
+        const data = res.data?.data || {};
 
-        // 응답 키에 유연하게 매핑
-        setPros(
-          data.pros ??
-            data.advantages ??
-            data.strengths ??
-            data.good ??
-            data.goodPoint ??
-            ""
-        );
-        setCons(
-          data.cons ??
-            data.disadvantages ??
-            data.weaknesses ??
-            data.bad ??
-            data.badPoint ??
-            ""
-        );
-        setTip(
-          data.feedback ??
-            data.tip ??
-            data.comment ??
-            data.suggestion ??
-            data.advice ??
-            ""
-        );
+        // 응답 값 매핑
+        setPros(data.good || "");
+        setCons(data.bad || "");
+        setTip(data.content || "");
+        setMemo(data.memo || "");
       } catch (e) {
         setError("피드백을 불러오지 못했어요.");
         console.warn(e?.response?.data || e?.message);
@@ -120,7 +92,8 @@ export default function FeedbackResult() {
         </View>
 
         <View style={styles.headerRow}>
-          <Text style={styles.topTitle}>ONE 회사 면접</Text>
+          {/* 제목 */}
+          <Text style={styles.topTitle}>{title || "피드백"}</Text>
           <Text style={styles.date}>{formattedDate}</Text>
         </View>
       </View>

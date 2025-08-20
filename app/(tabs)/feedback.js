@@ -28,23 +28,23 @@ export default function Feedback() {
   const [memoModal, setMemoModal] = useState(false);
   const [loadingId, setLoadingId] = useState(null);
   const [searchText, setSearchText] = useState("");
+  const [usersId, setUsersId] = useState(null); // ✅ userId 상태 추가
   const route = useRouter();
 
   useEffect(() => {
     async function fetchData() {
       try {
-        const usersId = await AsyncStorage.getItem("userId");
+        const storedUserId = await AsyncStorage.getItem("userId");
+        setUsersId(storedUserId);
 
-        console.log(usersId);
-        if (!usersId) {
+        if (!storedUserId) {
           console.log("userId가 저장되어 있지 않습니다.");
           return;
         }
-        //API 요청 보내기
 
-        const url = `${process.env.EXPO_PUBLIC_API_URL}/feedback/${usersId}`;
+        // API 요청 보내기
+        const url = `${process.env.EXPO_PUBLIC_API_URL}/feedback/${storedUserId}`;
         const res = await axios.get(url);
-
         const data = res.data;
 
         const mappedData = data.data.map((item) => ({
@@ -96,15 +96,15 @@ export default function Feedback() {
   // PATCH: pin / unpin
   const togglePin = async (item) => {
     const willPin = item.pin !== "Y";
-    const usersId = await AsyncStorage.getItem("userId");
+    const storedUserId = await AsyncStorage.getItem("userId");
 
     const url = willPin
-      ? `${process.env.EXPO_PUBLIC_API_URL}/feedback/pin/${usersId}/${item.id}`
-      : `${process.env.EXPO_PUBLIC_API_URL}/feedback/unpin/${usersId}/${item.id}`;
+      ? `${process.env.EXPO_PUBLIC_API_URL}/feedback/pin/${storedUserId}/${item.id}`
+      : `${process.env.EXPO_PUBLIC_API_URL}/feedback/unpin/${storedUserId}/${item.id}`;
     const res = await axios.patch(url);
 
     try {
-      console.log("사용자 ID:", usersId);
+      console.log("사용자 ID:", storedUserId);
       setLoadingId(item.id);
 
       // UI 즉시 업데이트
@@ -179,7 +179,7 @@ export default function Feedback() {
             }
           />
         </Pressable>
-        {open ? <AlignModal setOpen={setOpen} setMode={mode} /> : null}
+        {open ? <AlignModal setOpen={setOpen} setMode={setMode} /> : null}
       </View>
 
       <FlatList
@@ -214,7 +214,16 @@ export default function Feedback() {
 
           return (
             <Pressable
-              onPress={() => route.push("/screens/Feedback_result")}
+              onPress={() =>
+                route.push({
+                  pathname: "/screens/Feedback_result",
+                  params: {
+                    userId: usersId,
+                    feedbackId: item.id,
+                    title: item.title,
+                  },
+                })
+              }
               style={[
                 styles.contentBox,
                 {
