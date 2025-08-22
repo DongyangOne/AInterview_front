@@ -25,17 +25,20 @@ export default function Home() {
       try {
         setNickname(await AsyncStorage.getItem("NickName"));
         const usersId = await AsyncStorage.getItem("userId");
-        const res = await axios.get(
-          `${process.env.EXPO_PUBLIC_API_URL}/mainpage/calendar`,
-          {
+        await axios
+          .get(`${process.env.EXPO_PUBLIC_API_URL}/mainpage/calendar`, {
             params: { userId: usersId },
-          }
-        );
-
-        const count = res.data.data.map((item) => ({
-          id: item.calendar_id.toString(),
-        }));
-        setWeekSchedules(count.length.toString());
+          })
+          .then((res) => {
+            console.log(res.data);
+            const count = res.data.data.map((item) => ({
+              id: item.calendar_id.toString(),
+            }));
+            setWeekSchedules(count.length.toString());
+          })
+          .catch((err) => {
+            console.log(err);
+          });
       } catch (err) {
         console.error(err);
       }

@@ -15,30 +15,25 @@ export default function Bell() {
     const bellData = async () => {
       try {
         const storedUserId = await AsyncStorage.getItem("userId");
-
         if (!storedUserId) {
           console.log("userId 없음");
           return;
         }
-
         setUsersId(storedUserId); // 화면/UI 상태 업데이트용
         console.log("API 호출 userId:", storedUserId);
-
-        const API_URL = process.env.EXPO_PUBLIC_API_URL;
-        const res = await axios.get(`${API_URL}/notice/${storedUserId}`);
-
-        console.log("응답 데이터:", res.data);
-
-        if (res.data && res.data.success) {
-          setTime(res.data.created_at);
-
-          const newNotis = res.data.data || [];
-          const unreadNotis = newNotis.filter((n) => n.is_read === "N");
-          setNotis(unreadNotis);
-        }
+        await axios
+          .get(`${process.env.EXPO_PUBLIC_API_URL}/notice/${storedUserId}`)
+          .then(async (res) => {
+            console.log(res.data);
+            if (res.data && res.data.success) {
+              setTime(res.data.created_at);
+              const newNotis = res.data.data || [];
+              const unreadNotis = newNotis.filter((n) => n.is_read === "N");
+              setNotis(unreadNotis);
+            }
+          });
       } catch (error) {
         console.error("데이터 가져오기 실패:", error);
-        alert("데이터 가져오기 실패");
       }
     };
 

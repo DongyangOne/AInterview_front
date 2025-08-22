@@ -14,16 +14,19 @@ export default function MainQuestion() {
         const TodayQuest = await AsyncStorage.getItem("questToday");
         // 1. 날짜가 다르거나, 저장된 질문 자체가 없을 때 무조건 새로 가져옴
         if (lastDate !== today || !TodayQuest) {
-          const res = await axios.get(
-            `${process.env.EXPO_PUBLIC_API_URL}/mainpage/question`
-          );
-          const question = res.data.data[0].question;
-          console.log("새 질문 받아옴:", question);
-          setQuestToday(question);
-          await AsyncStorage.setItem("lastDate", today);
-          await AsyncStorage.setItem("questToday", question);
-          console.log(today);
-          console.log(question);
+          await axios
+            .get(`${process.env.EXPO_PUBLIC_API_URL}/mainpage/question`)
+            .then(async (res) => {
+              const question = res.data.data[0].question;
+              console.log("새 질문 받아옴:", question);
+              setQuestToday(question);
+              await AsyncStorage.setItem("lastDate", today);
+              await AsyncStorage.setItem("questToday", question);
+              console.log(question);
+            })
+            .catch((err) => {
+              console.log(err);
+            });
         } else {
           // 2. 오늘 날짜고 저장된 질문 있으면 그걸 사용
           setQuestToday(TodayQuest);
