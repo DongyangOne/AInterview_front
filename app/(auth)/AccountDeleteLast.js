@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
+import axios from 'axios';
 
 const REASONS = [
   "면접 기능을 사용하기 어려워요.",
@@ -31,9 +32,20 @@ export default function AccountDeleteLast() {
     setModalVisible(true); // 페이지 진입 시 첫 번째 모달 띄우기
   }, []);
 
-  const handleDelete = () => {
-    setModalVisible(false);
-    setConfirmModalVisible(true); // 두 번째 모달 띄우기
+  const handleDelete = async () => {
+    try {
+      // 실제 API 호출
+      const response = await axios.get(`${process.env.EXPO_PUBLIC_API_URL}/delete/deleteUser`);
+      if (response.data.success) {
+        setModalVisible(false);
+        setConfirmModalVisible(true); // 두 번째 모달 띄우기
+      } else {
+        // 실패 시 에러 핸들링 (옵션)
+        alert(response.data.message || "탈퇴에 실패했습니다.");
+      }
+    } catch (error) {
+      alert("네트워크 오류 또는 탈퇴에 실패했습니다.");
+    }
   };
 
   const handleConfirm = () => {

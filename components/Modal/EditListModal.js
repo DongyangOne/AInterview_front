@@ -1,45 +1,54 @@
 import {
-  Pressable, StyleSheet, View, Text, Modal, TextInput,
-  TouchableOpacity, Alert, ScrollView, Image
+  Pressable,
+  StyleSheet,
+  View,
+  Text,
+  Modal,
+  TextInput,
+  TouchableOpacity,
+  Alert,
+  ScrollView,
+  Image,
 } from "react-native";
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
+import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const EditListModal = ({
-  item,                 // 선택된 아이템(id 또는 객체)
+  item, // 선택된 아이템(id 또는 객체)
   setOpenModalItemId,
   isModalVisible,
-  isPinned,             // <-- 추가: 현재 고정 여부
-  onTogglePin,          // <-- 추가: 고정/해제 실행 함수
+  isPinned, // <-- 추가: 현재 고정 여부
+  onTogglePin, // <-- 추가: 고정/해제 실행 함수
+  // onUpdateTitle,
+  // onUpdateMemo
 }) => {
   const close = () => setOpenModalItemId(isModalVisible ? null : item);
-
 
   const [titleModalVisible, setTitleModalVisible] = useState(false);
   const [memoModalVisible, setMemoModalVisible] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+
   const handleDelete = () => {
     setFeedbacks((prevFeedbacks) =>
       prevFeedbacks.filter((item) => item.id !== selectedId)
     );
-    setModalVisible(false);
+    setDeleteModalVisible(false);
   };
 
-
-  const [inputText, setInputText] = useState("");
+  const [titleInputText, setTitleInputText] = useState("");
+  const [memoInputText, setMemoInputText] = useState("");
   const [titleNum, setTitleNum] = useState(0);
   const [memoNum, setMemoNum] = useState(0);
 
   useEffect(() => {
-      setTitleNum(inputText.length);
-    }, [inputText]);
+    setTitleNum(titleInputText.length);
+  }, [titleInputText]);
   useEffect(() => {
-    setMemoNum(inputText.length);
-  }, [inputText]);
+    setMemoNum(memoInputText.length);
+  }, [memoInputText]);
 
-  const [feedbacks, setFeedbacks] = useState([
-    { id: 1, memo: "기존 메모1" },
-    { id: 2, memo: "기존 메모2" },
-  ]);
+  const [feedbacks, setFeedbacks] = useState([]);
   const [selectedId, setSelectedId] = useState(null); // 어떤 항목을 수정 중인지 식별
 
   // 제목 수정 누르면 모달 열기 + 선택된 id 저장
@@ -49,23 +58,104 @@ const EditListModal = ({
   };
   useEffect(() => {
     if (isModalVisible) {
-      setInputText(item?.memo || "");
+      setTitleInputText(item?.title || "");
+    }
+  }, [isModalVisible, item]);
+  useEffect(() => {
+    if (isModalVisible) {
+      setMemoInputText(item?.memo || "");
     }
   }, [isModalVisible, item]);
 
-
-    if(titleNum>20) {
+  if (titleNum > 20) {
     alert("범위를 초과하였습니다");
-    }
-    else {
-    }
-    if(memoNum>=50) {
+  } else {
+  }
+  if (memoNum >= 50) {
     alert("범위를 초과하였습니다");
-    }
-    else {
-    }
+  } else {
+  }
 
+  const [newTitle, setNewTitle] = useState("");
+  const [newMemo, setNewMemo] = useState("");
 
+  const changeTitle = async (itemId, newTitle) => {
+    try {
+      const usersId = await AsyncStorage.getItem("userId");
+      const feedbackId = itemId; // 수정할 피드백의 ID
+      console.log(usersId);
+
+      if (usersId) {
+        await axios
+          .get(
+            `${process.env.EXPO_PUBLIC_API_URL}/feedback/${usersId}/${feedbackId}/title`
+          )
+          .then(async (res) => {
+            const url = `${process.env.EXPO_PUBLIC_API_URL}/feedback/${usersId}/${feedbackId}/title`;
+            const ress = await axios.patch(url, {
+              title: newTitle,
+            });
+            const updatedFeedback = ress.data;
+            console.log("수정된 데이터:", updatedFeedback);
+            console.log("PATCH URL:", url);
+            // 화면 상태 반영
+            setFeedbacks((prev) =>
+              prev.map((item) =>
+                item.id === itemId
+                  ? { ...item, title: updatedFeedback.title }
+                  : item
+              )
+            );
+          })
+          .catch((err) => {
+            console.error("title을 수정하지 못했습니다.", err);
+          });
+      } else {
+        console.log("userId가 저장되어 있지 않습니다.");
+      }
+    } catch (err) {
+      console.error("오류발생", err);
+    }
+  };
+
+  const changeMemo = async (itemId, newMemo) => {
+    try {
+      const usersId = await AsyncStorage.getItem("userId");
+      const feedbackId = itemId; // 수정할 피드백의 ID
+      console.log(usersId);
+
+      if (usersId) {
+        await axios
+          .get(
+            `${process.env.EXPO_PUBLIC_API_URL}/feedback/${usersId}/${feedbackId}/memo`
+          )
+          .then(async (res) => {
+            const url = `${process.env.EXPO_PUBLIC_API_URL}/feedback/${usersId}/${feedbackId}/memo`;
+            const ress = await axios.patch(url, {
+              memo: newMemo,
+            });
+            const updatedFeedback = ress.data;
+            console.log("수정된 데이터:", updatedFeedback);
+            console.log("PATCH URL:", url);
+            // 화면 상태 반영
+            setFeedbacks((prev) =>
+              prev.map((item) =>
+                item.id === itemId
+                  ? { ...item, memo: updatedFeedback.memo }
+                  : item
+              )
+            );
+          })
+          .catch((err) => {
+            console.error("memo를 수정하지 못했습니다.", err);
+          });
+      } else {
+        console.log("memo가 저장되어 있지 않습니다.");
+      }
+    } catch (err) {
+      console.error("오류발생", err);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -73,21 +163,24 @@ const EditListModal = ({
       <Pressable
         onPress={() => {
           close();
-          onTogglePin && onTogglePin();   // axios PATCH 호출 (부모에서 전달)
+          onTogglePin && onTogglePin(); // axios PATCH 호출 (부모에서 전달)
         }}
         style={[styles.wrapText, { borderBottomWidth: 0.3 }]}
       >
-        <Text style={styles.text}>{isPinned ? "최상단 고정 해제" : "최상단 고정"}</Text>
+        <Text style={styles.text}>
+          {isPinned ? "최상단 고정 해제" : "최상단 고정"}
+        </Text>
       </Pressable>
 
       {/* 아래 세 버튼은 기존 동작 그대로(닫기만) */}
       <Pressable
         onPress={() => {
           setTitleModalVisible(true);
-          setInputText(item.title);
+          setTitleInputText(item.title);
           setSelectedId(item.id);
         }}
-        style={[styles.wrapText, { borderBottomWidth: 0.3 }]}>
+        style={[styles.wrapText, { borderBottomWidth: 0.3 }]}
+      >
         <Text style={styles.text}>제목 수정</Text>
       </Pressable>
       <Modal
@@ -96,49 +189,92 @@ const EditListModal = ({
         visible={titleModalVisible}
         onRequestClose={() => setTitleModalVisible(false)}
       >
-        <View style={{
-          flex: 1,
-          backgroundColor: 'rgba(0, 0, 0, 0.5)',
-          justifyContent: 'center',
-          alignItems: 'center'
-        }}>
-          <View style={{
-            width: 350,
-            height: 210,
-            padding: 20,
-            backgroundColor: 'white',
-            borderRadius: 10,
-            elevation: 5,
-            alignItems: 'center',
-          }}>
-            <Text style={{ fontSize: 18, fontWeight: '600', marginBottom: 15 }}>제목 수정</Text>
-            <Text style={{ fontSize: 12, marginBottom: 7, marginLeft: 240, color: '#808080' }}>{titleNum}/20</Text>
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <View
+            style={{
+              width: 350,
+              height: 210,
+              padding: 20,
+              backgroundColor: "white",
+              borderRadius: 10,
+              elevation: 5,
+              alignItems: "center",
+            }}
+          >
+            <Text style={{ fontSize: 18, fontWeight: "600", marginBottom: 15 }}>
+              제목 수정
+            </Text>
+            <Text
+              style={{
+                fontSize: 12,
+                marginBottom: 7,
+                marginLeft: 240,
+                color: "#808080",
+              }}
+            >
+              {titleNum}/20
+            </Text>
             <TextInput
               style={{
-                width: 300, height: 50, borderRadius: 10,
-                borderWidth: 0.5, borderColor: '#CCCCCC', paddingLeft: 20
+                width: 300,
+                height: 50,
+                borderRadius: 10,
+                borderWidth: 0.5,
+                borderColor: "#CCCCCC",
+                paddingLeft: 20,
               }}
-              value={inputText}
-              onChangeText={setInputText}
-//              setTitleNum={inputText}
+              value={titleInputText}
+              onChangeText={setTitleInputText}
             />
-            <View style={{ flexDirection: 'row' }}>
-              <TouchableOpacity onPress={() => {setTitleModalVisible(false), setTitleNum(0)}}>
-                <View style={[styles.modalBtn, { marginRight: 15, marginTop: 15, backgroundColor: '#DDDDDD' }]}>
+            <View style={{ flexDirection: "row" }}>
+              <TouchableOpacity
+                onPress={() => {
+                  setTitleModalVisible(false), setTitleNum(0);
+                }}
+              >
+                <View
+                  style={[
+                    styles.modalBtn,
+                    {
+                      marginRight: 15,
+                      marginTop: 15,
+                      backgroundColor: "#DDDDDD",
+                    },
+                  ]}
+                >
                   <Text style={{ fontSize: 16 }}>취소</Text>
                 </View>
               </TouchableOpacity>
 
-              <TouchableOpacity onPress={() => {
-                setFeedbacks((prev) =>
-                  prev.map((item) =>
-                    item.id === selectedId ? { ...item, title: inputText } : item
-                  )
-                );
-                setTitleModalVisible(false);
-              }}>
-                <View style={[styles.modalBtn, { marginTop: 15, backgroundColor: '#5900FF' }]}>
-                  <Text style={{ fontSize: 16, color: 'white' }}>저장</Text>
+              <TouchableOpacity
+                onPress={() => {
+                  setFeedbacks((prev) =>
+                    prev.map((item) =>
+                      item.id === selectedId
+                        ? { ...item, title: titleInputText }
+                        : item
+                    )
+                  );
+                  setNewTitle(titleInputText);
+                  changeTitle(selectedId, titleInputText);
+                  setTitleModalVisible(false);
+                  // onUpdateTitle(item.id, inputText);
+                }}
+              >
+                <View
+                  style={[
+                    styles.modalBtn,
+                    { marginTop: 15, backgroundColor: "#5900FF" },
+                  ]}
+                >
+                  <Text style={{ fontSize: 16, color: "white" }}>저장</Text>
                 </View>
               </TouchableOpacity>
             </View>
@@ -149,7 +285,7 @@ const EditListModal = ({
       <Pressable
         onPress={() => {
           setMemoModalVisible(true);
-          setInputText(item.title);
+          setMemoInputText(item.memo);
           setSelectedId(item.id);
         }}
         style={[styles.wrapText, { borderBottomWidth: 0.3 }]}
@@ -162,49 +298,96 @@ const EditListModal = ({
         visible={memoModalVisible}
         onRequestClose={() => setMemoModalVisible(false)}
       >
-        <View style={{
-          flex: 1,
-          backgroundColor: 'rgba(0, 0, 0, 0.5)',
-          justifyContent: 'center',
-          alignItems: 'center'
-        }}>
-          <View style={{
-            width: 350,
-            height: 380,
-            padding: 20,
-            backgroundColor: 'white',
-            borderRadius: 10,
-            elevation: 5,
-            alignItems: 'center',
-          }}>
-            <Text style={{ fontSize: 18, fontWeight: 600, marginBottom: 15 }}>메모 수정</Text>
-            <Text style={{ fontSize: 12, marginBottom: 7, marginLeft: 240, color: '#808080' }}>{memoNum}/50</Text>
-            <TextInput style={{
-              width: 295, height: 230, borderRadius: 10,
-              borderWidth: 0.5, borderColor: '#CCCCCC', paddingLeft: 20,
-              paddingBottom: 170, fontSize: 16, multiline: 'true',
-            }} placeholder='메모를 작성해주세요'
-            onChangeText={setInputText}
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <View
+            style={{
+              width: 350,
+              height: 380,
+              padding: 20,
+              backgroundColor: "white",
+              borderRadius: 10,
+              elevation: 5,
+              alignItems: "center",
+            }}
+          >
+            <Text style={{ fontSize: 18, fontWeight: 600, marginBottom: 15 }}>
+              메모 수정
+            </Text>
+            <Text
+              style={{
+                fontSize: 12,
+                marginBottom: 7,
+                marginLeft: 240,
+                color: "#808080",
+              }}
+            >
+              {memoNum}/50
+            </Text>
+            <TextInput
+              style={{
+                width: 295,
+                height: 230,
+                borderRadius: 10,
+                borderWidth: 0.5,
+                borderColor: "#CCCCCC",
+                paddingLeft: 20,
+                paddingBottom: 170,
+                fontSize: 16,
+                multiline: "true",
+              }}
+              placeholder="메모를 작성해주세요"
+              value={memoInputText}
+              onChangeText={setMemoInputText}
             />
-            <View style={{ flexDirection: 'row', }}>
-              <TouchableOpacity onPress={() => {setMemoModalVisible(false), setMemoNum(0)}}>
-                <View style={[styles.modalBtn, { marginRight: 15, marginTop: 15, backgroundColor: '#DDDDDD' }]}>
-                  <Text style={{ fontSize: 16, }}>취소</Text>
+            <View style={{ flexDirection: "row" }}>
+              <TouchableOpacity
+                onPress={() => {
+                  setMemoModalVisible(false), setMemoNum(0);
+                }}
+              >
+                <View
+                  style={[
+                    styles.modalBtn,
+                    {
+                      marginRight: 15,
+                      marginTop: 15,
+                      backgroundColor: "#DDDDDD",
+                    },
+                  ]}
+                >
+                  <Text style={{ fontSize: 16 }}>취소</Text>
                 </View>
               </TouchableOpacity>
 
-              <TouchableOpacity onPress={() => {
-                Alert.alert('저장 버튼 클릭됨');
-                setMemoModalVisible(false);
-                setFeedbacks((prev) =>
-                  prev.map((item) =>
-                    item.id === selectedId ? { ...item, memo: inputText } : item
-                  )
-                );
-                setMemoModalVisible(false);
-              }}>
-                <View style={[styles.modalBtn, { marginTop: 15, backgroundColor: '#5900FF' }]}>
-                  <Text style={{ fontSize: 16, color: 'white' }}>저장</Text>
+              <TouchableOpacity
+                onPress={() => {
+                  setMemoModalVisible(false);
+                  setFeedbacks((prev) =>
+                    prev.map((item) =>
+                      item.id === selectedId
+                        ? { ...item, memo: memoInputText }
+                        : item
+                    )
+                  );
+                  setNewMemo(memoInputText);
+                  changeMemo(selectedId, memoInputText);
+                  setMemoModalVisible(false);
+                }}
+              >
+                <View
+                  style={[
+                    styles.modalBtn,
+                    { marginTop: 15, backgroundColor: "#5900FF" },
+                  ]}
+                >
+                  <Text style={{ fontSize: 16, color: "white" }}>저장</Text>
                 </View>
               </TouchableOpacity>
             </View>
@@ -214,8 +397,7 @@ const EditListModal = ({
 
       <Pressable
         onPress={() => {
-          setMemoModalVisible(true);
-          setInputText(item.title);
+          setDeleteModalVisible(true);
           setSelectedId(item.id);
         }}
         style={styles.wrapText}
@@ -275,7 +457,12 @@ const EditListModal = ({
                 </View>
               </TouchableOpacity>
 
-              <TouchableOpacity onPress={handleDelete}>
+              <TouchableOpacity
+                onPress={() => {
+                  feedbackDelete(selectedId);
+                  setDeleteModalVisible(false);
+                }}
+              >
                 <View
                   style={[
                     styles.modalBtn,
@@ -318,9 +505,9 @@ const styles = StyleSheet.create({
     width: 140,
     height: 45,
     borderRadius: 10,
-    justifyContent: 'center',
-    alignItems: 'center'
-  }
+    justifyContent: "center",
+    alignItems: "center",
+  },
 });
 
 export default EditListModal;

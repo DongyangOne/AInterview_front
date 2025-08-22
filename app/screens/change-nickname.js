@@ -10,24 +10,62 @@ import {
   Image,
   KeyboardAvoidingView,
   Platform,
+  Alert,
 } from "react-native";
 import { useRouter } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import axios from "axios";
 
 export default function ChangeNicknameScreen() {
   const router = useRouter();
   const [nickname, setNickname] = useState("");
   const [isValid, setIsValid] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [userId, setUserId] = useState("");
 
   useEffect(() => {
     const nicknameRegex = /^[a-z0-9가-힣]{2,8}$/i;
     setIsValid(nickname === "" || nicknameRegex.test(nickname));
   }, [nickname]);
 
-  const handleSubmit = () => {
-    if (!isValid || nickname === "") return;
-    // ✅ 닉네임 저장 처리 (예: 서버 API 요청)
-    console.log("변경된 닉네임:", nickname);
-    router.back();
+  useEffect(() => {
+    const fetchUserId = async () => {
+      try {
+        const id = await AsyncStorage.getItem("userId");
+        console.log("userId from storage:", id);
+        if (id) setUserId(id);
+      } catch (error) {
+        console.log("유저 ID 불러오기 실패", error);
+      }
+    };
+    fetchUserId();
+  }, []);
+
+  const handleSubmit = async () => {
+    if (!isValid || nickname === "" || userId === "") return;
+    setLoading(true);
+    try {
+      const response = await axios.post(
+        `${process.env.EXPO_PUBLIC_API_URL}/user/changeName`,
+        {
+          userId: userId,
+          newName: nickname,
+        }
+      );
+      if (response.data.success) {
+        await AsyncStorage.setItem("NickName", nickname);
+        Alert.alert("성공", `닉네임이 ${nickname}(으)로 변경되었습니다.`, [
+          { text: "확인", onPress: () => router.replace("/home") },
+        ]);
+      } else {
+        Alert.alert("실패", response.data.message || "닉네임 변경에 실패했습니다.");
+      }
+    } catch (error) {
+      Alert.alert("에러", "서버와의 통신에 실패했습니다.");
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -38,7 +76,7 @@ export default function ChangeNicknameScreen() {
           <Image
             source={require("../../assets/icons/arrow1.png")}
             style={styles.backIcon}
-            resizeMode="25"
+            resizeMode="contain"
           />
         </TouchableOpacity>
         <Text style={styles.title}>닉네임 변경</Text>
@@ -69,10 +107,10 @@ export default function ChangeNicknameScreen() {
       <View style={styles.bottomButtonWrapper}>
         <TouchableOpacity
           style={styles.button}
-          disabled={!isValid || nickname === ""}
+          disabled={!isValid || nickname === "" || loading}
           onPress={handleSubmit}
         >
-          <Text style={styles.buttonText}>확인</Text>
+          <Text style={styles.buttonText}>{loading ? "처리 중..." : "확인"}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -124,8 +162,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#5900FF", // ← 이 줄 추가!
+    backgroundColor: "#5900FF",
   },
-
   buttonText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
 });

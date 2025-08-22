@@ -1,5 +1,13 @@
 import {
-  View, Text, TextInput, StyleSheet, TouchableOpacity, Image, FlatList, Pressable, Alert,
+  View,
+  Text,
+  TextInput,
+  StyleSheet,
+  TouchableOpacity,
+  Image,
+  FlatList,
+  Pressable,
+  Alert,
 } from "react-native";
 import { useMemo, useState, useEffect } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -7,16 +15,17 @@ import AlignModal from "../../components/Modal/AlignModal";
 import EditListModal from "../../components/Modal/EditListModal";
 import { useRouter } from "expo-router";
 import axios from "axios";
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { EXPO_PUBLIC_API_URL } from '@env';
-
-//const USER_ID = "1"; // 고정
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import DeleteCheckModal from "../../components/Modal/DeleteModal";
+import MemoChangeModal from "../../components/Modal/MemoChangeModal";
 
 export default function Feedback() {
   const [feedbackList, setFeedbackList] = useState([]);
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState("basic");
   const [openModalItemId, setOpenModalItemId] = useState(null);
+  const [deleteModal, setDeleteModal] = useState(false);
+  const [memoModal, setMemoModal] = useState(false);
   const [loadingId, setLoadingId] = useState(null);
   const [searchText, setSearchText] = useState("");
   const route = useRouter();
@@ -27,26 +36,38 @@ export default function Feedback() {
         const usersId = await AsyncStorage.getItem("userId");
 
         console.log(usersId);
-        const userId = 1;
         if (!usersId) {
           console.log("userId가 저장되어 있지 않습니다.");
           return;
         }
         //API 요청 보내기
-        const res = await axios.get(`${EXPO_PUBLIC_API_URL}/feedback`, {
-          params: { userId: usersId }, // userId를 쿼리 파라미터로 전송
-        });
-        const data = await res.json();
 
-        const mappedData = data.data.map(item => ({
-          id: item.notice_id.toString(),
-          date: new Date(item.created_at).toLocaleDateString("ko-KR"),
-          title: item.title,
-          memo: item.content,
-          pin: item.is_read === "N" ? "Y" : "N",
-        }));
+        if (usersId !== null) {
+          await axios
+            .get(`${process.env.EXPO_PUBLIC_API_URL}/feedback/${usersId}`)
+            .then(async (res) => {
+              const url = `${process.env.EXPO_PUBLIC_API_URL}/feedback/${usersId}`;
+              const ress = await axios.get(url);
+              const data = ress.data;
 
-        setFeedbackList(mappedData);
+              const mappedData = data.data.map((item) => ({
+                id: item.id.toString(),
+                date: new Date(item.created_at).toLocaleDateString("ko-KR", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                }),
+                title: item.title,
+                memo: item.memo,
+                pin: item.pin || "N",
+              }));
+
+              setFeedbackList(mappedData);
+            })
+            .catch((err) => {
+              console.error("조회 실패.", err);
+            });
+        }
       } catch (error) {
         console.error(error);
       }
@@ -54,21 +75,20 @@ export default function Feedback() {
 
     fetchData();
   }, []);
+
   const filteredList = useMemo(() => {
     if (!searchText.trim()) return feedbackList;
 
     const lowerSearch = searchText.trim().toLowerCase();
-    const normalize = str => str.trim().toLowerCase();
+    const normalize = (str) => str.trim().toLowerCase();
 
-
-    return feedbackList.filter(item => {
+    return feedbackList.filter((item) => {
       return (
         normalize(item.title).includes(lowerSearch) ||
         item.date.includes(lowerSearch)
       );
     });
   }, [searchText, feedbackList]);
-
 
   const sortedList = useMemo(() => {
     const listToSort = filteredList;
@@ -81,81 +101,46 @@ export default function Feedback() {
     });
   }, [filteredList]);
 
-
-  // PATCH: pin / unpin
-  const togglePin = async (item) => {
-    const willPin = item.pin !== "Y";
-    const usersId = await AsyncStorage.getItem("userId");
-
-    // 2️⃣ API 요청 보내기
-    const res = await axios.get(`${EXPO_PUBLIC_API_URL}/feedback`, {
-      params: { userId: usersId }, // userId를 쿼리 파라미터로 전송
-    });
-    //    const userId = "1";
-    const url = willPin
-      ? `${EXPO_PUBLIC_API_URL}/feedback/pin/${usersId}/${item.id}`
-      : `${EXPO_PUBLIC_API_URL}/feedback/unpin/${usersId}/${item.id}`;
-
-    try {
-      setLoadingId(item.id);
-
-      // UI 즉시 업데이트
-      setFeedbackList(prev =>
-        prev.map(v => (v.id === item.id ? { ...v, pin: willPin ? "Y" : "N" } : v))
-      );
-      const usersId = await AsyncStorage.getItem("userId");
-
-      // 2️⃣ API 요청 보내기
-      const res = await axios.get(`${API_URL}/feedback`, {
-        params: { userId: usersId }, // userId를 쿼리 파라미터로 전송
-      });
-      //      const res = await axios.patch(url);  // 여기 한 번만 호출
-
-
-      console.log("서버 응답:", res.data);
-
-      if (!res?.data?.success) {
-        // 실패 시 롤백
-        setFeedbackList(prev =>
-          prev.map(v => (v.id === item.id ? { ...v, pin: item.pin } : v))
-        );
-        Alert.alert("실패", res?.data?.message || "요청을 처리하지 못했습니다.");
-      }
-    } catch (e) {
-      // 롤백
-      setFeedbackList(prev =>
-        prev.map(v => (v.id === item.id ? { ...v, pin: item.pin } : v))
-      );
-      Alert.alert("네트워크 오류", "잠시 후 다시 시도해 주세요.");
-    } finally {
-      setLoadingId(null);
-    }
-  };
-
-
-
+  const openDeleteModal = () => setDeleteModal(true);
+  const closeDeleteModal = () => setDeleteModal(false);
+  const openMemoModal = () => setMemoModal(true);
+  const closeMemoModal = () => setMemoModal(false);
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.head}>
-        <Text style={{ fontSize: 20, fontWeight: "500" }}>나의 피드백 목록</Text>
+        <Text style={{ fontSize: 20, fontWeight: "500" }}>
+          나의 피드백 목록
+        </Text>
       </View>
 
       <View style={styles.search}>
-        <TextInput style={styles.searchInput} placeholder="제목, 날짜, 메모 검색"
+        <TextInput
+          style={styles.searchInput}
+          placeholder="제목, 날짜, 메모 검색"
           value={searchText}
           onChangeText={setSearchText}
         />
-        <Image source={require("../../assets/icons/search.png")} style={{ width: 24, height: 24 }} />
+        <Image
+          source={require("../../assets/icons/search.png")}
+          style={{ width: 24, height: 24 }}
+        />
       </View>
 
       <View style={styles.wrapFilter}>
         <Text style={{ fontSize: 15, color: "#808080" }}>모든 피드백</Text>
-        <Pressable onPress={() => setOpen(!open)} style={{ flexDirection: "row", alignItems: "center" }}>
+        <Pressable
+          onPress={() => setOpen(!open)}
+          style={{ flexDirection: "row", alignItems: "center" }}
+        >
           <Text style={{ fontSize: 15 }}>정렬기준</Text>
           <Image
             style={{ width: 28, height: 14 }}
-            source={open ? require("../../assets/icons/arrow_down.png") : require("../../assets/icons/arrow_up.png")}
+            source={
+              open
+                ? require("../../assets/icons/arrow_down.png")
+                : require("../../assets/icons/arrow_up.png")
+            }
           />
         </Pressable>
         {open ? <AlignModal setOpen={setOpen} setMode={mode} /> : null}
@@ -165,6 +150,28 @@ export default function Feedback() {
         data={sortedList}
         keyExtractor={(item) => item.id}
         showsVerticalScrollIndicator={false}
+        removeClippedSubviews={false}
+        CellRendererComponent={(props) => {
+          const { index, style, children, ...rest } = props;
+          const item = sortedList[index];
+          const isOpen = item?.id === openModalItemId;
+
+          return (
+            <View
+              {...rest}
+              style={[
+                style,
+                {
+                  zIndex: isOpen ? 10000 : 0,
+                  elevation: isOpen ? 10000 : 0,
+                  overflow: "visible",
+                },
+              ]}
+            >
+              {children}
+            </View>
+          );
+        }}
         renderItem={({ item }) => {
           const isModalVisible = openModalItemId === item.id;
           const isPinned = item.pin === "Y";
@@ -172,36 +179,95 @@ export default function Feedback() {
           return (
             <Pressable
               onPress={() => route.push("/screens/FeedbackDetail")}
-              style={[styles.contentBox, { position: "relative" }]}
+              style={[
+                styles.contentBox,
+                {
+                  position: "relative",
+                  overflow: "visible",
+                  zIndex: isModalVisible ? 9999 : 0,
+                  elevation: isModalVisible ? 9999 : 0,
+                },
+              ]}
             >
-              {/* 보라색 저장 아이콘: pin일 때만 표시 */}
               {isPinned && (
                 <Image
                   source={require("../../assets/icons/bookmark.png")}
-                  style={{ width: 50, height: 50, marginLeft: 270, top: -12, position: "absolute" }}
+                  style={{
+                    width: 50,
+                    height: 50,
+                    marginLeft: 270,
+                    top: -12,
+                    position: "absolute",
+                  }}
                 />
               )}
 
-              <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                }}
+              >
                 <Text style={styles.fontTw1}>{item.date}</Text>
 
                 <TouchableOpacity
                   style={{ top: 20, right: 14 }}
-                  onPress={() => setOpenModalItemId(isModalVisible ? null : item.id)}
+                  onPress={() =>
+                    setOpenModalItemId(isModalVisible ? null : item.id)
+                  }
                   disabled={loadingId === item.id}
                 >
-                  <Image source={require("../../assets/icons/dot.png")} style={{ width: 24, height: 24 }} />
+                  <Image
+                    source={require("../../assets/icons/dot.png")}
+                    style={{ width: 24, height: 24 }}
+                  />
                 </TouchableOpacity>
 
                 {isModalVisible ? (
-                  <View style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, zIndex: 9999 }}>
-                    <EditListModal
-                      item={item}
-                      setOpenModalItemId={setOpenModalItemId}
-                      isModalVisible={isModalVisible}
-                      isPinned={isPinned}
-                      onTogglePin={() => togglePin(item)}
-                    />
+                  <View
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      zIndex: 10000,
+                      elevation: 10000,
+                      overflow: "visible",
+                    }}
+                    pointerEvents="box-none"
+                  >
+                    <View
+                      style={{
+                        position: "absolute",
+                        top: 0,
+                        right: 1,
+                        zIndex: 10000,
+                        elevation: 10000,
+                        overflow: "visible",
+                      }}
+                    >
+                      <EditListModal
+                        item={item}
+                        setOpenModalItemId={setOpenModalItemId}
+                        isModalVisible={isModalVisible}
+                        openMemoModal={openMemoModal}
+                        openDeleteModal={openDeleteModal}
+                        isPinned={isPinned}
+                        onToggleonDelete={(id) =>
+                          setFeedbacks((prev) =>
+                            prev.filter((item) => item.id !== id)
+                          )
+                        }
+                        onDelete={(id) =>
+                          setFeedbacks((prev) =>
+                            prev.filter((item) => item.id !== id)
+                          )
+                        }
+                        // onUpdateTitle={handleUpdateTitle}
+                        // onUpdateMemo={handleUpdateMemo}
+                      />
+                    </View>
                   </View>
                 ) : null}
               </View>
@@ -214,12 +280,19 @@ export default function Feedback() {
           );
         }}
       />
+      <DeleteCheckModal visible={deleteModal} onCancel={closeDeleteModal} />
+      <MemoChangeModal visible={memoModal} onCancel={closeMemoModal} />
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "white", paddingHorizontal: 32, zIndex: 20000 },
+  container: {
+    flex: 1,
+    backgroundColor: "white",
+    paddingHorizontal: 32,
+    zIndex: 20000,
+  },
   head: { height: 60, alignItems: "center", justifyContent: "center" },
   search: {
     flexDirection: "row",
@@ -233,12 +306,35 @@ const styles = StyleSheet.create({
     paddingRight: 12,
   },
   searchInput: { height: 50, fontSize: 15 },
-  wrapFilter: { flexDirection: "row", justifyContent: "space-between", marginTop: 35, marginBottom: 10 },
+  wrapFilter: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 35,
+    marginBottom: 10,
+  },
   contentBox: {
-    borderRadius: 10, borderWidth: 0.5, borderColor: "#cccccc",
-    width: "100%", height: 135, marginBottom: 10, marginTop: 10, backgroundColor: "white",
+    borderRadius: 10,
+    borderWidth: 0.5,
+    borderColor: "#cccccc",
+    width: "100%",
+    height: 135,
+    marginBottom: 10,
+    marginTop: 10,
+    backgroundColor: "white",
   },
   fontTw1: { marginTop: 24, marginLeft: 17, fontSize: 14, color: "#808080" },
-  fontTw2: { fontSize: 18, marginTop: 15, marginLeft: 17, marginBottom: 10, fontWeight: "600" },
-  fontTw3: { fontSize: 15, marginLeft: 17, marginBottom: 10, bottom: 5, color: "#808080" },
+  fontTw2: {
+    fontSize: 18,
+    marginTop: 15,
+    marginLeft: 17,
+    marginBottom: 10,
+    fontWeight: "600",
+  },
+  fontTw3: {
+    fontSize: 15,
+    marginLeft: 17,
+    marginBottom: 10,
+    bottom: 5,
+    color: "#808080",
+  },
 });
