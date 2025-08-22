@@ -42,24 +42,31 @@ export default function Feedback() {
         }
         //API 요청 보내기
 
-        const url = `${process.env.EXPO_PUBLIC_API_URL}/feedback/${usersId}`;
-        const res = await axios.get(url);
+        if (usersId !== null) {
+          const res = await axios
+            .get(`https://api.example.com/feedback/${usersId}`)
+            .then(async (res) => {
+              const url = `${process.env.EXPO_PUBLIC_API_URL}/feedback/${usersId}`;
+              const ress = await axios.get(url);
+              const data = ress.data;
 
-        const data = res.data;
+              const mappedData = data.data.map((item) => ({
+                id: item.id.toString(),
+                date: new Date(item.created_at).toLocaleDateString("ko-KR", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                }),
+                title: item.title,
+                memo: item.memo,
+                pin: item.pin || "N",
+              }));
 
-        const mappedData = data.data.map((item) => ({
-          id: item.id.toString(),
-          date: new Date(item.created_at).toLocaleDateString("ko-KR", {
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-          }),
-          title: item.title,
-          memo: item.memo,
-          pin: item.pin || "N",
-        }));
+              setFeedbackList(mappedData);
+            })
+        }
 
-        setFeedbackList(mappedData);
+
       } catch (error) {
         console.error(error);
       }
@@ -102,62 +109,7 @@ export default function Feedback() {
 
 
 
-  //----------- 고정------------
 
-
-
-
-
-
-
-  // PATCH: pin / unpin
-  const togglePin = async (item) => {
-
-
-
-    try {
-
-      const willPin = item.pin !== "Y";
-      const usersId = await AsyncStorage.getItem("userId");
-
-      const url = willPin
-        ? `${process.env.EXPO_PUBLIC_API_URL}/feedback/pin/${usersId}/${item.id}`
-        : `${process.env.EXPO_PUBLIC_API_URL}/feedback/unpin/${usersId}/${item.id}`;
-      const res = await axios.patch(url, {}); // body 추가
-      console.log("요청 URL:", url);
-      console.log("응답:", res.data);
-      console.log("사용자 ID:", usersId);
-      setLoadingId(item.id);
-
-      // UI 즉시 업데이트
-      setFeedbackList((prev) =>
-        prev.map((v) =>
-          v.id === item.id ? { ...v, pin: willPin ? "Y" : "N" } : v
-        )
-      );
-
-      console.log("서버 응답:", res.data);
-
-      if (!res?.data?.success) {
-        // 실패 시 롤백
-        setFeedbackList((prev) =>
-          prev.map((v) => (v.id === item.id ? { ...v, pin: item.pin } : v))
-        );
-        Alert.alert(
-          "실패",
-          res?.data?.message || "요청을 처리하지 못했습니다."
-        );
-      }
-    } catch (e) {
-      // 롤백
-      setFeedbackList((prev) =>
-        prev.map((v) => (v.id === item.id ? { ...v, pin: item.pin } : v))
-      );
-      Alert.alert("네트워크 오류", "잠시 후 다시 시도해 주세요.");
-    } finally {
-      setLoadingId(null);
-    }
-  };
 
 
   const openDeleteModal = () => setDeleteModal(true);
@@ -313,7 +265,8 @@ export default function Feedback() {
                         openMemoModal={openMemoModal}
                         openDeleteModal={openDeleteModal}
                         isPinned={isPinned}
-                        onTogglePin={() => togglePin(item)}
+                        onToggleonDelete={(id) => setFeedbacks(prev => prev.filter(item => item.id !== id))}
+                        onDelete={(id) => setFeedbacks(prev => prev.filter(item => item.id !== id))}
                       // onUpdateTitle={handleUpdateTitle}
                       // onUpdateMemo={handleUpdateMemo}
                       />

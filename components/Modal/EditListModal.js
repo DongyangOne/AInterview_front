@@ -22,11 +22,12 @@ const EditListModal = ({
   const [titleModalVisible, setTitleModalVisible] = useState(false);
   const [memoModalVisible, setMemoModalVisible] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+
   const handleDelete = () => {
     setFeedbacks((prevFeedbacks) =>
       prevFeedbacks.filter((item) => item.id !== selectedId)
     );
-    setModalVisible(false);
+    setDeleteModalVisible(false);
   };
 
 
@@ -84,29 +85,35 @@ const EditListModal = ({
       const feedbackId = itemId; // 수정할 피드백의 ID
       console.log(usersId);
 
-      if (!usersId) {
-        console.log("userId가 저장되어 있지 않습니다.");
-        return;
+      if (usersId) {
+        const res = await axios
+          .get(`${process.env.EXPO_PUBLIC_API_URL}/feedback/${usersId}/${feedbackId}/title`)
+          .then(async (res) => {
+            const url = `${process.env.EXPO_PUBLIC_API_URL}/feedback/${usersId}/${feedbackId}/title`;
+            const ress = await axios.patch(url, {
+              title: newTitle,
+            })
+            const updatedFeedback = ress.data;
+            console.log("수정된 데이터:", updatedFeedback);
+            console.log("PATCH URL:", url);
+            // 화면 상태 반영
+            setFeedbacks((prev) =>
+              prev.map((item) =>
+                item.id === itemId ? { ...item, title: updatedFeedback.title } : item
+              )
+            );
+          })
+          .catch((err) => {
+            console.error("title을 수정하지 못했습니다.", err);
+          })
       }
-      //API 요청 보내기
+      else {
+        console.log("userId가 저장되어 있지 않습니다.");
+      }
 
-      const url = `${process.env.EXPO_PUBLIC_API_URL}/feedback/${usersId}/${feedbackId}/title`;
-      const res = await axios.patch(url, {
-        title: newTitle,
-      });
 
-      const updatedFeedback = res.data;
-      console.log("수정된 데이터:", updatedFeedback);
-      console.log("PATCH URL:", url);
-      console.log("Request body:", { title: newTitle });
-      // 화면 상태 반영
-      setFeedbacks((prev) =>
-        prev.map((item) =>
-          item.id === itemId ? { ...item, title: updatedFeedback.title } : item
-        )
-      );
-    } catch (error) {
-      console.error("title을 수정하지 못했습니다.", error);
+    } catch (err) {
+      console.error("오류발생", err);
     }
   };
 
@@ -118,33 +125,37 @@ const EditListModal = ({
       const feedbackId = itemId; // 수정할 피드백의 ID
       console.log(usersId);
 
-      if (!usersId) {
-        console.log("userId가 저장되어 있지 않습니다.");
-        return;
+      if (usersId) {
+        const res = await axios
+          .get(`${process.env.EXPO_PUBLIC_API_URL}/feedback/${usersId}/${feedbackId}/memo`)
+          .then(async (res) => {
+            const url = `${process.env.EXPO_PUBLIC_API_URL}/feedback/${usersId}/${feedbackId}/memo`;
+            const ress = await axios.patch(url, {
+              memo: newMemo,
+            })
+            const updatedFeedback = ress.data;
+            console.log("수정된 데이터:", updatedFeedback);
+            console.log("PATCH URL:", url);
+            // 화면 상태 반영
+            setFeedbacks((prev) =>
+              prev.map((item) =>
+                item.id === itemId ? { ...item, memo: updatedFeedback.memo } : item
+              )
+            );
+          })
+          .catch((err) => {
+            console.error("title을 수정하지 못했습니다.", err);
+          })
       }
-      //API 요청 보내기
+      else {
+        console.log("userId가 저장되어 있지 않습니다.");
+      }
 
-      const url = `${process.env.EXPO_PUBLIC_API_URL}/feedback/${usersId}/${feedbackId}/memo`;
-      const res = await axios.patch(url, {
-        memo: newMemo,
-      });
 
-      const updatedFeedback = res.data;
-      console.log("수정된 데이터:", updatedFeedback);
-      console.log("PATCH URL:", url);
-      console.log("Request body:", { memo: newMemo });
-      // 화면 상태 반영
-      setFeedbacks((prev) =>
-        prev.map((item) =>
-          item.id === itemId ? { ...item, memo: updatedFeedback.memo } : item
-        )
-      );
-    } catch (error) {
-      console.error("memo 수정하지 못했습니다.", error);
+    } catch (err) {
+      console.error("오류발생", err);
     }
   };
-
-
 
 
 
@@ -299,8 +310,7 @@ const EditListModal = ({
 
       <Pressable
         onPress={() => {
-          setMemoModalVisible(true);
-          setInputText(item.title);
+          setDeleteModalVisible(true);
           setSelectedId(item.id);
         }}
         style={styles.wrapText}
@@ -360,7 +370,7 @@ const EditListModal = ({
                 </View>
               </TouchableOpacity>
 
-              <TouchableOpacity onPress={handleDelete}>
+              <TouchableOpacity onPress={() => { feedbackDelete(selectedId); setDeleteModalVisible(false); }}>
                 <View
                   style={[
                     styles.modalBtn,
