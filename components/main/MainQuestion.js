@@ -30,7 +30,7 @@ export default function MainQuestion() {
         } else {
           // 2. 오늘 날짜고 저장된 질문 있으면 그걸 사용
           setQuestToday(TodayQuest);
-          console.log("저장된 질문:", questToday);
+          console.log("저장된 질문:", TodayQuest);
           console.log("저장된 날짜:", today);
         }
       } catch (err) {

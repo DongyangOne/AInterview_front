@@ -9,7 +9,6 @@ export default function Bell() {
   const [notis, setNotis] = useState([]);
   const [time, setTime] = useState();
   const apiTime = new Date(time);
-  const [getNoticeid, setGetNoticeid] = useState("");
   const [usersId, setUsersId] = useState("");
   useEffect(() => {
     const bellData = async () => {
@@ -24,12 +23,12 @@ export default function Bell() {
         await axios
           .get(`${process.env.EXPO_PUBLIC_API_URL}/notice/${storedUserId}`)
           .then((res) => {
-            console.log(res.data);
             if (res.data && res.data.success) {
               setTime(res.data.created_at);
               const newNotis = res.data.data || [];
               const unreadNotis = newNotis.filter((n) => n.is_read === "N");
               setNotis(unreadNotis);
+              unreadNotis.forEach((n) => console.log("안 읽은 알람", n));
             }
           });
       } catch (error) {
@@ -40,10 +39,15 @@ export default function Bell() {
     bellData();
   }, []);
 
-  const pacthNotices = (id) => {
-    axios.patch(
-      `${process.env.EXPO_PUBLIC_API_URL}/notice/${usersId}/${id}/read`
-    );
+  const pacthNotices = async (id) => {
+    await axios
+      .patch(`${process.env.EXPO_PUBLIC_API_URL}/notice/${usersId}/${id}/read`)
+      .then((res) => {
+        console.log(res.data);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
   };
   const getTimes = (apiTime) => {
     const now = new Date();
@@ -74,10 +78,6 @@ export default function Bell() {
     setNotis((prev) =>
       prev.map((n) => (n.notice_id === id ? { ...n, read: true } : n))
     );
-
-    const a = id.toString();
-    setGetNoticeid(a);
-    console.log(getNoticeid);
     pacthNotices(id);
   };
 
