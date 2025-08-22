@@ -21,27 +21,27 @@ export default function MyPage() {
   const [myInfo, setMyInfo] = useState(null);
   const [error, setError] = useState('');
 
-
   useEffect(() => {
     const fetchMyInfo = async () => {
-      try {
-        const usersId = await AsyncStorage.getItem("userId");
-        setError('');
-        const res = await axios.get(
-          `${process.env.EXPO_PUBLIC_API_URL}/myPage/myInfo`,
-          {
-            params: { userId: usersId },
-            withCredentials: true
-          }
-        );
-        setMyInfo(res.data);
-      } catch (err) {
-        setError(
-          "내 정보 불러오기 실패: " +
-            (err?.response?.data?.message || err.message)
-        );
-        setMyInfo(null);
-      }
+      const usersId = await AsyncStorage.getItem("userId");
+      setError('');
+      axios
+        .get(`${process.env.EXPO_PUBLIC_API_URL}/myPage/myInfo`, {
+          params: { userId: usersId },
+          withCredentials: true
+        })
+        .then((res) => {
+          console.log("[myInfo] Response:", res.data);
+          setMyInfo(res.data);
+        })
+        .catch((err) => {
+          console.error("[myInfo] Error:", err?.response?.data || err);
+          setError(
+            "내 정보 불러오기 실패: " +
+              (err?.response?.data?.message || err.message)
+          );
+          setMyInfo(null);
+        });
     };
     fetchMyInfo();
   }, []);
