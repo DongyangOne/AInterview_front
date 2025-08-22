@@ -67,7 +67,7 @@ export default function ChangePasswordScreen() {
           router.back();
         });
     } catch (error) {
-      console.error("[changePw] Error:", error?.response?.data || error);
+      console.log("[changePw] Error:", error?.response?.data || error);
 
       const errArr = error?.response?.data?.error ?? [];
       if (
