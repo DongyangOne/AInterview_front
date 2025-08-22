@@ -144,11 +144,11 @@ const EditListModal = ({
             );
           })
           .catch((err) => {
-            console.error("title을 수정하지 못했습니다.", err);
+            console.error("memo를 수정하지 못했습니다.", err);
           })
       }
       else {
-        console.log("userId가 저장되어 있지 않습니다.");
+        console.log("memo가 저장되어 있지 않습니다.");
       }
 
 

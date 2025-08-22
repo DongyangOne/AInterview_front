@@ -60,9 +60,15 @@ export default function Feedback() {
                 title: item.title,
                 memo: item.memo,
                 pin: item.pin || "N",
-              }));
+              })
+
+              );
+
 
               setFeedbackList(mappedData);
+            })
+            .catch((err) => {
+              console.error("memo를 수정하지 못했습니다.", err);
             })
         }
 
