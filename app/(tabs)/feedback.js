@@ -56,7 +56,6 @@ export default function Feedback() {
           }),
           title: item.title,
           memo: item.memo,
-          // pin: item.is_read === "N" ? "Y" : "N",
           pin: item.pin || "N",
         }));
 
@@ -93,6 +92,23 @@ export default function Feedback() {
       return new Date(b.date) - new Date(a.date);
     });
   }, [filteredList]);
+
+
+
+
+
+
+
+
+
+
+  //----------- 고정------------
+
+
+
+
+
+
 
   // PATCH: pin / unpin
   const togglePin = async (item) => {
@@ -142,6 +158,7 @@ export default function Feedback() {
       setLoadingId(null);
     }
   };
+
 
   const openDeleteModal = () => setDeleteModal(true);
   const closeDeleteModal = () => setDeleteModal(false);
@@ -297,6 +314,8 @@ export default function Feedback() {
                         openDeleteModal={openDeleteModal}
                         isPinned={isPinned}
                         onTogglePin={() => togglePin(item)}
+                      // onUpdateTitle={handleUpdateTitle}
+                      // onUpdateMemo={handleUpdateMemo}
                       />
                     </View>
                   </View>

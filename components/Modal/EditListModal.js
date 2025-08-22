@@ -3,7 +3,8 @@ import {
   TouchableOpacity, Alert, ScrollView, Image
 } from "react-native";
 import { useState, useEffect } from 'react';
-
+import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 
 const EditListModal = ({
@@ -12,6 +13,8 @@ const EditListModal = ({
   isModalVisible,
   isPinned,             // <-- 추가: 현재 고정 여부
   onTogglePin,          // <-- 추가: 고정/해제 실행 함수
+  // onUpdateTitle,
+  // onUpdateMemo
 }) => {
   const close = () => setOpenModalItemId(isModalVisible ? null : item);
 
@@ -27,21 +30,19 @@ const EditListModal = ({
   };
 
 
-  const [inputText, setInputText] = useState("");
+  const [titleInputText, setTitleInputText] = useState("");
+  const [memoInputText, setMemoInputText] = useState("");
   const [titleNum, setTitleNum] = useState(0);
   const [memoNum, setMemoNum] = useState(0);
 
   useEffect(() => {
-    setTitleNum(inputText.length);
-  }, [inputText]);
+    setTitleNum(titleInputText.length);
+  }, [titleInputText]);
   useEffect(() => {
-    setMemoNum(inputText.length);
-  }, [inputText]);
+    setMemoNum(memoInputText.length);
+  }, [memoInputText]);
 
-  const [feedbacks, setFeedbacks] = useState([
-    { id: 1, memo: "기존 메모1" },
-    { id: 2, memo: "기존 메모2" },
-  ]);
+  const [feedbacks, setFeedbacks] = useState([]);
   const [selectedId, setSelectedId] = useState(null); // 어떤 항목을 수정 중인지 식별
 
   // 제목 수정 누르면 모달 열기 + 선택된 id 저장
@@ -51,7 +52,12 @@ const EditListModal = ({
   };
   useEffect(() => {
     if (isModalVisible) {
-      setInputText(item?.memo || "");
+      setTitleInputText(item?.title || "");
+    }
+  }, [isModalVisible, item]);
+  useEffect(() => {
+    if (isModalVisible) {
+      setMemoInputText(item?.memo || "");
     }
   }, [isModalVisible, item]);
 
@@ -66,6 +72,79 @@ const EditListModal = ({
   }
   else {
   }
+
+  const [newTitle, setNewTitle] = useState("");
+  const [newMemo, setNewMemo] = useState("");
+
+  const changeTitle = async (itemId, newTitle) => {
+
+
+    try {
+      const usersId = await AsyncStorage.getItem("userId");
+      const feedbackId = itemId; // 수정할 피드백의 ID
+      console.log(usersId);
+
+      if (!usersId) {
+        console.log("userId가 저장되어 있지 않습니다.");
+        return;
+      }
+      //API 요청 보내기
+
+      const url = `${process.env.EXPO_PUBLIC_API_URL}/feedback/${usersId}/${feedbackId}/title`;
+      const res = await axios.patch(url, {
+        title: newTitle,
+      });
+
+      const updatedFeedback = res.data;
+      console.log("수정된 데이터:", updatedFeedback);
+      console.log("PATCH URL:", url);
+      console.log("Request body:", { title: newTitle });
+      // 화면 상태 반영
+      setFeedbacks((prev) =>
+        prev.map((item) =>
+          item.id === itemId ? { ...item, title: updatedFeedback.title } : item
+        )
+      );
+    } catch (error) {
+      console.error("title을 수정하지 못했습니다.", error);
+    }
+  };
+
+  const changeMemo = async (itemId, newMemo) => {
+
+
+    try {
+      const usersId = await AsyncStorage.getItem("userId");
+      const feedbackId = itemId; // 수정할 피드백의 ID
+      console.log(usersId);
+
+      if (!usersId) {
+        console.log("userId가 저장되어 있지 않습니다.");
+        return;
+      }
+      //API 요청 보내기
+
+      const url = `${process.env.EXPO_PUBLIC_API_URL}/feedback/${usersId}/${feedbackId}/memo`;
+      const res = await axios.patch(url, {
+        memo: newMemo,
+      });
+
+      const updatedFeedback = res.data;
+      console.log("수정된 데이터:", updatedFeedback);
+      console.log("PATCH URL:", url);
+      console.log("Request body:", { memo: newMemo });
+      // 화면 상태 반영
+      setFeedbacks((prev) =>
+        prev.map((item) =>
+          item.id === itemId ? { ...item, memo: updatedFeedback.memo } : item
+        )
+      );
+    } catch (error) {
+      console.error("memo 수정하지 못했습니다.", error);
+    }
+  };
+
+
 
 
 
@@ -86,7 +165,7 @@ const EditListModal = ({
       <Pressable
         onPress={() => {
           setTitleModalVisible(true);
-          setInputText(item.title);
+          setTitleInputText(item.title);
           setSelectedId(item.id);
         }}
         style={[styles.wrapText, { borderBottomWidth: 0.3 }]}>
@@ -120,9 +199,8 @@ const EditListModal = ({
                 width: 300, height: 50, borderRadius: 10,
                 borderWidth: 0.5, borderColor: '#CCCCCC', paddingLeft: 20
               }}
-              value={inputText}
-              onChangeText={setInputText}
-            //              setTitleNum={inputText}
+              value={titleInputText}
+              onChangeText={setTitleInputText}
             />
             <View style={{ flexDirection: 'row' }}>
               <TouchableOpacity onPress={() => { setTitleModalVisible(false), setTitleNum(0) }}>
@@ -134,10 +212,13 @@ const EditListModal = ({
               <TouchableOpacity onPress={() => {
                 setFeedbacks((prev) =>
                   prev.map((item) =>
-                    item.id === selectedId ? { ...item, title: inputText } : item
+                    item.id === selectedId ? { ...item, title: titleInputText } : item
                   )
                 );
+                setNewTitle(titleInputText);
+                changeTitle(selectedId, titleInputText);
                 setTitleModalVisible(false);
+                // onUpdateTitle(item.id, inputText);
               }}>
                 <View style={[styles.modalBtn, { marginTop: 15, backgroundColor: '#5900FF' }]}>
                   <Text style={{ fontSize: 16, color: 'white' }}>저장</Text>
@@ -151,7 +232,7 @@ const EditListModal = ({
       <Pressable
         onPress={() => {
           setMemoModalVisible(true);
-          setInputText(item.title);
+          setMemoInputText(item.memo);
           setSelectedId(item.id);
         }}
         style={[styles.wrapText, { borderBottomWidth: 0.3 }]}
@@ -186,7 +267,8 @@ const EditListModal = ({
               borderWidth: 0.5, borderColor: '#CCCCCC', paddingLeft: 20,
               paddingBottom: 170, fontSize: 16, multiline: 'true',
             }} placeholder='메모를 작성해주세요'
-              onChangeText={setInputText}
+              value={memoInputText}
+              onChangeText={setMemoInputText}
             />
             <View style={{ flexDirection: 'row', }}>
               <TouchableOpacity onPress={() => { setMemoModalVisible(false), setMemoNum(0) }}>
@@ -196,13 +278,14 @@ const EditListModal = ({
               </TouchableOpacity>
 
               <TouchableOpacity onPress={() => {
-                Alert.alert('저장 버튼 클릭됨');
                 setMemoModalVisible(false);
                 setFeedbacks((prev) =>
                   prev.map((item) =>
-                    item.id === selectedId ? { ...item, memo: inputText } : item
+                    item.id === selectedId ? { ...item, memo: memoInputText } : item
                   )
                 );
+                setNewMemo(memoInputText);
+                changeMemo(selectedId, memoInputText);
                 setMemoModalVisible(false);
               }}>
                 <View style={[styles.modalBtn, { marginTop: 15, backgroundColor: '#5900FF' }]}>
