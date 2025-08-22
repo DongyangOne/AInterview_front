@@ -43,8 +43,8 @@ export default function Feedback() {
         //API 요청 보내기
 
         if (usersId !== null) {
-          const res = await axios
-            .get(`https://api.example.com/feedback/${usersId}`)
+          await axios
+            .get(`${process.env.EXPO_PUBLIC_API_URL}/feedback/${usersId}`)
             .then(async (res) => {
               const url = `${process.env.EXPO_PUBLIC_API_URL}/feedback/${usersId}`;
               const ress = await axios.get(url);

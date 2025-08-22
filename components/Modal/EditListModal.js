@@ -86,7 +86,7 @@ const EditListModal = ({
       console.log(usersId);
 
       if (usersId) {
-        const res = await axios
+        await axios
           .get(`${process.env.EXPO_PUBLIC_API_URL}/feedback/${usersId}/${feedbackId}/title`)
           .then(async (res) => {
             const url = `${process.env.EXPO_PUBLIC_API_URL}/feedback/${usersId}/${feedbackId}/title`;
@@ -126,7 +126,7 @@ const EditListModal = ({
       console.log(usersId);
 
       if (usersId) {
-        const res = await axios
+        await axios
           .get(`${process.env.EXPO_PUBLIC_API_URL}/feedback/${usersId}/${feedbackId}/memo`)
           .then(async (res) => {
             const url = `${process.env.EXPO_PUBLIC_API_URL}/feedback/${usersId}/${feedbackId}/memo`;
