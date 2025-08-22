@@ -15,15 +15,16 @@ import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const EditListModal = ({
-  item, // 선택된 아이템(id 또는 객체)
+  item,
   setOpenModalItemId,
   isModalVisible,
-  isPinned, // <-- 추가: 현재 고정 여부
-  onTogglePin, // <-- 추가: 고정/해제 실행 함수
-  // onUpdateTitle,
-  // onUpdateMemo
+  isPinned,
+  onTogglePin,
+  onUpdateTitle,
+  onUpdateMemo,
+  onDelete,
 }) => {
-  const close = () => setOpenModalItemId(isModalVisible ? null : item);
+  const close = () => setOpenModalItemId(null);
 
   const [titleModalVisible, setTitleModalVisible] = useState(false);
   const [memoModalVisible, setMemoModalVisible] = useState(false);
@@ -48,10 +49,8 @@ const EditListModal = ({
     setMemoNum(memoInputText.length);
   }, [memoInputText]);
 
-  const [feedbacks, setFeedbacks] = useState([]);
-  const [selectedId, setSelectedId] = useState(null); // 어떤 항목을 수정 중인지 식별
+  const [selectedId, setSelectedId] = useState(null);
 
-  // 제목 수정 누르면 모달 열기 + 선택된 id 저장
   const openModal = (id) => {
     setSelectedId(id);
     setModalVisible(true);
@@ -82,7 +81,7 @@ const EditListModal = ({
   const changeTitle = async (itemId, newTitle) => {
     try {
       const usersId = await AsyncStorage.getItem("userId");
-      const feedbackId = itemId; // 수정할 피드백의 ID
+      const feedbackId = itemId;
       console.log(usersId);
 
       if (usersId) {
@@ -98,14 +97,6 @@ const EditListModal = ({
             const updatedFeedback = ress.data;
             console.log("수정된 데이터:", updatedFeedback);
             console.log("PATCH URL:", url);
-            // 화면 상태 반영
-            setFeedbacks((prev) =>
-              prev.map((item) =>
-                item.id === itemId
-                  ? { ...item, title: updatedFeedback.title }
-                  : item
-              )
-            );
           })
           .catch((err) => {
             console.error("title을 수정하지 못했습니다.", err);
@@ -121,7 +112,7 @@ const EditListModal = ({
   const changeMemo = async (itemId, newMemo) => {
     try {
       const usersId = await AsyncStorage.getItem("userId");
-      const feedbackId = itemId; // 수정할 피드백의 ID
+      const feedbackId = itemId;
       console.log(usersId);
 
       if (usersId) {
@@ -137,14 +128,6 @@ const EditListModal = ({
             const updatedFeedback = ress.data;
             console.log("수정된 데이터:", updatedFeedback);
             console.log("PATCH URL:", url);
-            // 화면 상태 반영
-            setFeedbacks((prev) =>
-              prev.map((item) =>
-                item.id === itemId
-                  ? { ...item, memo: updatedFeedback.memo }
-                  : item
-              )
-            );
           })
           .catch((err) => {
             console.error("memo를 수정하지 못했습니다.", err);
@@ -157,13 +140,34 @@ const EditListModal = ({
     }
   };
 
+  const feedbackDelete = async (itemId) => {
+    try {
+      const usersId = await AsyncStorage.getItem("userId");
+      const feedbackId = itemId;
+      if (!usersId) return false;
+
+      const url = `${process.env.EXPO_PUBLIC_API_URL}/feedback/${feedbackId}/${usersId}`;
+      const res = await axios.delete(url);
+
+      if (res?.data?.success) {
+        console.log("삭제 완료");
+        return true;
+      } else {
+        console.log("삭제 실패", res?.data);
+        return false;
+      }
+    } catch (error) {
+      console.error("삭제 중 오류 발생", error);
+      return false;
+    }
+  };
+
   return (
     <View style={styles.container}>
-      {/* 최상단 고정 / 해제 */}
       <Pressable
         onPress={() => {
           close();
-          onTogglePin && onTogglePin(); // axios PATCH 호출 (부모에서 전달)
+          onTogglePin && onTogglePin();
         }}
         style={[styles.wrapText, { borderBottomWidth: 0.3 }]}
       >
@@ -172,7 +176,6 @@ const EditListModal = ({
         </Text>
       </Pressable>
 
-      {/* 아래 세 버튼은 기존 동작 그대로(닫기만) */}
       <Pressable
         onPress={() => {
           setTitleModalVisible(true);
@@ -254,18 +257,10 @@ const EditListModal = ({
               </TouchableOpacity>
 
               <TouchableOpacity
-                onPress={() => {
-                  setFeedbacks((prev) =>
-                    prev.map((item) =>
-                      item.id === selectedId
-                        ? { ...item, title: titleInputText }
-                        : item
-                    )
-                  );
-                  setNewTitle(titleInputText);
-                  changeTitle(selectedId, titleInputText);
+                onPress={async () => {
+                  await changeTitle(selectedId, titleInputText); // 서버 PATCH
+                  onUpdateTitle && onUpdateTitle(selectedId, titleInputText);
                   setTitleModalVisible(false);
-                  // onUpdateTitle(item.id, inputText);
                 }}
               >
                 <View
@@ -367,17 +362,9 @@ const EditListModal = ({
               </TouchableOpacity>
 
               <TouchableOpacity
-                onPress={() => {
-                  setMemoModalVisible(false);
-                  setFeedbacks((prev) =>
-                    prev.map((item) =>
-                      item.id === selectedId
-                        ? { ...item, memo: memoInputText }
-                        : item
-                    )
-                  );
-                  setNewMemo(memoInputText);
-                  changeMemo(selectedId, memoInputText);
+                onPress={async () => {
+                  await changeMemo(selectedId, memoInputText); // 서버 PATCH
+                  onUpdateMemo && onUpdateMemo(selectedId, memoInputText); // 부모에 반영
                   setMemoModalVisible(false);
                 }}
               >
@@ -442,7 +429,11 @@ const EditListModal = ({
             </Text>
 
             <View style={{ flexDirection: "row" }}>
-              <TouchableOpacity onPress={() => setDeleteModalVisible(false)}>
+              <TouchableOpacity
+                onPress={() => {
+                  setDeleteModalVisible(false);
+                }}
+              >
                 <View
                   style={[
                     styles.modalBtn,
@@ -458,8 +449,14 @@ const EditListModal = ({
               </TouchableOpacity>
 
               <TouchableOpacity
-                onPress={() => {
-                  feedbackDelete(selectedId);
+                onPress={async () => {
+                  const success = await feedbackDelete(selectedId);
+                  if (success) {
+                    onDelete && onDelete(selectedId); // 부모 state 반영
+                    close(); // 메인 모달도 닫기
+                  } else {
+                    Alert.alert("삭제 실패", "서버에서 삭제하지 못했습니다.");
+                  }
                   setDeleteModalVisible(false);
                 }}
               >

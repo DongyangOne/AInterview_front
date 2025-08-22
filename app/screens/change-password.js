@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import axios from "axios";
 import { useRouter } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // 비밀번호 유효성 검사 함수
 function validatePassword(password) {
@@ -37,7 +38,6 @@ export default function ChangePasswordScreen() {
     setMatchError("");
     setApiError("");
 
-    // 새 비밀번호 형식 오류
     if (
       newPassword.length < 8 ||
       newPassword.length > 16 ||
@@ -47,25 +47,28 @@ export default function ChangePasswordScreen() {
       return;
     }
 
-    // 새 비밀번호/확인 불일치
     if (newPassword !== confirmPassword) {
       setMatchError("비밀번호가 일치하지 않습니다.");
       return;
     }
 
     try {
-      const response = await axios.post(
-        `${process.env.EXPO_PUBLIC_API_URL}/user/changePw`,
-        {
+      const usersId = await AsyncStorage.getItem("userId");
+      await axios
+        .post(`${process.env.EXPO_PUBLIC_API_URL}/user/changePw`, {
+          userId: usersId ,
           password: currentPassword,
           newPassword: newPassword,
           newPasswordCheck: confirmPassword,
-        }
-      );
-      alert("비밀번호 변경 완료");
-      router.back();
+        })
+        .then((response) => {
+          console.log("[changePw] Response:", response.data);
+          alert("비밀번호 변경 완료");
+          router.back();
+        });
     } catch (error) {
-      // -- 1. 서버 error 배열 검사
+      console.log("[changePw] Error:", error?.response?.data || error);
+
       const errArr = error?.response?.data?.error ?? [];
       if (
         Array.isArray(errArr) &&
@@ -79,7 +82,7 @@ export default function ChangePasswordScreen() {
         setCurrentPwError("비밀번호가 일치하지 않습니다.");
         return;
       }
-      // -- 2. 기존 message도 검사 (백업)
+
       const msg = error?.response?.data?.message ?? "";
       if (
         msg.includes("현재 비밀번호") ||
@@ -89,7 +92,7 @@ export default function ChangePasswordScreen() {
         setCurrentPwError("비밀번호가 일치하지 않습니다.");
         return;
       }
-      // -- 3. 나머지는 apiError로 화면 하단에
+
       if (msg) {
         setApiError(msg);
       } else {
@@ -128,7 +131,6 @@ export default function ChangePasswordScreen() {
               setCurrentPwError("");
             }}
           />
-          {/* 바로 아래에 currentPwError 표시!! */}
           {currentPwError ? (
             <Text style={styles.error}>{currentPwError}</Text>
           ) : null}
@@ -179,7 +181,6 @@ export default function ChangePasswordScreen() {
   );
 }
 
-// (스타일 부분은 동일)
 const styles = StyleSheet.create({
   container: {
     flex: 1,

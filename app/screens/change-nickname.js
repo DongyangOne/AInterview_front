@@ -41,31 +41,41 @@ export default function ChangeNicknameScreen() {
     fetchUserId();
   }, []);
 
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     if (!isValid || nickname === "" || userId === "") return;
     setLoading(true);
-    try {
-      const response = await axios.post(
-        `${process.env.EXPO_PUBLIC_API_URL}/user/changeName`,
-        {
-          userId: userId,
-          newName: nickname,
+
+    axios
+      .post(`${process.env.EXPO_PUBLIC_API_URL}/user/changeName`, {
+        userId: userId,
+        newName: nickname,
+      })
+      .then((response) => {
+        console.log("[changeName] Response:", response.data);
+        if (response.data.success) {
+          AsyncStorage.setItem("NickName", nickname)
+            .then(() => {
+              Alert.alert("성공", `닉네임이 ${nickname}(으)로 변경되었습니다.`, [
+                { text: "확인", onPress: () => router.replace("/home") },
+              ]);
+            })
+            .catch((err) => {
+              console.error("[AsyncStorage.setItem] Error:", err);
+            });
+        } else {
+          Alert.alert(
+            "실패",
+            response.data.message || "닉네임 변경에 실패했습니다."
+          );
         }
-      );
-      if (response.data.success) {
-        await AsyncStorage.setItem("NickName", nickname);
-        Alert.alert("성공", `닉네임이 ${nickname}(으)로 변경되었습니다.`, [
-          { text: "확인", onPress: () => router.replace("/home") },
-        ]);
-      } else {
-        Alert.alert("실패", response.data.message || "닉네임 변경에 실패했습니다.");
-      }
-    } catch (error) {
-      Alert.alert("에러", "서버와의 통신에 실패했습니다.");
-      console.log(error);
-    } finally {
-      setLoading(false);
-    }
+      })
+      .catch((error) => {
+        console.error("[changeName] Error:", error);
+        Alert.alert("에러", "서버와의 통신에 실패했습니다.");
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   };
 
   return (
