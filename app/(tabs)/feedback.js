@@ -68,7 +68,7 @@ export default function Feedback() {
               setFeedbackList(mappedData);
             })
             .catch((err) => {
-              console.error("memo를 수정하지 못했습니다.", err);
+              console.error("조회 실패.", err);
             })
         }
 
