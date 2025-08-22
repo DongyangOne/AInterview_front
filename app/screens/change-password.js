@@ -32,13 +32,12 @@ export default function ChangePasswordScreen() {
   const [matchError, setMatchError] = useState("");
   const [apiError, setApiError] = useState("");
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     setCurrentPwError("");
     setFormatError("");
     setMatchError("");
     setApiError("");
 
-    // 새 비밀번호 형식 오류
     if (
       newPassword.length < 8 ||
       newPassword.length > 16 ||
@@ -48,65 +47,58 @@ export default function ChangePasswordScreen() {
       return;
     }
 
-    // 새 비밀번호/확인 불일치
     if (newPassword !== confirmPassword) {
       setMatchError("비밀번호가 일치하지 않습니다.");
       return;
     }
 
-    AsyncStorage.getItem("userId")
-      .then((usersId) => {
-        return axios.post(
-          `${process.env.EXPO_PUBLIC_API_URL}/user/changePw`,
-          {
-            userId: usersId,
-            password: currentPassword,
-            newPassword: newPassword,
-            newPasswordCheck: confirmPassword,
-          }
-        );
-      })
-      .then((response) => {
-        console.log("[changePw] Response:", response.data);
-        alert("비밀번호 변경 완료");
-        router.back();
-      })
-      .catch((error) => {
-        console.error("[changePw] Error:", error?.response?.data || error);
+    try {
+      const usersId = await AsyncStorage.getItem("userId");
+      await axios
+        .post(`${process.env.EXPO_PUBLIC_API_URL}/user/changePw`, {
+          userId: usersId ,
+          password: currentPassword,
+          newPassword: newPassword,
+          newPasswordCheck: confirmPassword,
+        })
+        .then((response) => {
+          console.log("[changePw] Response:", response.data);
+          alert("비밀번호 변경 완료");
+          router.back();
+        });
+    } catch (error) {
+      console.error("[changePw] Error:", error?.response?.data || error);
 
-        // -- 1. 서버 error 배열 검사
-        const errArr = error?.response?.data?.error ?? [];
-        if (
-          Array.isArray(errArr) &&
-          errArr.some(
-            (e) =>
-              e.includes("현재 비밀번호") ||
-              e.includes("틀렸") ||
-              e.includes("일치하지 않습니다")
-          )
-        ) {
-          setCurrentPwError("비밀번호가 일치하지 않습니다.");
-          return;
-        }
+      const errArr = error?.response?.data?.error ?? [];
+      if (
+        Array.isArray(errArr) &&
+        errArr.some(
+          (e) =>
+            e.includes("현재 비밀번호") ||
+            e.includes("틀렸") ||
+            e.includes("일치하지 않습니다")
+        )
+      ) {
+        setCurrentPwError("비밀번호가 일치하지 않습니다.");
+        return;
+      }
 
-        // -- 2. 기존 message도 검사 (백업)
-        const msg = error?.response?.data?.message ?? "";
-        if (
-          msg.includes("현재 비밀번호") ||
-          msg.includes("일치하지 않습니다") ||
-          msg.includes("틀림")
-        ) {
-          setCurrentPwError("비밀번호가 일치하지 않습니다.");
-          return;
-        }
+      const msg = error?.response?.data?.message ?? "";
+      if (
+        msg.includes("현재 비밀번호") ||
+        msg.includes("일치하지 않습니다") ||
+        msg.includes("틀림")
+      ) {
+        setCurrentPwError("비밀번호가 일치하지 않습니다.");
+        return;
+      }
 
-        // -- 3. 나머지는 apiError로 화면 하단에
-        if (msg) {
-          setApiError(msg);
-        } else {
-          setApiError("비밀번호 변경 중 오류가 발생했습니다.");
-        }
-      });
+      if (msg) {
+        setApiError(msg);
+      } else {
+        setApiError("비밀번호 변경 중 오류가 발생했습니다.");
+      }
+    }
   };
 
   return (
@@ -139,7 +131,6 @@ export default function ChangePasswordScreen() {
               setCurrentPwError("");
             }}
           />
-          {/* 바로 아래에 currentPwError 표시!! */}
           {currentPwError ? (
             <Text style={styles.error}>{currentPwError}</Text>
           ) : null}
