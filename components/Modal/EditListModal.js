@@ -8,11 +8,11 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 
 const EditListModal = ({
-  item,                 // 선택된 아이템(id 또는 객체)
+  item,
   setOpenModalItemId,
   isModalVisible,
-  isPinned,             // <-- 추가: 현재 고정 여부
-  onTogglePin,          // <-- 추가: 고정/해제 실행 함수
+  isPinned,
+  onTogglePin,
   onUpdateTitle,
   onUpdateMemo,
   onDelete
@@ -44,9 +44,8 @@ const EditListModal = ({
     setMemoNum(memoInputText.length);
   }, [memoInputText]);
 
-  const [selectedId, setSelectedId] = useState(null); // 어떤 항목을 수정 중인지 식별
+  const [selectedId, setSelectedId] = useState(null);
 
-  // 제목 수정 누르면 모달 열기 + 선택된 id 저장
   const openModal = (id) => {
     setSelectedId(id);
     setModalVisible(true);
@@ -76,22 +75,13 @@ const EditListModal = ({
 
   const [newTitle, setNewTitle] = useState("");
   const [newMemo, setNewMemo] = useState("");
-  // const [pin, setPin] = useState(willPin? "Y" :"N");
-
-
-  if (isPinned === "최상단 고정") {
-    // setPin("Y");
-  }
-  else {
-    // setPin("N");
-  }
 
   const changeTitle = async (itemId, newTitle) => {
 
 
     try {
       const usersId = await AsyncStorage.getItem("userId");
-      const feedbackId = itemId; // 수정할 피드백의 ID
+      const feedbackId = itemId;
       console.log(usersId);
 
       if (usersId) {
@@ -126,7 +116,7 @@ const EditListModal = ({
 
     try {
       const usersId = await AsyncStorage.getItem("userId");
-      const feedbackId = itemId; // 수정할 피드백의 ID
+      const feedbackId = itemId;
       console.log(usersId);
 
       if (usersId) {
@@ -140,7 +130,6 @@ const EditListModal = ({
             const updatedFeedback = ress.data;
             console.log("수정된 데이터:", updatedFeedback);
             console.log("PATCH URL:", url);
-            // 화면 상태 반영
 
           })
           .catch((err) => {
@@ -163,25 +152,19 @@ const EditListModal = ({
   const feedbackDelete = async (itemId) => {
     try {
       const usersId = await AsyncStorage.getItem("userId");
-      if (usersId !== null) {
-        await axios
-          .get(`${process.env.EXPO_PUBLIC_API_URL}/feedback/${usersId}/${itemId}`)
-          .then(async (res) => {
-            const url = `${process.env.EXPO_PUBLIC_API_URL}/feedback/${usersId}/${itemId}`;
-            const ress = await axios.delete(url);
-            if (ress?.data?.success) {
-              console.log("삭제 완료");
-              return true;   // ✅ 성공 반환
-            } else {
-              console.log("삭제 실패", res?.data);
-              return false;
-            }
-          })
-          .catch((err) => {
-            console.error("삭제 요청 실패", err);
-          });
-      }
+      const feedbackId = itemId;
+      if (!usersId) return false;
 
+      const url = `${process.env.EXPO_PUBLIC_API_URL}/feedback/${feedbackId}/${usersId}`;
+      const res = await axios.delete(url);
+
+      if (res?.data?.success) {
+        console.log("삭제 완료");
+        return true;
+      } else {
+        console.log("삭제 실패", res?.data);
+        return false;
+      }
     } catch (error) {
       console.error("삭제 중 오류 발생", error);
       return false;
@@ -194,13 +177,13 @@ const EditListModal = ({
 
 
 
+
   return (
     <View style={styles.container}>
-      {/* 최상단 고정 / 해제 */}
       <Pressable
         onPress={() => {
           close();
-          onTogglePin && onTogglePin();   // axios PATCH 호출 (부모에서 전달)
+          onTogglePin && onTogglePin();
         }}
         style={[styles.wrapText, { borderBottomWidth: 0.3 }]}
       >
@@ -208,7 +191,6 @@ const EditListModal = ({
       </Pressable>
 
 
-      {/* 아래 세 버튼은 기존 동작 그대로(닫기만) */}
       <Pressable
         onPress={() => {
           setTitleModalVisible(true);
@@ -258,7 +240,7 @@ const EditListModal = ({
 
               <TouchableOpacity onPress={async () => {
                 await changeTitle(selectedId, titleInputText); // 서버 PATCH
-                onUpdateTitle && onUpdateTitle(selectedId, titleInputText); // 부모에 반영
+                onUpdateTitle && onUpdateTitle(selectedId, titleInputText);
                 setTitleModalVisible(false);
               }}>
                 <View style={[styles.modalBtn, { marginTop: 15, backgroundColor: '#5900FF' }]}>
