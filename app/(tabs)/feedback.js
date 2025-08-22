@@ -112,9 +112,25 @@ export default function Feedback() {
 
 
 
+  const handleUpdateTitle = (id, newTitle) => {
+    setFeedbackList(prev =>
+      prev.map(item =>
+        item.id === id ? { ...item, title: newTitle } : item
+      )
+    );
+  };
 
+  const handleUpdateMemo = (id, newMemo) => {
+    setFeedbackList(prev =>
+      prev.map(item =>
+        item.id === id ? { ...item, memo: newMemo } : item
+      )
+    );
+  };
 
-
+  const handleDelete = (id) => {
+    setFeedbackList(prev => prev.filter(item => item.id !== id));
+  };
 
 
 
@@ -271,10 +287,10 @@ export default function Feedback() {
                         openMemoModal={openMemoModal}
                         openDeleteModal={openDeleteModal}
                         isPinned={isPinned}
-                        onToggleonDelete={(id) => setFeedbacks(prev => prev.filter(item => item.id !== id))}
-                        onDelete={(id) => setFeedbacks(prev => prev.filter(item => item.id !== id))}
-                      // onUpdateTitle={handleUpdateTitle}
-                      // onUpdateMemo={handleUpdateMemo}
+                        onTogglePin={() => togglePin(item)}
+                        onUpdateTitle={handleUpdateTitle}
+                        onUpdateMemo={handleUpdateMemo}
+                        onDelete={handleDelete}
                       />
                     </View>
                   </View>
@@ -289,8 +305,6 @@ export default function Feedback() {
           );
         }}
       />
-      <DeleteCheckModal visible={deleteModal} onCancel={closeDeleteModal} />
-      <MemoChangeModal visible={memoModal} onCancel={closeMemoModal} />
     </SafeAreaView>
   );
 }
