@@ -23,7 +23,7 @@ export default function Bell() {
         console.log("API 호출 userId:", storedUserId);
         await axios
           .get(`${process.env.EXPO_PUBLIC_API_URL}/notice/${storedUserId}`)
-          .then(async (res) => {
+          .then((res) => {
             console.log(res.data);
             if (res.data && res.data.success) {
               setTime(res.data.created_at);
