@@ -38,7 +38,6 @@ export default function Feedback() {
           console.log("userId가 저장되어 있지 않습니다.");
           return;
         }
-        //API 요청 보내기
 
         if (usersId !== null) {
           await axios
