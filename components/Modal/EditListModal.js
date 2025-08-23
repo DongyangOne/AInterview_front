@@ -5,7 +5,15 @@ import {
 import { useState, useEffect } from 'react';
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Dimensions } from "react-native";
 
+const screenHeight = Dimensions.get("window").height;
+
+const menuHeight = 200; // 예상 메뉴 높이
+const topPosition = 50;
+const adjustedTop = topPosition + menuHeight > screenHeight
+  ? screenHeight - menuHeight - 20
+  : topPosition;
 
 const EditListModal = ({
   item,
@@ -15,7 +23,7 @@ const EditListModal = ({
   onTogglePin,
   onUpdateTitle,
   onUpdateMemo,
-  onDelete
+  onDelete,
 }) => {
   const close = () => setOpenModalItemId(null);
 
@@ -24,12 +32,6 @@ const EditListModal = ({
   const [memoModalVisible, setMemoModalVisible] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
 
-  const handleDelete = () => {
-    setFeedbacks((prevFeedbacks) =>
-      prevFeedbacks.filter((item) => item.id !== selectedId)
-    );
-    setDeleteModalVisible(false);
-  };
 
 
   const [titleInputText, setTitleInputText] = useState("");
@@ -179,7 +181,8 @@ const EditListModal = ({
 
 
   return (
-    <View style={styles.container}>
+
+    <View style={[styles.container, { top: adjustedTop }]}>
       <Pressable
         onPress={() => {
           close();
@@ -200,6 +203,7 @@ const EditListModal = ({
         style={[styles.wrapText, { borderBottomWidth: 0.3 }]}>
         <Text style={styles.text}>제목 수정</Text>
       </Pressable>
+
       <Modal
         animationType="fade"
         transparent={true}
@@ -250,7 +254,8 @@ const EditListModal = ({
             </View>
           </View>
         </View>
-      </Modal>
+
+      </Modal >
 
       <Pressable
         onPress={() => {
@@ -401,7 +406,7 @@ const EditListModal = ({
           </View>
         </View>
       </Modal>
-    </View>
+    </View >
   );
 };
 

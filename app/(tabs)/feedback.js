@@ -90,6 +90,9 @@ export default function Feedback() {
     });
   }, [searchText, feedbackList]);
 
+
+
+
   const sortedList = useMemo(() => {
     const listToSort = filteredList;
 
@@ -97,9 +100,15 @@ export default function Feedback() {
       if (a.pin === "Y" && b.pin !== "Y") return -1;
       if (a.pin !== "Y" && b.pin === "Y") return 1;
 
+      if (mode === "date") {
+        return new Date(b.date) - new Date(a.date);
+      } else if (mode === "alphabet") {
+        return a.title.localeCompare(b.title, "ko");
+      }
+
       return new Date(b.date) - new Date(a.date);
     });
-  }, [filteredList]);
+  }, [filteredList, mode]);
 
 
 
@@ -133,6 +142,44 @@ export default function Feedback() {
   const closeDeleteModal = () => setDeleteModal(false);
   const openMemoModal = () => setMemoModal(true);
   const closeMemoModal = () => setMemoModal(false);
+
+
+
+
+
+  const togglePin = async (item) => {
+    try {
+      const usersId = await AsyncStorage.getItem("userId");
+      if (!usersId) return Alert.alert("오류", "userId가 없습니다.");
+
+      // 고정 상태에 따라 URL 선택
+      const url = `${process.env.EXPO_PUBLIC_API_URL}/feedback/${item.pin === "Y" ? "unpin" : "pin"
+        }/24/1`;
+
+      console.log("요청 URL:", url);
+
+      const res = await axios.patch(url);
+
+      if (res?.data?.success) {
+        // UI 상태 업데이트
+        setFeedbackList((prev) =>
+          prev.map((v) =>
+            v.id === item.id ? { ...v, pin: v.pin === "Y" ? "N" : "Y" } : v
+          )
+        );
+      } else {
+        Alert.alert("실패", res?.data?.message || "요청을 처리하지 못했습니다.");
+      }
+    } catch (e) {
+      console.error(e);
+      Alert.alert("네트워크 오류", "잠시 후 다시 시도해 주세요.");
+    }
+  };
+
+
+
+
+
 
   return (
     <SafeAreaView style={styles.container}>
@@ -171,7 +218,10 @@ export default function Feedback() {
             }
           />
         </Pressable>
-        {open ? <AlignModal setOpen={setOpen} setMode={mode} /> : null}
+        {open ? <AlignModal
+          setOpen={setOpen}
+          onSortByDate={() => setMode("date")}
+          onSortByAlphabet={() => setMode("alphabet")} /> : null}
       </View>
 
       <FlatList
