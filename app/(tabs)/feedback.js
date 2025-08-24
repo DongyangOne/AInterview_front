@@ -94,23 +94,6 @@ export default function Feedback() {
 
 
 
-
-
-
-
-
-  const handleUpdateTitle = (id, newTitle) => {
-    setFeedbackList(prev =>
-      prev.map(item =>
-        item.id === id ? { ...item, title: newTitle } : item
-      )
-    );
-  };
-
-
-
-
-
   const sortedList = useMemo(() => {
     const listToSort = filteredList;
 
@@ -131,6 +114,21 @@ export default function Feedback() {
 
 
 
+
+
+
+
+  const handleUpdateMemo = (id, newMemo) => {
+    setFeedbackList(prev =>
+      prev.map(item =>
+        item.id === id ? { ...item, memo: newMemo } : item
+      )
+    );
+  };
+
+
+  const openMemoModal = () => setMemoModal(true);
+  const closeMemoModal = () => setMemoModal(false);
 
 
 
@@ -178,7 +176,8 @@ export default function Feedback() {
         </Pressable>
         {open ? <AlignModal
           setOpen={setOpen}
-        /> : null}
+          onSortByDate={() => setMode("date")}
+          onSortByAlphabet={() => setMode("alphabet")} /> : null}
       </View>
 
       <FlatList
@@ -286,7 +285,9 @@ export default function Feedback() {
                         item={item}
                         setOpenModalItemId={setOpenModalItemId}
                         isModalVisible={isModalVisible}
-                        onUpdateTitle={handleUpdateTitle}
+                        openMemoModal={openMemoModal}
+                        isPinned={isPinned}
+                        onUpdateMemo={handleUpdateMemo}
                       />
                     </View>
                   </View>
