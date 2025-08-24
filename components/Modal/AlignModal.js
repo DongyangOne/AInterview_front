@@ -1,18 +1,24 @@
 import { StyleSheet, View, Text, Pressable } from "react-native";
 
-const AlignModal = ({ setOpen }) => {
+const AlignModal = ({ setOpen, onSortByDate, onSortByAlphabet }) => {
   const onClick = () => {
     setOpen(false);
   };
   return (
     <View style={styles.conatiner}>
       <Pressable
-        onPress={onClick}
+        onPress={() => {
+          onSortByDate && onSortByDate(); // ✅ 부모한테 정렬 요청
+          setOpen(false); // 모달 닫기
+        }}
         style={[styles.wrapText, { borderBottomWidth: 0.3 }]}
       >
         <Text style={styles.text}>최근 날짜 순</Text>
       </Pressable>
-      <Pressable onPress={onClick} style={styles.wrapText}>
+      <Pressable onPress={() => {
+        onSortByAlphabet && onSortByAlphabet(); // 부모에 정렬 요청
+        setOpen(false); // 모달 닫기
+      }} style={styles.wrapText}>
         <Text style={styles.text}>가나다 순</Text>
       </Pressable>
     </View>
