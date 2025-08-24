@@ -152,7 +152,7 @@ const EditListModal = ({
               </TouchableOpacity>
 
               <TouchableOpacity onPress={async () => {
-                await changeTitle(selectedId, titleInputText); // 서버 PATCH
+                await changeTitle(selectedId, titleInputText);
                 onUpdateTitle && onUpdateTitle(selectedId, titleInputText);
                 setTitleModalVisible(false);
               }}>
