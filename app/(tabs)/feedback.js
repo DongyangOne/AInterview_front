@@ -118,17 +118,16 @@ export default function Feedback() {
 
 
 
-  const handleUpdateMemo = (id, newMemo) => {
-    setFeedbackList(prev =>
-      prev.map(item =>
-        item.id === id ? { ...item, memo: newMemo } : item
-      )
-    );
+  const handleDelete = (id) => {
+    setFeedbackList(prev => prev.filter(item => item.id !== id));
   };
 
 
-  const openMemoModal = () => setMemoModal(true);
-  const closeMemoModal = () => setMemoModal(false);
+
+  const openDeleteModal = () => setDeleteModal(true);
+  const closeDeleteModal = () => setDeleteModal(false);
+
+
 
 
 
@@ -285,9 +284,9 @@ export default function Feedback() {
                         item={item}
                         setOpenModalItemId={setOpenModalItemId}
                         isModalVisible={isModalVisible}
-                        openMemoModal={openMemoModal}
+                        openDeleteModal={openDeleteModal}
                         isPinned={isPinned}
-                        onUpdateMemo={handleUpdateMemo}
+                        onDelete={handleDelete}
                       />
                     </View>
                   </View>
