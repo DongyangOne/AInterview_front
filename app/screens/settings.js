@@ -10,20 +10,37 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function SettingsScreen() {
   const [isEnabled, setIsEnabled] = useState(false);
+  const [error, setError] = useState('');
   const router = useRouter();
 
   useEffect(() => {
     const fetchPushStatus = async () => {
-      try {
-        const res = await axios.get(`${process.env.EXPO_PUBLIC_API_URL}/user/getAppPush`);
-        setIsEnabled(res.data.status === "Y");
-      } catch (err) {
-        setIsEnabled(false);
-      }
+      const usersId = await AsyncStorage.getItem("userId");
+      setError('');
+
+      axios
+        .get(`${process.env.EXPO_PUBLIC_API_URL}/user/getAppPush`, {
+          params: { userId: usersId },
+          withCredentials: true,
+        })
+        .then((res) => {
+          console.log("[getAppPush] Response:", res.data);
+          setIsEnabled(res.data.status === "Y");
+        })
+        .catch((err) => {
+          console.error("[getAppPush] Error:", err?.response?.data || err);
+          setError(
+            "알림 상태 가져오기 실패: " +
+              (err?.response?.data?.message || err.message)
+          );
+          setIsEnabled(false);
+        });
     };
+
     fetchPushStatus();
   }, []);
 
@@ -31,23 +48,30 @@ export default function SettingsScreen() {
     const newEnabled = !isEnabled;
     setIsEnabled(newEnabled);
 
-    try {
-      const statusParam = newEnabled ? "Y" : "N";
-      const res = await axios.get(`${process.env.EXPO_PUBLIC_API_URL}/user/setAppPush`, {
-        params: { status: statusParam } // 상태값을 서버로 전달
+    const usersId = await AsyncStorage.getItem("userId");
+    const statusParam = newEnabled ? "Y" : "N";
+
+    axios
+      .get(`${process.env.EXPO_PUBLIC_API_URL}/user/setAppPush`, {
+        params: { userId: usersId, status: statusParam },
+        withCredentials: true,
+      })
+      .then((res) => {
+        console.log("[setAppPush] Response:", res.data);
+        if (res.data && res.data.success) {
+          setIsEnabled(res.data.status === "Y");
+        } else {
+          setIsEnabled(isEnabled);
+        }
+      })
+      .catch((err) => {
+        console.error("[setAppPush] Error:", err?.response?.data || err);
+        setIsEnabled(isEnabled);
+        setError(
+          "알림 상태 변경 실패: " +
+            (err?.response?.data?.message || err.message)
+        );
       });
-      if (res.data && res.data.success) {
-        setIsEnabled(res.data.status === "Y"); // 서버 응답 기준으로 세팅
-        console.log("서버에 저장된 상태:", res.data.status);
-        console.log("서버 메시지:", res.data.message);
-      } else {
-        setIsEnabled(isEnabled); // 실패 시 이전 값 복구
-        console.log("API failure:", res.data);
-      }
-    } catch (err) {
-      setIsEnabled(isEnabled);
-      console.log("API Error!", err);
-    }
   };
 
   return (
@@ -78,6 +102,9 @@ export default function SettingsScreen() {
             value={isEnabled}
           />
         </View>
+        {!!error && (
+          <Text style={{ color: 'red', marginTop: 8 }}>{error}</Text>
+        )}
       </View>
 
       {/* 기타 */}

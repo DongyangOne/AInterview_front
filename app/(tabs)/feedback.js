@@ -16,16 +16,12 @@ import EditListModal from "../../components/Modal/EditListModal";
 import { useRouter } from "expo-router";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import DeleteCheckModal from "../../components/Modal/DeleteModal";
-import MemoChangeModal from "../../components/Modal/MemoChangeModal";
 
 export default function Feedback() {
   const [feedbackList, setFeedbackList] = useState([]);
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState("basic");
   const [openModalItemId, setOpenModalItemId] = useState(null);
-  const [deleteModal, setDeleteModal] = useState(false);
-  const [memoModal, setMemoModal] = useState(false);
   const [loadingId, setLoadingId] = useState(null);
   const [searchText, setSearchText] = useState("");
   const [usersId, setUsersId] = useState(null); // ✅ userId 상태 추가
@@ -60,6 +56,35 @@ export default function Feedback() {
         }));
 
         setFeedbackList(mappedData);
+        if (usersId !== null) {
+          await axios
+            .get(`${process.env.EXPO_PUBLIC_API_URL}/feedback/${usersId}`)
+            .then(async (res) => {
+              const data = res.data;
+
+              const mappedData = data.data.map((item) => ({
+                id: item.id.toString(),
+                date: new Date(item.created_at).toLocaleDateString("ko-KR", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                }),
+                title: item.title,
+                memo: item.memo,
+                pin: item.pin || "N",
+              })
+
+              );
+
+
+              setFeedbackList(mappedData);
+            })
+            .catch((err) => {
+              console.error("조회 실패.", err);
+            })
+        }
+
+
       } catch (error) {
         console.error(error);
       }
@@ -82,6 +107,17 @@ export default function Feedback() {
     });
   }, [searchText, feedbackList]);
 
+
+
+
+
+
+
+
+
+
+
+
   const sortedList = useMemo(() => {
     const listToSort = filteredList;
 
@@ -89,7 +125,14 @@ export default function Feedback() {
       if (a.pin === "Y" && b.pin !== "Y") return -1;
       if (a.pin !== "Y" && b.pin === "Y") return 1;
 
-      return new Date(b.date) - new Date(a.date);
+      if (mode === "date") {
+        return new Date(a.date) - new Date(b.date);
+      } else if (mode === "alphabet") {
+        return a.title.localeCompare(b.title, "ko");
+      }
+
+
+      return new Date(a.date) - new Date(b.date);
     });
   }, [filteredList]);
 
@@ -113,34 +156,26 @@ export default function Feedback() {
           v.id === item.id ? { ...v, pin: willPin ? "Y" : "N" } : v
         )
       );
+  }, [filteredList, mode]);
 
-      console.log("서버 응답:", res.data);
 
-      if (!res?.data?.success) {
-        // 실패 시 롤백
-        setFeedbackList((prev) =>
-          prev.map((v) => (v.id === item.id ? { ...v, pin: item.pin } : v))
-        );
-        Alert.alert(
-          "실패",
-          res?.data?.message || "요청을 처리하지 못했습니다."
-        );
-      }
-    } catch (e) {
-      // 롤백
-      setFeedbackList((prev) =>
-        prev.map((v) => (v.id === item.id ? { ...v, pin: item.pin } : v))
-      );
-      Alert.alert("네트워크 오류", "잠시 후 다시 시도해 주세요.");
-    } finally {
-      setLoadingId(null);
-    }
+
+
+
+  const handleSortByDate = () => setMode("date");
+  const handleSortByAlphabet = () => setMode("alphabet");
+
+  const handleUpdateTitle = (id, newTitle) => {
+    setFeedbackList(prev =>
+      prev.map(item =>
+        item.id === id ? { ...item, title: newTitle } : item
+      )
+    );
   };
 
-  const openDeleteModal = () => setDeleteModal(true);
-  const closeDeleteModal = () => setDeleteModal(false);
-  const openMemoModal = () => setMemoModal(true);
-  const closeMemoModal = () => setMemoModal(false);
+
+
+
 
   return (
     <SafeAreaView style={styles.container}>
@@ -180,6 +215,11 @@ export default function Feedback() {
           />
         </Pressable>
         {open ? <AlignModal setOpen={setOpen} setMode={setMode} /> : null}
+        {open ? <AlignModal
+          setOpen={setOpen}
+          onSortByDate={handleSortByDate}
+          onSortByAlphabet={handleSortByAlphabet}
+        /> : null}
       </View>
 
       <FlatList
@@ -296,10 +336,7 @@ export default function Feedback() {
                         item={item}
                         setOpenModalItemId={setOpenModalItemId}
                         isModalVisible={isModalVisible}
-                        openMemoModal={openMemoModal}
-                        openDeleteModal={openDeleteModal}
-                        isPinned={isPinned}
-                        onTogglePin={() => togglePin(item)}
+                        onUpdateTitle={handleUpdateTitle}
                       />
                     </View>
                   </View>
@@ -314,8 +351,6 @@ export default function Feedback() {
           );
         }}
       />
-      <DeleteCheckModal visible={deleteModal} onCancel={closeDeleteModal} />
-      <MemoChangeModal visible={memoModal} onCancel={closeMemoModal} />
     </SafeAreaView>
   );
 }

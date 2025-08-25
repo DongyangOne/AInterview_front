@@ -31,20 +31,23 @@ function MainFeedback() {
       try {
         const usersId = await AsyncStorage.getItem("userId");
         console.log(usersId);
-        const res = await axios.get(
-          `${process.env.EXPO_PUBLIC_API_URL}/mainpage/feedback`,
-          {
+        await axios
+          .get(`${process.env.EXPO_PUBLIC_API_URL}/mainpage/feedback`, {
             params: { userId: usersId },
-          }
-        );
-        if (res.data && res.data.success) {
-          setFeedback(res.data.data);
-          const apiDate = res.data.data[0]?.created_at;
-          setFetime(formatDate(apiDate));
-        }
+          })
+          .then((res) => {
+            if (res.data && res.data.success) {
+              setFeedback(res.data.data);
+              const apiDate = res.data.data[0]?.created_at;
+              setFetime(formatDate(apiDate));
+              console.log(res.data);
+            }
+          })
+          .catch((err) => {
+            console.log(err);
+          });
       } catch (error) {
         console.error("데이터 가져오기 실패:", error);
-        alert("데이터 가져오기 실패");
       }
     };
 
@@ -70,7 +73,6 @@ function MainFeedback() {
     setShouldScroll(true);
   };
   const firstfb = feedback?.[0];
-  console.log("가져온 데이터", firstfb);
   return firstfb ? (
     <View style={[styles.container, { minHeight: textBoxHeight }]}>
       {/* 헤더 영역 */}
