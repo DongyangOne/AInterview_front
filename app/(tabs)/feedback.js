@@ -9,7 +9,6 @@ import {
   Pressable,
   Alert,
 } from "react-native";
-//10 13 14 15
 import { useMemo, useState, useEffect } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import AlignModal from "../../components/Modal/AlignModal";
@@ -92,6 +91,14 @@ export default function Feedback() {
 
 
 
+
+
+
+
+
+
+
+
   const sortedList = useMemo(() => {
     const listToSort = filteredList;
 
@@ -100,12 +107,13 @@ export default function Feedback() {
       if (a.pin !== "Y" && b.pin === "Y") return 1;
 
       if (mode === "date") {
-        return new Date(b.date) - new Date(a.date);
+        return new Date(a.date) - new Date(b.date);
       } else if (mode === "alphabet") {
         return a.title.localeCompare(b.title, "ko");
       }
 
-      return new Date(b.date) - new Date(a.date);
+
+      return new Date(a.date) - new Date(b.date);
     });
   }, [filteredList, mode]);
 
@@ -113,11 +121,16 @@ export default function Feedback() {
 
 
 
+  const handleSortByDate = () => setMode("date");
+  const handleSortByAlphabet = () => setMode("alphabet");
 
-
-
-
-
+  const handleUpdateTitle = (id, newTitle) => {
+    setFeedbackList(prev =>
+      prev.map(item =>
+        item.id === id ? { ...item, title: newTitle } : item
+      )
+    );
+  };
 
 
 
@@ -162,8 +175,9 @@ export default function Feedback() {
         </Pressable>
         {open ? <AlignModal
           setOpen={setOpen}
-          onSortByDate={() => setMode("date")}
-          onSortByAlphabet={() => setMode("alphabet")} /> : null}
+          onSortByDate={handleSortByDate}
+          onSortByAlphabet={handleSortByAlphabet}
+        /> : null}
       </View>
 
       <FlatList
@@ -271,6 +285,7 @@ export default function Feedback() {
                         item={item}
                         setOpenModalItemId={setOpenModalItemId}
                         isModalVisible={isModalVisible}
+                        onUpdateTitle={handleUpdateTitle}
                       />
                     </View>
                   </View>
