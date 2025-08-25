@@ -32,6 +32,8 @@ const EditListModal = ({
   const [titleInputText, setTitleInputText] = useState("");
   const [titleNum, setTitleNum] = useState(0);
 
+
+
   useEffect(() => {
     setTitleNum(titleInputText.length);
   }, [titleInputText]);
@@ -75,8 +77,6 @@ const EditListModal = ({
             })
             const updatedFeedback = ress.data;
             console.log("수정된 데이터:", updatedFeedback);
-            console.log("PATCH URL:", url);
-
           })
           .catch((err) => {
             console.error("title을 수정하지 못했습니다.", err);
@@ -93,6 +93,10 @@ const EditListModal = ({
   };
 
 
+
+
+
+
   return (
 
     <View style={[styles.container, { top: adjustedTop }]}>
@@ -105,9 +109,9 @@ const EditListModal = ({
 
       <Pressable
         onPress={() => {
-          setTitleModalVisible(true);
           setTitleInputText(item.title);
           setSelectedId(item.id);
+          setTitleModalVisible(true);
         }}
         style={[styles.wrapText, { borderBottomWidth: 0.3 }]}>
         <Text style={styles.text}>제목 수정</Text>

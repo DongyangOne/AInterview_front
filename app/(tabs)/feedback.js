@@ -23,8 +23,6 @@ export default function Feedback() {
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState("basic");
   const [openModalItemId, setOpenModalItemId] = useState(null);
-  const [deleteModal, setDeleteModal] = useState(false);
-  const [memoModal, setMemoModal] = useState(false);
   const [loadingId, setLoadingId] = useState(null);
   const [searchText, setSearchText] = useState("");
   const route = useRouter();
@@ -99,15 +97,6 @@ export default function Feedback() {
 
 
 
-  const handleUpdateTitle = (id, newTitle) => {
-    setFeedbackList(prev =>
-      prev.map(item =>
-        item.id === id ? { ...item, title: newTitle } : item
-      )
-    );
-  };
-
-
 
 
 
@@ -115,16 +104,18 @@ export default function Feedback() {
     const listToSort = filteredList;
 
     return [...listToSort].sort((a, b) => {
+      // 최상단 고정
       if (a.pin === "Y" && b.pin !== "Y") return -1;
       if (a.pin !== "Y" && b.pin === "Y") return 1;
 
       if (mode === "date") {
-        return new Date(b.date) - new Date(a.date);
+        return new Date(a.date) - new Date(b.date); // ✅ 오래된 날짜 순
       } else if (mode === "alphabet") {
         return a.title.localeCompare(b.title, "ko");
       }
 
-      return new Date(b.date) - new Date(a.date);
+
+      return new Date(a.date) - new Date(b.date); // 기본도 오래된 순
     });
   }, [filteredList, mode]);
 
@@ -132,8 +123,16 @@ export default function Feedback() {
 
 
 
+  const handleSortByDate = () => setMode("date");
+  const handleSortByAlphabet = () => setMode("alphabet");
 
-
+  const handleUpdateTitle = (id, newTitle) => {
+    setFeedbackList(prev =>
+      prev.map(item =>
+        item.id === id ? { ...item, title: newTitle } : item
+      )
+    );
+  };
 
 
 
@@ -178,6 +177,8 @@ export default function Feedback() {
         </Pressable>
         {open ? <AlignModal
           setOpen={setOpen}
+          onSortByDate={handleSortByDate}
+          onSortByAlphabet={handleSortByAlphabet}
         /> : null}
       </View>
 
