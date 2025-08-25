@@ -9,6 +9,7 @@ import {
   Pressable,
   Alert,
 } from "react-native";
+//10 13 14 15
 import { useMemo, useState, useEffect } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import AlignModal from "../../components/Modal/AlignModal";
@@ -16,16 +17,12 @@ import EditListModal from "../../components/Modal/EditListModal";
 import { useRouter } from "expo-router";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import DeleteCheckModal from "../../components/Modal/DeleteModal";
-import MemoChangeModal from "../../components/Modal/MemoChangeModal";
 
 export default function Feedback() {
   const [feedbackList, setFeedbackList] = useState([]);
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState("basic");
   const [openModalItemId, setOpenModalItemId] = useState(null);
-  const [deleteModal, setDeleteModal] = useState(false);
-  const [memoModal, setMemoModal] = useState(false);
   const [loadingId, setLoadingId] = useState(null);
   const [searchText, setSearchText] = useState("");
   const route = useRouter();
@@ -40,26 +37,36 @@ export default function Feedback() {
           console.log("userId가 저장되어 있지 않습니다.");
           return;
         }
-        //API 요청 보내기
 
-        const url = `${process.env.EXPO_PUBLIC_API_URL}/feedback/${usersId}`;
-        const res = await axios.get(url);
+        if (usersId !== null) {
+          await axios
+            .get(`${process.env.EXPO_PUBLIC_API_URL}/feedback/${usersId}`)
+            .then(async (res) => {
+              const data = res.data;
 
-        const data = res.data;
+              const mappedData = data.data.map((item) => ({
+                id: item.id.toString(),
+                date: new Date(item.created_at).toLocaleDateString("ko-KR", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                }),
+                title: item.title,
+                memo: item.memo,
+                pin: item.pin || "N",
+              })
 
-        const mappedData = data.data.map((item) => ({
-          id: item.id.toString(),
-          date: new Date(item.created_at).toLocaleDateString("ko-KR", {
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-          }),
-          title: item.title,
-          memo: item.memo,
-          // pin: item.is_read === "N" ? "Y" : "N",
-        }));
+              );
 
-        setFeedbackList(mappedData);
+
+              setFeedbackList(mappedData);
+            })
+            .catch((err) => {
+              console.error("조회 실패.", err);
+            })
+        }
+
+
       } catch (error) {
         console.error(error);
       }
@@ -82,6 +89,9 @@ export default function Feedback() {
     });
   }, [searchText, feedbackList]);
 
+
+
+
   const sortedList = useMemo(() => {
     const listToSort = filteredList;
 
@@ -89,58 +99,29 @@ export default function Feedback() {
       if (a.pin === "Y" && b.pin !== "Y") return -1;
       if (a.pin !== "Y" && b.pin === "Y") return 1;
 
+      if (mode === "date") {
+        return new Date(b.date) - new Date(a.date);
+      } else if (mode === "alphabet") {
+        return a.title.localeCompare(b.title, "ko");
+      }
+
       return new Date(b.date) - new Date(a.date);
     });
-  }, [filteredList]);
+  }, [filteredList, mode]);
 
-  // PATCH: pin / unpin
-  const togglePin = async (item) => {
-    const willPin = item.pin !== "Y";
-    const usersId = await AsyncStorage.getItem("userId");
 
-    const url = willPin
-      ? `${process.env.EXPO_PUBLIC_API_URL}/feedback/pin/${usersId}/${item.id}`
-      : `${process.env.EXPO_PUBLIC_API_URL}/feedback/unpin/${usersId}/${item.id}`;
-    const res = await axios.patch(url);
 
-    try {
-      console.log("사용자 ID:", usersId);
-      setLoadingId(item.id);
 
-      // UI 즉시 업데이트
-      setFeedbackList((prev) =>
-        prev.map((v) =>
-          v.id === item.id ? { ...v, pin: willPin ? "Y" : "N" } : v
-        )
-      );
 
-      console.log("서버 응답:", res.data);
 
-      if (!res?.data?.success) {
-        // 실패 시 롤백
-        setFeedbackList((prev) =>
-          prev.map((v) => (v.id === item.id ? { ...v, pin: item.pin } : v))
-        );
-        Alert.alert(
-          "실패",
-          res?.data?.message || "요청을 처리하지 못했습니다."
-        );
-      }
-    } catch (e) {
-      // 롤백
-      setFeedbackList((prev) =>
-        prev.map((v) => (v.id === item.id ? { ...v, pin: item.pin } : v))
-      );
-      Alert.alert("네트워크 오류", "잠시 후 다시 시도해 주세요.");
-    } finally {
-      setLoadingId(null);
-    }
-  };
 
-  const openDeleteModal = () => setDeleteModal(true);
-  const closeDeleteModal = () => setDeleteModal(false);
-  const openMemoModal = () => setMemoModal(true);
-  const closeMemoModal = () => setMemoModal(false);
+
+
+
+
+
+
+
 
   return (
     <SafeAreaView style={styles.container}>
@@ -179,7 +160,10 @@ export default function Feedback() {
             }
           />
         </Pressable>
-        {open ? <AlignModal setOpen={setOpen} setMode={mode} /> : null}
+        {open ? <AlignModal
+          setOpen={setOpen}
+          onSortByDate={() => setMode("date")}
+          onSortByAlphabet={() => setMode("alphabet")} /> : null}
       </View>
 
       <FlatList
@@ -287,10 +271,6 @@ export default function Feedback() {
                         item={item}
                         setOpenModalItemId={setOpenModalItemId}
                         isModalVisible={isModalVisible}
-                        openMemoModal={openMemoModal}
-                        openDeleteModal={openDeleteModal}
-                        isPinned={isPinned}
-                        onTogglePin={() => togglePin(item)}
                       />
                     </View>
                   </View>
@@ -305,8 +285,6 @@ export default function Feedback() {
           );
         }}
       />
-      <DeleteCheckModal visible={deleteModal} onCancel={closeDeleteModal} />
-      <MemoChangeModal visible={memoModal} onCancel={closeMemoModal} />
     </SafeAreaView>
   );
 }
