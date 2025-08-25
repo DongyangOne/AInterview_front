@@ -77,7 +77,6 @@ const EditListModal = ({
             })
             const updatedFeedback = ress.data;
             console.log("수정된 데이터:", updatedFeedback);
-            console.log("PATCH URL:", url);
 
           })
           .catch((err) => {
