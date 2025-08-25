@@ -53,7 +53,16 @@ export default function FeedbackResult() {
 
         const res = await api.get(
           `/feedback/${encodeURIComponent(userId)}/${encodeURIComponent(feedbackId)}`
-        );
+        )
+        .then((r) => {
+            console.log("가져온 데이터",{
+                userId,
+                feedbackId,
+                title,
+                status: r?.status,
+            });
+            return r;
+        });
         const data = res.data?.data || {};
 
         // 응답 값 매핑
@@ -76,7 +85,7 @@ export default function FeedbackResult() {
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff", paddingTop: 0 }}>
       <View style={styles.container}>
         <View style={styles.topHeader}>
-          <TouchableOpacity onPress={() => route.back()}>
+          <TouchableOpacity onPress={() => route.replace('/feedback')}>
             <Image
               source={require("../../assets/icons/arrow.png")}
               style={styles.arrowIcon}
