@@ -22,8 +22,6 @@ export default function Feedback() {
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState("basic");
   const [openModalItemId, setOpenModalItemId] = useState(null);
-  const [deleteModal, setDeleteModal] = useState(false);
-  const [memoModal, setMemoModal] = useState(false);
   const [loadingId, setLoadingId] = useState(null);
   const [searchText, setSearchText] = useState("");
   const route = useRouter();
@@ -116,6 +114,13 @@ export default function Feedback() {
 
 
 
+  const handleUpdateTitle = (id, newTitle) => {
+    setFeedbackList(prev =>
+      prev.map(item =>
+        item.id === id ? { ...item, title: newTitle } : item
+      )
+    );
+  };
 
   const handleUpdateMemo = (id, newMemo) => {
     setFeedbackList(prev =>
@@ -125,11 +130,49 @@ export default function Feedback() {
     );
   };
 
+  const handleDelete = (id) => {
+    setFeedbackList(prev => prev.filter(item => item.id !== id));
+  };
 
+
+
+  const openDeleteModal = () => setDeleteModal(true);
+  const closeDeleteModal = () => setDeleteModal(false);
   const openMemoModal = () => setMemoModal(true);
   const closeMemoModal = () => setMemoModal(false);
 
 
+
+
+
+  const togglePin = async (item) => {
+    try {
+      const usersId = await AsyncStorage.getItem("userId");
+      if (!usersId) return Alert.alert("오류", "userId가 없습니다.");
+
+      // 고정 상태에 따라 URL 선택
+      const url = `${process.env.EXPO_PUBLIC_API_URL}/feedback/${item.pin === "Y" ? "unpin" : "pin"
+        }/24/1`;
+
+      console.log("요청 URL:", url);
+
+      const res = await axios.patch(url);
+
+      if (res?.data?.success) {
+        // UI 상태 업데이트
+        setFeedbackList((prev) =>
+          prev.map((v) =>
+            v.id === item.id ? { ...v, pin: v.pin === "Y" ? "N" : "Y" } : v
+          )
+        );
+      } else {
+        Alert.alert("실패", res?.data?.message || "요청을 처리하지 못했습니다.");
+      }
+    } catch (e) {
+      console.error(e);
+      Alert.alert("네트워크 오류", "잠시 후 다시 시도해 주세요.");
+    }
+  };
 
 
 
@@ -285,8 +328,12 @@ export default function Feedback() {
                         setOpenModalItemId={setOpenModalItemId}
                         isModalVisible={isModalVisible}
                         openMemoModal={openMemoModal}
+                        openDeleteModal={openDeleteModal}
                         isPinned={isPinned}
+                        onTogglePin={() => togglePin(item)}
+                        onUpdateTitle={handleUpdateTitle}
                         onUpdateMemo={handleUpdateMemo}
+                        onDelete={handleDelete}
                       />
                     </View>
                   </View>
