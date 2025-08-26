@@ -22,6 +22,8 @@ export default function Feedback() {
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState("basic");
   const [openModalItemId, setOpenModalItemId] = useState(null);
+  const [deleteModal, setDeleteModal] = useState(false);
+  const [memoModal, setMemoModal] = useState(false);
   const [loadingId, setLoadingId] = useState(null);
   const [searchText, setSearchText] = useState("");
   const route = useRouter();
@@ -131,6 +133,20 @@ export default function Feedback() {
       )
     );
   };
+
+  const handleDelete = (id) => {
+    setFeedbackList(prev => prev.filter(item => item.id !== id));
+  };
+
+
+
+  const openDeleteModal = () => setDeleteModal(true);
+  const closeDeleteModal = () => setDeleteModal(false);
+
+
+
+
+
 
 
 
@@ -285,7 +301,10 @@ export default function Feedback() {
                         item={item}
                         setOpenModalItemId={setOpenModalItemId}
                         isModalVisible={isModalVisible}
+                        openDeleteModal={openDeleteModal}
+                        isPinned={isPinned}
                         onUpdateTitle={handleUpdateTitle}
+                        onDelete={handleDelete}
                       />
                     </View>
                   </View>
