@@ -16,52 +16,50 @@ import EditListModal from "../../components/Modal/EditListModal";
 import { useRouter } from "expo-router";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import DeleteCheckModal from "../../components/Modal/DeleteModal";
-import MemoChangeModal from "../../components/Modal/MemoChangeModal";
 
 export default function Feedback() {
   const [feedbackList, setFeedbackList] = useState([]);
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState("basic");
   const [openModalItemId, setOpenModalItemId] = useState(null);
-  const [deleteModal, setDeleteModal] = useState(false);
-  const [memoModal, setMemoModal] = useState(false);
   const [loadingId, setLoadingId] = useState(null);
   const [searchText, setSearchText] = useState("");
-  const [usersId, setUsersId] = useState(null); // ✅ userId 상태 추가
+  const [usersId, setUsersId] = useState(null); // ✅ 전달용 userId 보관
+  const [deleteModal, setDeleteModal] = useState(false); // (자식에서 호출 대비)
+  const [memoModal, setMemoModal] = useState(false);     // (자식에서 호출 대비)
   const route = useRouter();
 
   useEffect(() => {
     async function fetchData() {
       try {
-        const storedUserId = await AsyncStorage.getItem("userId");
-        setUsersId(storedUserId);
+        const uid = await AsyncStorage.getItem("userId");
+        setUsersId(uid);
 
-        if (!storedUserId) {
+        if (!uid) {
           console.log("userId가 저장되어 있지 않습니다.");
           return;
         }
 
-        // API 요청 보내기
-        const url = `${process.env.EXPO_PUBLIC_API_URL}/feedback/${storedUserId}`;
-        const res = await axios.get(url);
+        const res = await axios.get(
+          `${process.env.EXPO_PUBLIC_API_URL}/feedback/${uid}`
+        );
         const data = res.data;
 
-        const mappedData = data.data.map((item) => ({
-          id: item.id.toString(),
+        const mappedData = (data?.data ?? []).map((item) => ({
+          id: String(item.id),
           date: new Date(item.created_at).toLocaleDateString("ko-KR", {
             year: "numeric",
             month: "long",
             day: "numeric",
           }),
-          title: item.title,
-          memo: item.memo,
-          // pin: item.is_read === "N" ? "Y" : "N",
+          title: item.title ?? "",
+          memo: item.memo ?? "",
+          pin: item.pin || "N",
         }));
 
         setFeedbackList(mappedData);
       } catch (error) {
-        console.error(error);
+        console.error("피드백 목록 조회 실패:", error?.response?.data || error);
       }
     }
 
@@ -72,12 +70,12 @@ export default function Feedback() {
     if (!searchText.trim()) return feedbackList;
 
     const lowerSearch = searchText.trim().toLowerCase();
-    const normalize = (str) => str.trim().toLowerCase();
+    const normalize = (str) => (str ?? "").trim().toLowerCase();
 
     return feedbackList.filter((item) => {
       return (
         normalize(item.title).includes(lowerSearch) ||
-        item.date.includes(lowerSearch)
+        (item.date ?? "").includes(lowerSearch)
       );
     });
   }, [searchText, feedbackList]);
@@ -89,42 +87,41 @@ export default function Feedback() {
       if (a.pin === "Y" && b.pin !== "Y") return -1;
       if (a.pin !== "Y" && b.pin === "Y") return 1;
 
+      if (mode === "alphabet") {
+        return (a.title ?? "").localeCompare(b.title ?? "", "ko");
+      }
+      // 기본/날짜 정렬
       return new Date(b.date) - new Date(a.date);
     });
-  }, [filteredList]);
+  }, [filteredList, mode]);
 
-  // PATCH: pin / unpin
+  // ✅ 북마크 토글 (pin/unpin)
   const togglePin = async (item) => {
+    if (!usersId) return;
     const willPin = item.pin !== "Y";
-    const storedUserId = await AsyncStorage.getItem("userId");
 
     const url = willPin
-      ? `${process.env.EXPO_PUBLIC_API_URL}/feedback/pin/${storedUserId}/${item.id}`
-      : `${process.env.EXPO_PUBLIC_API_URL}/feedback/unpin/${storedUserId}/${item.id}`;
-    const res = await axios.patch(url);
+      ? `${process.env.EXPO_PUBLIC_API_URL}/feedback/pin/${usersId}/${item.id}`
+      : `${process.env.EXPO_PUBLIC_API_URL}/feedback/unpin/${usersId}/${item.id}`;
 
     try {
-      console.log("사용자 ID:", storedUserId);
       setLoadingId(item.id);
 
-      // UI 즉시 업데이트
+      // UI 먼저 변경
       setFeedbackList((prev) =>
         prev.map((v) =>
           v.id === item.id ? { ...v, pin: willPin ? "Y" : "N" } : v
         )
       );
 
-      console.log("서버 응답:", res.data);
+      const res = await axios.patch(url);
 
       if (!res?.data?.success) {
         // 실패 시 롤백
         setFeedbackList((prev) =>
           prev.map((v) => (v.id === item.id ? { ...v, pin: item.pin } : v))
         );
-        Alert.alert(
-          "실패",
-          res?.data?.message || "요청을 처리하지 못했습니다."
-        );
+        Alert.alert("실패", res?.data?.message || "요청을 처리하지 못했습니다.");
       }
     } catch (e) {
       // 롤백
@@ -137,6 +134,24 @@ export default function Feedback() {
     }
   };
 
+  // (옵션) 목록 내 값 업데이트/삭제 콜백
+  const handleUpdateTitle = (id, newTitle) => {
+    setFeedbackList((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, title: newTitle } : item))
+    );
+  };
+
+  const handleUpdateMemo = (id, newMemo) => {
+    setFeedbackList((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, memo: newMemo } : item))
+    );
+  };
+
+  const handleDelete = (id) => {
+    setFeedbackList((prev) => prev.filter((item) => item.id !== id));
+  };
+
+  // (자식 모달에서 호출 대비 - 실제 렌더링은 이 화면에서 안함)
   const openDeleteModal = () => setDeleteModal(true);
   const closeDeleteModal = () => setDeleteModal(false);
   const openMemoModal = () => setMemoModal(true);
@@ -145,9 +160,7 @@ export default function Feedback() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.head}>
-        <Text style={{ fontSize: 20, fontWeight: "500" }}>
-          나의 피드백 목록
-        </Text>
+        <Text style={{ fontSize: 20, fontWeight: "500" }}>나의 피드백 목록</Text>
       </View>
 
       <View style={styles.search}>
@@ -179,7 +192,13 @@ export default function Feedback() {
             }
           />
         </Pressable>
-        {open ? <AlignModal setOpen={setOpen} setMode={setMode} /> : null}
+        {open ? (
+          <AlignModal
+            setOpen={setOpen}
+            onSortByDate={() => setMode("date")}
+            onSortByAlphabet={() => setMode("alphabet")}
+          />
+        ) : null}
       </View>
 
       <FlatList
@@ -218,8 +237,8 @@ export default function Feedback() {
                 route.push({
                   pathname: "/screens/Feedback_result",
                   params: {
-                    userId: usersId,
-                    feedbackId: item.id,
+                    userId: usersId,     // ✅ 상세로 전달
+                    feedbackId: item.id, // ✅ 상세로 전달
                     title: item.title,
                   },
                 })
@@ -300,6 +319,9 @@ export default function Feedback() {
                         openDeleteModal={openDeleteModal}
                         isPinned={isPinned}
                         onTogglePin={() => togglePin(item)}
+                        onUpdateTitle={handleUpdateTitle}
+                        onUpdateMemo={handleUpdateMemo}
+                        onDelete={handleDelete}
                       />
                     </View>
                   </View>
@@ -308,14 +330,18 @@ export default function Feedback() {
 
               <View>
                 <Text style={styles.fontTw2}>{item.title}</Text>
-                <Text style={styles.fontTw3}>{item.memo}</Text>
+                <Text
+                  style={styles.fontTw3}
+                  numberOfLines={2}
+                  ellipsizeMode="tail"
+                >
+                  {item.memo ?? "메모 없음"}
+                </Text>
               </View>
             </Pressable>
           );
         }}
       />
-      <DeleteCheckModal visible={deleteModal} onCancel={closeDeleteModal} />
-      <MemoChangeModal visible={memoModal} onCancel={closeMemoModal} />
     </SafeAreaView>
   );
 }
@@ -351,7 +377,7 @@ const styles = StyleSheet.create({
     borderWidth: 0.5,
     borderColor: "#cccccc",
     width: "100%",
-    height: 135,
+    minHeight: 135, // ✅ 고정 높이 → 최소 높이로
     marginBottom: 10,
     marginTop: 10,
     backgroundColor: "white",
