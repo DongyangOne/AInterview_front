@@ -61,8 +61,6 @@ const EditListModal = ({
 
 
   const [newTitle, setNewTitle] = useState("");
-  const [newMemo, setNewMemo] = useState("");
-
   const changeTitle = async (itemId, newTitle) => {
 
 

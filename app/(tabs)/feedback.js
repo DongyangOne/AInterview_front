@@ -303,6 +303,7 @@ export default function Feedback() {
                         isModalVisible={isModalVisible}
                         openDeleteModal={openDeleteModal}
                         isPinned={isPinned}
+                        onUpdateTitle={handleUpdateTitle}
                         onDelete={handleDelete}
                       />
                     </View>
