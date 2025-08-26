@@ -22,8 +22,6 @@ export default function Feedback() {
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState("basic");
   const [openModalItemId, setOpenModalItemId] = useState(null);
-  const [deleteModal, setDeleteModal] = useState(false);
-  const [memoModal, setMemoModal] = useState(false);
   const [loadingId, setLoadingId] = useState(null);
   const [searchText, setSearchText] = useState("");
   const route = useRouter();
@@ -93,14 +91,6 @@ export default function Feedback() {
 
 
 
-
-
-
-
-
-
-
-
   const sortedList = useMemo(() => {
     const listToSort = filteredList;
 
@@ -109,13 +99,12 @@ export default function Feedback() {
       if (a.pin !== "Y" && b.pin === "Y") return 1;
 
       if (mode === "date") {
-        return new Date(a.date) - new Date(b.date);
+        return new Date(b.date) - new Date(a.date);
       } else if (mode === "alphabet") {
         return a.title.localeCompare(b.title, "ko");
       }
 
-
-      return new Date(a.date) - new Date(b.date);
+      return new Date(b.date) - new Date(a.date);
     });
   }, [filteredList, mode]);
 
@@ -123,13 +112,20 @@ export default function Feedback() {
 
 
 
-  const handleSortByDate = () => setMode("date");
-  const handleSortByAlphabet = () => setMode("alphabet");
+
 
   const handleUpdateTitle = (id, newTitle) => {
     setFeedbackList(prev =>
       prev.map(item =>
         item.id === id ? { ...item, title: newTitle } : item
+      )
+    );
+  };
+
+  const handleUpdateMemo = (id, newMemo) => {
+    setFeedbackList(prev =>
+      prev.map(item =>
+        item.id === id ? { ...item, memo: newMemo } : item
       )
     );
   };
@@ -142,7 +138,8 @@ export default function Feedback() {
 
   const openDeleteModal = () => setDeleteModal(true);
   const closeDeleteModal = () => setDeleteModal(false);
-
+  const openMemoModal = () => setMemoModal(true);
+  const closeMemoModal = () => setMemoModal(false);
 
 
 
@@ -191,9 +188,8 @@ export default function Feedback() {
         </Pressable>
         {open ? <AlignModal
           setOpen={setOpen}
-          onSortByDate={handleSortByDate}
-          onSortByAlphabet={handleSortByAlphabet}
-        /> : null}
+          onSortByDate={() => setMode("date")}
+          onSortByAlphabet={() => setMode("alphabet")} /> : null}
       </View>
 
       <FlatList
@@ -301,9 +297,12 @@ export default function Feedback() {
                         item={item}
                         setOpenModalItemId={setOpenModalItemId}
                         isModalVisible={isModalVisible}
+                        openMemoModal={openMemoModal}
                         openDeleteModal={openDeleteModal}
                         isPinned={isPinned}
+                        onTogglePin={() => togglePin(item)}
                         onUpdateTitle={handleUpdateTitle}
+                        onUpdateMemo={handleUpdateMemo}
                         onDelete={handleDelete}
                       />
                     </View>
