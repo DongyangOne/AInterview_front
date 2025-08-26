@@ -10,7 +10,7 @@ import {
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import RoundedBar from "./RoundedBar";
-
+import { useIsFocused } from "@react-navigation/native";
 function formatDate(dateStr) {
   if (!dateStr) return "";
   const dateObj = new Date(dateStr);
@@ -19,37 +19,68 @@ function formatDate(dateStr) {
   const day = String(dateObj.getDate()).padStart(2, "0");
   return `${year}.${month}.${day}`;
 }
+
+const getTimes = (apiDate) => {
+  const now = new Date();
+  const date = new Date(apiDate);
+  const diffMs = now.getTime() - date.getTime();
+  const minutes = Math.floor(diffMs / 1000 / 60);
+
+  if (minutes <= 1) {
+    return "방금 전";
+  } else if (minutes < 60) {
+    return `${minutes}분 전`;
+  } else if (minutes < 60 * 24) {
+    const hours = Math.floor(minutes / 60);
+    return `${hours}시간 전`;
+  } else if (minutes < 60 * 24 * 30) {
+    const days = Math.floor(minutes / 60 / 24);
+    return `${days}일 전`;
+  } else if (minutes < 60 * 24 * 30 * 12) {
+    const month = Math.floor(minutes / 60 / 24 / 30);
+    return `${month}달 전`;
+  } else {
+    const years = Math.floor(minutes / 60 / 24 / 365);
+    return `${years}년 전`;
+  }
+};
+
 function MainFeedback() {
   const [shouldScroll, setShouldScroll] = useState(false);
   const scrollRef = useRef(null);
   const [textBoxHeight, setTextBoxHeight] = useState(227);
   const [feedback, setFeedback] = useState([]);
   const [fetime, setFetime] = useState("");
-
+  const [feedtitle, setFeedTitle] = useState("");
+  const isFocused = useIsFocused();
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const usersId = await AsyncStorage.getItem("userId");
-        console.log(usersId);
-        const res = await axios.get(
-          `${process.env.EXPO_PUBLIC_API_URL}/mainpage/feedback`,
-          {
-            params: { userId: usersId },
-          }
-        );
-        if (res.data && res.data.success) {
-          setFeedback(res.data.data);
-          const apiDate = res.data.data[0]?.created_at;
-          setFetime(formatDate(apiDate));
+    if (isFocused) {
+      const fetchData = async () => {
+        try {
+          const usersId = await AsyncStorage.getItem("userId");
+          await axios
+            .get(`${process.env.EXPO_PUBLIC_API_URL}/mainpage/feedback`, {
+              params: { userId: usersId },
+            })
+            .then((res) => {
+              if (res.data && res.data.success) {
+                const firstData = res.data.data[0];
+                setFeedback(res.data.data);
+                setFetime(formatDate(firstData.created_at));
+                setFeedTitle(firstData.title);
+                console.log("메인피드백", res.data.data);
+              }
+            })
+            .catch((err) => {
+              console.log(err);
+            });
+        } catch (error) {
+          console.error("데이터 가져오기 실패:", error);
         }
-      } catch (error) {
-        console.error("데이터 가져오기 실패:", error);
-        alert("데이터 가져오기 실패");
-      }
-    };
-
-    fetchData();
-  }, []);
+      };
+      fetchData();
+    }
+  }, [isFocused]);
 
   const evaluationData = [
     { label: "업무이해도", percent: 77 },
@@ -70,20 +101,16 @@ function MainFeedback() {
     setShouldScroll(true);
   };
   const firstfb = feedback?.[0];
-  console.log("가져온 데이터", firstfb);
   return firstfb ? (
     <View style={[styles.container, { minHeight: textBoxHeight }]}>
       {/* 헤더 영역 */}
-
       <View style={styles.headerRow}>
         <View style={styles.titleSection}>
-          <Text style={styles.title}>
-            {firstfb?.title ? firstfb.title : "로딩 중"}
-          </Text>
+          <Text style={styles.title}>{feedtitle ? feedtitle : "로딩 중"}</Text>
           <Text style={styles.date}>{fetime ? fetime : "로딩 중"}</Text>
         </View>
         <Text style={styles.rightTime}>
-          {firstfb?.days_ago ? firstfb.days_ago : "로딩 중"}일 전
+          {firstfb?.created_at ? getTimes(firstfb.created_at) : "로딩 중"}
         </Text>
       </View>
 
@@ -105,6 +132,7 @@ function MainFeedback() {
             style={{ flex: 1 }}
             contentContainerStyle={{ paddingBottom: 8 }}
             showsVerticalScrollIndicator={false}
+            ref={scrollRef}
           >
             {expandedNotice.map((item, i) => (
               <View key={i}>
@@ -159,28 +187,9 @@ function MainFeedback() {
           최근 피드백이 없습니다.
         </Text>
       </View>
-      {/* <TouchableOpacity
-        style={[
-          styles.arrowBtn,
-          { marginTop: textBoxHeight === 412 ? 8 : "auto" },
-        ]}
-        onPress={toggleTextHeight}
-        activeOpacity={0.7}
-      >
-        <Image
-          source={
-            textBoxHeight === 227
-              ? require("../../assets/icons/arow.png")
-              : require("../../assets/icons/main_arrow.png")
-          }
-          style={styles.arrowImage}
-        />
-      </TouchableOpacity> */}
     </View>
   );
 }
-
-export default MainFeedback;
 
 const styles = StyleSheet.create({
   container: {
@@ -300,3 +309,5 @@ const styles = StyleSheet.create({
     alignSelf: "center",
   },
 });
+
+export default MainFeedback;
