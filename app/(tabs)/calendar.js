@@ -20,8 +20,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 const SCREEN_PAD = 32;
 
-const BASE = process.env.EXPO_PUBLIC_API_URL;
-
 const todayISO = () => {
   const now = new Date();
   const y = String(now.getFullYear());
@@ -131,10 +129,13 @@ export default function Calendar() {
     try {
       setLoading(true);
       const { year, month } = splitDate(iso);
-      const { data } = await axios.get(`${BASE}/calendar/month`, {
-        params: { userId, year, month: Number(month), _: Date.now() },
-        headers: { "Cache-Control": "no-cache" },
-      });
+      const { data } = await axios.get(
+        `${process.env.EXPO_PUBLIC_API_URL}/calendar/month`,
+        {
+          params: { userId, year, month: Number(month), _: Date.now() },
+          headers: { "Cache-Control": "no-cache" },
+        }
+      );
       const byDay = {};
       (data?.data || []).forEach((row) => {
         const y = row.year ?? row?.년 ?? year;
@@ -156,16 +157,19 @@ export default function Calendar() {
     if (!BASE || !userId) return;
     try {
       const { year, month, day } = splitDate(iso);
-      const { data } = await axios.get(`${BASE}/calendar/day`, {
-        params: {
-          userId,
-          year,
-          month: Number(month),
-          day: Number(day),
-          _: Date.now(),
-        },
-        headers: { "Cache-Control": "no-cache" },
-      });
+      const { data } = await axios.get(
+        `${process.env.EXPO_PUBLIC_API_URL}/calendar/day`,
+        {
+          params: {
+            userId,
+            year,
+            month: Number(month),
+            day: Number(day),
+            _: Date.now(),
+          },
+          headers: { "Cache-Control": "no-cache" },
+        }
+      );
       const list = normalizeList(data?.data);
       setSchedules((prev) => ({ ...prev, [iso]: list }));
     } catch (e) {
@@ -179,7 +183,7 @@ export default function Calendar() {
       const target = schedules[selectedDate]?.[deleteIdx];
       const calId = target?.id;
       if (calId) {
-        await axios.get(`${BASE}/calendar/delete`, {
+        await axios.get(`${process.env.EXPO_PUBLIC_API_URL}/calendar/delete`, {
           params: { calendar_id: calId },
           headers: { "Cache-Control": "no-cache" },
         });
@@ -305,18 +309,21 @@ export default function Calendar() {
       let ok = false;
 
       if (isEditing && editingId) {
-        const res = await axios.get(`${BASE}/calendar/update`, {
-          params: {
-            userId,
-            calendar_id: editingId,
-            title,
-            time: timeFull,
-            importance: importanceCode,
-            memo: safeMemo,
-          },
-          validateStatus: () => true,
-          headers: { "Cache-Control": "no-cache" },
-        });
+        const res = await axios.get(
+          `${process.env.EXPO_PUBLIC_API_URL}/calendar/update`,
+          {
+            params: {
+              userId,
+              calendar_id: editingId,
+              title,
+              time: timeFull,
+              importance: importanceCode,
+              memo: safeMemo,
+            },
+            validateStatus: () => true,
+            headers: { "Cache-Control": "no-cache" },
+          }
+        );
         console.log("[update]", res?.status, res?.data);
         ok = isOk(res?.data);
 
@@ -338,20 +345,23 @@ export default function Calendar() {
           });
         }
       } else {
-        const res = await axios.get(`${BASE}/calendar/add`, {
-          params: {
-            userId,
-            title,
-            time: timeFull,
-            importance: importanceCode,
-            memo: safeMemo,
-            year,
-            month: Number(month),
-            day: Number(day),
-          },
-          validateStatus: () => true,
-          headers: { "Cache-Control": "no-cache" },
-        });
+        const res = await axios.get(
+          `${process.env.EXPO_PUBLIC_API_URL}/calendar/add`,
+          {
+            params: {
+              userId,
+              title,
+              time: timeFull,
+              importance: importanceCode,
+              memo: safeMemo,
+              year,
+              month: Number(month),
+              day: Number(day),
+            },
+            validateStatus: () => true,
+            headers: { "Cache-Control": "no-cache" },
+          }
+        );
         console.log("[add]", res?.status, res?.data);
         ok = isOk(res?.data);
       }
