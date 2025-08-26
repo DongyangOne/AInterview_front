@@ -9,7 +9,6 @@ import {
   Pressable,
   Alert,
 } from "react-native";
-//10 13 14 15
 import { useMemo, useState, useEffect } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import AlignModal from "../../components/Modal/AlignModal";

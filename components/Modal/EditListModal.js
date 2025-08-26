@@ -173,8 +173,8 @@ const EditListModal = ({
               </TouchableOpacity>
 
               <TouchableOpacity onPress={async () => {
-                await changeMemo(selectedId, memoInputText); // 서버 PATCH
-                onUpdateMemo && onUpdateMemo(selectedId, memoInputText); // 부모에 반영
+                await changeMemo(selectedId, memoInputText);
+                onUpdateMemo && onUpdateMemo(selectedId, memoInputText);
                 setMemoModalVisible(false);
               }}>
                 <View style={[styles.modalBtn, { marginTop: 15, backgroundColor: '#5900FF' }]}>
