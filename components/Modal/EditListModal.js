@@ -20,24 +20,82 @@ const EditListModal = ({
   setOpenModalItemId,
   isModalVisible,
   isPinned,
+  onUpdateTitle,
   onDelete,
 }) => {
   const close = () => setOpenModalItemId(null);
 
-
+  const [titleModalVisible, setTitleModalVisible] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
 
 
 
+  const [titleInputText, setTitleInputText] = useState("");
+  const [titleNum, setTitleNum] = useState(0);
+
+
+
+  useEffect(() => {
+    setTitleNum(titleInputText.length);
+  }, [titleInputText]);
 
 
   const [selectedId, setSelectedId] = useState(null);
 
 
-
   const openModal = (id) => {
     setSelectedId(id);
     setModalVisible(true);
+  };
+  useEffect(() => {
+    if (isModalVisible) {
+      setTitleInputText(item?.title || "");
+    }
+  }, [isModalVisible, item]);
+
+  if (titleNum > 20) {
+    alert("범위를 초과하였습니다");
+  }
+  else {
+  }
+
+
+  const [newTitle, setNewTitle] = useState("");
+  const [newMemo, setNewMemo] = useState("");
+
+  const changeTitle = async (itemId, newTitle) => {
+
+
+    try {
+      const usersId = await AsyncStorage.getItem("userId");
+      const feedbackId = itemId;
+      console.log(usersId);
+
+      if (usersId) {
+        await axios
+          .get(`${process.env.EXPO_PUBLIC_API_URL}/feedback/${usersId}/${feedbackId}/title`)
+          .then(async (res) => {
+            const url = `${process.env.EXPO_PUBLIC_API_URL}/feedback/${usersId}/${feedbackId}/title`;
+            const ress = await axios.patch(url, {
+              title: newTitle,
+            })
+            const updatedFeedback = ress.data;
+            console.log("수정된 데이터:", updatedFeedback);
+            console.log("PATCH URL:", url);
+
+          })
+          .catch((err) => {
+            console.error("title을 수정하지 못했습니다.", err);
+          })
+      }
+      else {
+        console.log("userId가 저장되어 있지 않습니다.");
+      }
+
+
+    } catch (err) {
+      console.error("오류발생", err);
+    }
   };
 
 
@@ -84,12 +142,65 @@ const EditListModal = ({
 
       <Pressable
         onPress={() => {
+          setTitleInputText(item.title);
           setSelectedId(item.id);
+          setTitleModalVisible(true);
         }}
         style={[styles.wrapText, { borderBottomWidth: 0.3 }]}>
         <Text style={styles.text}>제목 수정</Text>
       </Pressable>
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={titleModalVisible}
+        onRequestClose={() => setTitleModalVisible(false)}
+      >
+        <View style={{
+          flex: 1,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          justifyContent: 'center',
+          alignItems: 'center'
+        }}>
+          <View style={{
+            width: 350,
+            height: 210,
+            padding: 20,
+            backgroundColor: 'white',
+            borderRadius: 10,
+            elevation: 5,
+            alignItems: 'center',
+          }}>
+            <Text style={{ fontSize: 18, fontWeight: '600', marginBottom: 15 }}>제목 수정</Text>
+            <Text style={{ fontSize: 12, marginBottom: 7, marginLeft: 240, color: '#808080' }}>{titleNum}/20</Text>
+            <TextInput
+              style={{
+                width: 300, height: 50, borderRadius: 10,
+                borderWidth: 0.5, borderColor: '#CCCCCC', paddingLeft: 20
+              }}
+              value={titleInputText}
+              onChangeText={setTitleInputText}
+            />
+            <View style={{ flexDirection: 'row' }}>
+              <TouchableOpacity onPress={() => { setTitleModalVisible(false), setTitleNum(0) }}>
+                <View style={[styles.modalBtn, { marginRight: 15, marginTop: 15, backgroundColor: '#DDDDDD' }]}>
+                  <Text style={{ fontSize: 16 }}>취소</Text>
+                </View>
+              </TouchableOpacity>
 
+              <TouchableOpacity onPress={async () => {
+                await changeTitle(selectedId, titleInputText);
+                onUpdateTitle && onUpdateTitle(selectedId, titleInputText);
+                setTitleModalVisible(false);
+              }}>
+                <View style={[styles.modalBtn, { marginTop: 15, backgroundColor: '#5900FF' }]}>
+                  <Text style={{ fontSize: 16, color: 'white' }}>저장</Text>
+                </View>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+
+      </Modal >
 
 
       <Pressable
