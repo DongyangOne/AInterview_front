@@ -9,7 +9,7 @@ import { Dimensions } from "react-native";
 
 const screenHeight = Dimensions.get("window").height;
 
-const menuHeight = 200; // 예상 메뉴 높이
+const menuHeight = 200;
 const topPosition = 50;
 const adjustedTop = topPosition + menuHeight > screenHeight
   ? screenHeight - menuHeight - 20
