@@ -10,7 +10,7 @@ import {
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import RoundedBar from "./RoundedBar";
-
+import { useIsFocused } from "@react-navigation/native";
 function formatDate(dateStr) {
   if (!dateStr) return "";
   const dateObj = new Date(dateStr);
@@ -52,33 +52,35 @@ function MainFeedback() {
   const [feedback, setFeedback] = useState([]);
   const [fetime, setFetime] = useState("");
   const [feedtitle, setFeedTitle] = useState("");
-
+  const isFocused = useIsFocused();
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const usersId = await AsyncStorage.getItem("userId");
-        const res = await axios
-          .get(`${process.env.EXPO_PUBLIC_API_URL}/mainpage/feedback`, {
-            params: { userId: usersId },
-          })
-          .then((res) => {
-            if (res.data && res.data.success) {
-              const firstData = res.data.data[0];
-              setFeedback(res.data.data);
-              setFetime(formatDate(firstData.created_at));
-              setFeedTitle(firstData.title);
-              console.log("메인피드백", res.data.data);
-            }
-          })
-          .catch((err) => {
-            console.log(err);
-          });
-      } catch (error) {
-        console.error("데이터 가져오기 실패:", error);
-      }
-    };
-    fetchData();
-  }, []);
+    if (isFocused) {
+      const fetchData = async () => {
+        try {
+          const usersId = await AsyncStorage.getItem("userId");
+          await axios
+            .get(`${process.env.EXPO_PUBLIC_API_URL}/mainpage/feedback`, {
+              params: { userId: usersId },
+            })
+            .then((res) => {
+              if (res.data && res.data.success) {
+                const firstData = res.data.data[0];
+                setFeedback(res.data.data);
+                setFetime(formatDate(firstData.created_at));
+                setFeedTitle(firstData.title);
+                console.log("메인피드백", res.data.data);
+              }
+            })
+            .catch((err) => {
+              console.log(err);
+            });
+        } catch (error) {
+          console.error("데이터 가져오기 실패:", error);
+        }
+      };
+      fetchData();
+    }
+  }, [isFocused]);
 
   const evaluationData = [
     { label: "업무이해도", percent: 77 },
