@@ -125,41 +125,53 @@ export default function Calendar() {
   }, []);
 
   const fetchMonth = async (iso = selectedDate) => {
-    if (!BASE || !userId) return;
+    if (!userId) return;
     try {
       setLoading(true);
       const { year, month } = splitDate(iso);
-      const { data } = await axios.get(
-        `${process.env.EXPO_PUBLIC_API_URL}/calendar/month`,
-        {
-          params: { userId, year, month: Number(month), _: Date.now() },
-          headers: { "Cache-Control": "no-cache" },
-        }
-      );
-      const byDay = {};
-      (data?.data || []).forEach((row) => {
-        const y = row.year ?? row?.년 ?? year;
-        const m = pad(row.month ?? row?.월 ?? month);
-        const d = pad(row.day ?? row?.일);
-        const key = `${y}-${m}-${d}`;
-        if (!byDay[key]) byDay[key] = [];
-        byDay[key].push(normalizeList([row])[0]);
-      });
-      setSchedules(byDay);
-    } catch (e) {
-      console.log("[calendar/month]", e?.response?.data || e.message);
+
+      await axios
+        .get(`${process.env.EXPO_PUBLIC_API_URL}/calendar/month`, {
+          params: {
+            userId,
+            year,
+            month: Number(month),
+            _: Date.now(),
+          },
+        })
+        .then((res) => {
+          console.log("[calendar/month 성공]", res.status, res.data);
+
+          const byDay = {};
+          (res.data?.data || []).forEach((row) => {
+            const y = row.year ?? row?.년 ?? year;
+            const m = pad(row.month ?? row?.월 ?? month);
+            const d = pad(row.day ?? row?.일);
+            const key = `${y}-${m}-${d}`;
+            if (!byDay[key]) byDay[key] = [];
+            byDay[key].push(normalizeList([row])[0]);
+          });
+          setSchedules(byDay);
+        })
+        .catch((error) => {
+          console.log(
+            "[calendar/month 실패]",
+            error.response?.status,
+            error.response?.data || error.message
+          );
+        });
     } finally {
       setLoading(false);
     }
   };
 
   const fetchDay = async (iso = selectedDate) => {
-    if (!BASE || !userId) return;
+    if (!userId) return;
     try {
       const { year, month, day } = splitDate(iso);
-      const { data } = await axios.get(
-        `${process.env.EXPO_PUBLIC_API_URL}/calendar/day`,
-        {
+
+      await axios
+        .get(`${process.env.EXPO_PUBLIC_API_URL}/calendar/day`, {
           params: {
             userId,
             year,
@@ -168,29 +180,46 @@ export default function Calendar() {
             _: Date.now(),
           },
           headers: { "Cache-Control": "no-cache" },
-        }
-      );
-      const list = normalizeList(data?.data);
-      setSchedules((prev) => ({ ...prev, [iso]: list }));
+        })
+        .then((res) => {
+          console.log("[calendar/day 성공]", res.status, res.data);
+          const list = normalizeList(res.data?.data);
+          setSchedules((prev) => ({ ...prev, [iso]: list }));
+        })
+        .catch((error) => {
+          console.log(
+            "[calendar/day 실패]",
+            error.response?.status,
+            error.response?.data || error.message
+          );
+        });
     } catch (e) {
-      console.log("[calendar/day]", e?.response?.data || e.message);
+      console.log("[calendar/day 예외]", e.message);
     }
   };
 
   const confirmDelete = async () => {
-    if (!BASE) return;
     try {
       const target = schedules[selectedDate]?.[deleteIdx];
       const calId = target?.id;
       if (calId) {
-        await axios.get(`${process.env.EXPO_PUBLIC_API_URL}/calendar/delete`, {
-          params: { calendar_id: calId },
-          headers: { "Cache-Control": "no-cache" },
-        });
+        await axios
+          .get(`${process.env.EXPO_PUBLIC_API_URL}/calendar/delete`, {
+            params: { calendar_id: calId },
+            headers: { "Cache-Control": "no-cache" },
+          })
+          .then((res) => {
+            console.log("[calendar/delete 성공]", res.status, res.data);
+            fetchDay(selectedDate);
+          })
+          .catch((error) => {
+            console.log(
+              "[calendar/delete 실패]",
+              error.response?.status,
+              error.response?.data || error.message
+            );
+          });
       }
-      await fetchDay(selectedDate);
-    } catch (e) {
-      console.log("[calendar/delete]", e?.response?.data || e.message);
     } finally {
       setIsDeleteConfirmVisible(false);
       setDeleteIdx(null);
@@ -280,10 +309,6 @@ export default function Calendar() {
     setPriorityRequired(!isPriorityValid);
     if (!isTitleValid || !isTimeValid || !isPriorityValid) return;
 
-    if (!BASE) {
-      Alert.alert("오류", "서버 주소가 설정되지 않았습니다.");
-      return;
-    }
     if (!userId) {
       Alert.alert("오류", "로그인 정보가 없습니다.");
       return;
@@ -291,7 +316,6 @@ export default function Calendar() {
 
     try {
       setSaving(true);
-
       const { year, month, day } = splitDate(selectedDate);
       const timeHHMMSS = `${hour}:${minute}:00`;
       const timeFull = `${selectedDate} ${timeHHMMSS}`;
@@ -309,9 +333,8 @@ export default function Calendar() {
       let ok = false;
 
       if (isEditing && editingId) {
-        const res = await axios.get(
-          `${process.env.EXPO_PUBLIC_API_URL}/calendar/update`,
-          {
+        await axios
+          .get(`${process.env.EXPO_PUBLIC_API_URL}/calendar/update`, {
             params: {
               userId,
               calendar_id: editingId,
@@ -320,34 +343,22 @@ export default function Calendar() {
               importance: importanceCode,
               memo: safeMemo,
             },
-            validateStatus: () => true,
             headers: { "Cache-Control": "no-cache" },
-          }
-        );
-        console.log("[update]", res?.status, res?.data);
-        ok = isOk(res?.data);
-
-        if (ok) {
-          setSchedules((prev) => {
-            const list = (prev[selectedDate] || []).slice();
-            if (typeof editingIdx === "number" && list[editingIdx]) {
-              list[editingIdx] = {
-                ...list[editingIdx],
-                title,
-                hour,
-                minute,
-                priority,
-                memo: safeMemo,
-              };
-              return { ...prev, [selectedDate]: list };
-            }
-            return prev;
+          })
+          .then((res) => {
+            console.log("[calendar/update 성공]", res.status, res.data);
+            ok = isOk(res.data);
+          })
+          .catch((error) => {
+            console.log(
+              "[calendar/update 실패]",
+              error.response?.status,
+              error.response?.data || error.message
+            );
           });
-        }
       } else {
-        const res = await axios.get(
-          `${process.env.EXPO_PUBLIC_API_URL}/calendar/add`,
-          {
+        await axios
+          .get(`${process.env.EXPO_PUBLIC_API_URL}/calendar/add`, {
             params: {
               userId,
               title,
@@ -358,12 +369,19 @@ export default function Calendar() {
               month: Number(month),
               day: Number(day),
             },
-            validateStatus: () => true,
             headers: { "Cache-Control": "no-cache" },
-          }
-        );
-        console.log("[add]", res?.status, res?.data);
-        ok = isOk(res?.data);
+          })
+          .then((res) => {
+            console.log("[calendar/add 성공]", res.status, res.data);
+            ok = isOk(res.data);
+          })
+          .catch((error) => {
+            console.log(
+              "[calendar/add 실패]",
+              error.response?.status,
+              error.response?.data || error.message
+            );
+          });
       }
 
       await fetchDay(selectedDate);
@@ -379,8 +397,7 @@ export default function Calendar() {
       setEditingId(null);
       resetForm();
     } catch (e) {
-      console.log("[calendar/save] 실패", e?.response?.data || e.message);
-      Alert.alert("오류", "일정 저장 중 문제가 발생했습니다.");
+      console.log("[calendar/save 예외]", e.message);
     } finally {
       setSaving(false);
     }
