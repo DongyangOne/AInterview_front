@@ -1,7 +1,17 @@
+
 import { useRouter, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import {View,Text,StyleSheet,TextInput,TouchableOpacity,Image,ScrollView,Dimensions} from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  Image,
+  ScrollView,
+  Dimensions,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import EditListModal from "../../components/Modal/EditListModal";
 
@@ -48,16 +58,7 @@ export default function FeedbackResult() {
         setError(null);
         const res = await api.get(
           `/feedback/${encodeURIComponent(userId)}/${encodeURIComponent(feedbackId)}`
-        )
-        .then((r) => {
-            console.log("가져온 데이터",{
-                userId,
-                feedbackId,
-                title,
-                status: r?.status,
-            });
-            return r;
-        });
+        );
         const data = res.data?.data || {};
         setPros(data.good || "");
         setCons(data.bad || "");
@@ -78,7 +79,7 @@ export default function FeedbackResult() {
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff", paddingTop: 0 }}>
       <View style={styles.container}>
         <View style={styles.topHeader}>
-          <TouchableOpacity onPress={() => route.replace('/feedback')}>
+          <TouchableOpacity onPress={() => route.replace("/feedback")}>
             <Image
               source={require("../../assets/icons/arrow.png")}
               style={styles.arrowIcon}
@@ -129,17 +130,35 @@ export default function FeedbackResult() {
 
           <Text style={styles.labelGood}>장점</Text>
           <Text style={styles.bodyText}>
-            {loading ? "불러오는 중..." : error ? "장점을 표시할 수 없어요." : pros?.trim() ? pros : "장점 데이터가 없습니다."}
+            {loading
+              ? "불러오는 중..."
+              : error
+              ? "장점을 표시할 수 없어요."
+              : pros?.trim()
+              ? pros
+              : "장점 데이터가 없습니다."}
           </Text>
 
           <Text style={styles.labelBad}>단점</Text>
           <Text style={styles.bodyText}>
-            {loading ? "불러오는 중..." : error ? "단점을 표시할 수 없어요." : cons?.trim() ? cons : "단점 데이터가 없습니다."}
+            {loading
+              ? "불러오는 중..."
+              : error
+              ? "단점을 표시할 수 없어요."
+              : cons?.trim()
+              ? cons
+              : "단점 데이터가 없습니다."}
           </Text>
 
           <Text style={styles.labelTip}>피드백</Text>
           <Text style={styles.bodyText}>
-            {loading ? "불러오는 중..." : error ? "피드백을 표시할 수 없어요." : tip?.trim() ? tip : "피드백 데이터가 없습니다."}
+            {loading
+              ? "불러오는 중..."
+              : error
+              ? "피드백을 표시할 수 없어요."
+              : tip?.trim()
+              ? tip
+              : "피드백 데이터가 없습니다."}
           </Text>
 
           <Text style={styles.memoTitle}>메모</Text>
@@ -169,20 +188,39 @@ export default function FeedbackResult() {
       </ScrollView>
 
       {modalVisible && (
-        <EditListModal
-          item={{ id: feedbackId, title, memo }}
-          setOpenModalItemId={() => setModalVisible(false)}
-          isModalVisible={modalVisible}
-          isPinned={isPinned}
-          onUpdateTitle={(id, newTitle) => route.setParams({ title: newTitle })}
-          onUpdateMemo={(id, newMemo) => setMemo(newMemo)}
-          onDelete={(id) => route.replace("/feedback")}
-        />
+        <View
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 9999,
+            elevation: 9999,
+          }}
+        >
+          <TouchableOpacity
+            style={{ flex: 1 }}
+            activeOpacity={1}
+            onPressOut={() => setModalVisible(false)}
+          />
+
+          <View style={{ position: "absolute", top: 20, right: 0 }}>
+            <EditListModal
+              item={{ id: feedbackId, title, memo }}
+              setOpenModalItemId={() => setModalVisible(false)}
+              isModalVisible={modalVisible}
+              isPinned={isPinned}
+              onUpdateTitle={(id, newTitle) => route.setParams({ title: newTitle })}
+              onUpdateMemo={(id, newMemo) => setMemo(newMemo)}
+              onDelete={(id) => route.replace("/feedback")}
+            />
+          </View>
+        </View>
       )}
     </SafeAreaView>
   );
 }
-
 
 const styles = StyleSheet.create({
   container: {
