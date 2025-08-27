@@ -23,6 +23,7 @@ const EditListModal = ({
   onUpdateTitle,
   onUpdateMemo,
   onDelete,
+  onUpdatePin,
 }) => {
   const close = () => setOpenModalItemId(null);
 
@@ -63,16 +64,50 @@ const EditListModal = ({
   }, [isModalVisible, item]);
 
 
-  if (titleNum > 20) {
-    alert("범위를 초과하였습니다");
-  }
-  else {
-  }
-  if (memoNum >= 50) {
-    alert("범위를 초과하였습니다");
-  }
-  else {
-  }
+
+  // 글자 수 초과 모달
+  const [limitMessage, setLimitMessage] = useState("");
+  const [open, setOpen] = useState(false);
+  // useEffect(() => {
+  //   if (titleNum > 20 || memoNum > 50) {
+  //     setOpen(true);
+  //   } else {
+  //     setOpen(false);
+  //   }
+  // }, [titleNum, memoNum]);
+
+  // if (memoNum >= 50) {
+  //   setOpen(true);
+  // }
+  // else {
+  // }
+  // 글자 수 제한 체크
+  useEffect(() => {
+    if (titleNum > 20) {
+      setOpen(true);
+      setTitleInputText(titleInputText.slice(0, 20));
+    } else if (memoNum > 50) {
+      setOpen(true);
+      setMemoInputText(memoInputText.slice(0, 50));
+    }
+  }, [titleNum, memoNum]);
+
+  // 모달 자동 닫기 (3초)
+  useEffect(() => {
+    if (open) {
+      const timer = setTimeout(() => {
+        setOpen(false);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [open]);
+
+
+
+
+
+
+
 
   const [newTitle, setNewTitle] = useState("");
   const [newMemo, setNewMemo] = useState("");
@@ -171,8 +206,24 @@ const EditListModal = ({
   };
 
 
+  const togglePin = async (itemId) => {
+    try {
+      const usersId = await AsyncStorage.getItem("userId");
+      if (!usersId) return;
 
+      const pinAction = isPinned ? "unpin" : "pin";
+      const url = `${process.env.EXPO_PUBLIC_API_URL}/feedback/${pinAction}/${itemId}/${usersId}`;
+      console.log(itemId, pinAction, usersId);
+      const res = await axios.patch(url);
+      console.log("togglePin response:", res.data);
 
+      // 부모 state 업데이트
+      onUpdatePin && onUpdatePin(itemId, pinAction === "pin" ? "Y" : "N");
+    } catch (err) {
+      console.error(`${isPinned ? "unpin" : "pin"} 실패`, err);
+      Alert.alert("오류", `${isPinned ? "최상단 해제" : "최상단 고정"}에 실패했습니다.`);
+    }
+  };
 
 
 
@@ -181,9 +232,7 @@ const EditListModal = ({
 
     <View style={[styles.container, { top: adjustedTop }]}>
       <Pressable
-        onPress={() => {
-          close();
-        }}
+        onPress={() => togglePin(item.id)}
         style={[styles.wrapText, { borderBottomWidth: 0.3 }]}
       >
         <Text style={styles.text}>{isPinned ? "최상단 고정 해제" : "최상단 고정"}</Text>
@@ -231,6 +280,18 @@ const EditListModal = ({
               value={titleInputText}
               onChangeText={setTitleInputText}
             />
+            {open ?
+              <Modal visible={true} transparent={true} animationType="fade">
+                <View style={styles.limitModal}>
+                  <Image source={require('../../assets/images/tri.png')} style={{ width: 13, height: 13, top: 10 }} />
+                  <Text style={{ fontSize: 14, top: 10 }}>글자 수 제한을 초과하였습니다.</Text>
+                  <Text style={{ fontSize: 14, color: '#808080', top: 8 }}>다시 확인해주세요.</Text>
+                </View>
+              </Modal> : null}
+
+
+
+
             <View style={{ flexDirection: 'row' }}>
               <TouchableOpacity onPress={() => { setTitleModalVisible(false), setTitleNum(0) }}>
                 <View style={[styles.modalBtn, { marginRight: 15, marginTop: 15, backgroundColor: '#DDDDDD' }]}>
@@ -252,6 +313,7 @@ const EditListModal = ({
         </View>
 
       </Modal >
+
 
       <Pressable
         onPress={() => {
@@ -294,6 +356,15 @@ const EditListModal = ({
               value={memoInputText}
               onChangeText={setMemoInputText}
             />
+            {open ?
+              <Modal visible={true} transparent={true} animationType="fade">
+                <View style={styles.limitModal2}>
+                  <Image source={require('../../assets/images/tri.png')} style={{ width: 13, height: 13, top: 10 }} />
+                  <Text style={{ fontSize: 14, top: 10 }}>글자 수 제한을 초과하였습니다.</Text>
+                  <Text style={{ fontSize: 14, color: '#808080', top: 8 }}>다시 확인해주세요.</Text>
+                </View>
+              </Modal> : null
+            }
             <View style={{ flexDirection: 'row', }}>
               <TouchableOpacity onPress={() => { setMemoModalVisible(false), setMemoNum(0) }}>
                 <View style={[styles.modalBtn, { marginRight: 15, marginTop: 15, backgroundColor: '#DDDDDD' }]}>
@@ -433,6 +504,26 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center'
+  },
+  limitModal: {
+    top: 167,
+    left: 75,
+    width: 240,
+    height: 80,
+    backgroundColor: 'white',
+    borderRadius: 10,
+    flexDirection: 'column',
+    alignItems: 'center',
+  },
+  limitModal2: {
+    top: 92,
+    left: 75,
+    width: 240,
+    height: 80,
+    backgroundColor: 'white',
+    borderRadius: 10,
+    flexDirection: 'column',
+    alignItems: 'center',
   }
 });
 

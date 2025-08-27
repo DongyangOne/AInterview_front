@@ -57,7 +57,7 @@ export default function Feedback() {
 
               );
 
-
+              console.log("pin : " + res.data.pin);
               setFeedbackList(mappedData);
             })
             .catch((err) => {
@@ -110,7 +110,11 @@ export default function Feedback() {
 
 
 
-
+  const handleUpdatePin = (id, newPin) => {
+    setFeedbackList(prev =>
+      prev.map(item => (item.id === id ? { ...item, pin: newPin } : item))
+    );
+  };
 
 
 
@@ -145,7 +149,24 @@ export default function Feedback() {
 
 
 
+  const togglePin = async (itemId, currentPin) => {
+    try {
+      const usersId = await AsyncStorage.getItem("userId");
+      if (!usersId) return;
 
+      const pinAction = currentPin === "Y" ? "unpin" : "pin"; // 현재 상태에 따라 토글
+      const url = `${process.env.EXPO_PUBLIC_API_URL}/feedback/${pinAction}/${itemId}/${usersId}`;
+
+      const res = await axios.patch(url);
+      console.log("togglePin response:", res.data);
+
+      // state 업데이트
+      handleUpdatePin(itemId, pinAction === "pin" ? "Y" : "N");
+    } catch (err) {
+      console.error(`${currentPin === "Y" ? "unpin" : "pin"} 실패`, err);
+      Alert.alert("오류", `${currentPin === "Y" ? "최상단 해제" : "최상단 고정"}에 실패했습니다.`);
+    }
+  };
 
 
 
@@ -300,10 +321,11 @@ export default function Feedback() {
                         openMemoModal={openMemoModal}
                         openDeleteModal={openDeleteModal}
                         isPinned={isPinned}
-                        onTogglePin={() => togglePin(item)}
+                        onTogglePin={() => togglePin(item.id, item.pin)}
                         onUpdateTitle={handleUpdateTitle}
                         onUpdateMemo={handleUpdateMemo}
                         onDelete={handleDelete}
+                        onUpdatePin={handleUpdatePin}
                       />
                     </View>
                   </View>

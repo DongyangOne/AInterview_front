@@ -21,6 +21,7 @@
     "@react-native-seoul/kakao-login": "^5.4.1",
     "@react-navigation/native": "^7.1.6",
     "axios": "^1.11.0",
+    "cors": "^2.8.5",
     "expo-blur": "~14.1.5",
     "expo-font": "~13.3.2",
     "expo-linking": "~7.1.7",
@@ -29,6 +30,7 @@
     "expo-status-bar": "~2.2.3",
     "expo-system-ui": "~5.0.10",
     "expo-web-browser": "~14.2.0",
+    "express": "^5.1.0",
     "i": "^0.3.7",
     "react": "^19.0.0",
     "react-dom": "19.0.0",
@@ -54,5 +56,17 @@
     "react-test-renderer": "19.0.0",
     "typescript": "~5.8.3"
   },
-  "private": true
+  "private": true,
+  "description": "2025 one 엑스포 프론트",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DongyangOne/AInterview_front.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/DongyangOne/AInterview_front/issues"
+  },
+  "homepage": "https://github.com/DongyangOne/AInterview_front#readme"
 }
