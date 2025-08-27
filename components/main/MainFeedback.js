@@ -106,7 +106,15 @@ function MainFeedback() {
       {/* 헤더 영역 */}
       <View style={styles.headerRow}>
         <View style={styles.titleSection}>
-          <Text style={styles.title}>{feedtitle ? feedtitle : "로딩 중"}</Text>
+          <Text
+            numberOfLines={1}
+            style={[
+              styles.title,
+              feedtitle.length > 10 ? { maxWidth: 125 } : { maxWidth: "100%" },
+            ]}
+          >
+            {feedtitle ? feedtitle : "로딩 중"}
+          </Text>
           <Text style={styles.date}>{fetime ? fetime : "로딩 중"}</Text>
         </View>
         <Text style={styles.rightTime}>
