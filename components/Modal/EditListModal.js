@@ -175,7 +175,11 @@ const EditListModal = ({
           )
           .then(async (res) => {
             const updatedFeedback = res.data;
-            console.log("수정된 데이터:", updatedFeedback);
+            console.log(
+              "최상단 고정 완료 feedbackId:",
+              feedbackId,
+              updatedFeedback
+            );
             onPin && onPin(feedbackId, "Y");
           })
           .catch((err) => {
@@ -203,7 +207,11 @@ const EditListModal = ({
           )
           .then(async (res) => {
             const updatedFeedback = res.data;
-            console.log("수정된 데이터:", updatedFeedback);
+            console.log(
+              "최상단 고정 해제 완료 feedbackId:",
+              feedbackId,
+              updatedFeedback
+            );
             onPin && onPin(feedbackId, "N");
           })
           .catch((err) => {
