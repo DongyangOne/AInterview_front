@@ -16,7 +16,7 @@ import EditListModal from "../../components/Modal/EditListModal";
 import { useRouter } from "expo-router";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
+import { useIsFocused } from "@react-navigation/native";
 export default function Feedback() {
   const [feedbackList, setFeedbackList] = useState([]);
   const [open, setOpen] = useState(false);
@@ -28,7 +28,7 @@ export default function Feedback() {
   const [deleteModal, setDeleteModal] = useState(false); // (자식에서 호출 대비)
   const [memoModal, setMemoModal] = useState(false);     // (자식에서 호출 대비)
   const route = useRouter();
-
+  const isFocused = useIsFocused();
   useEffect(() => {
     if (isFocused) {
       async function fetchData() {
@@ -70,10 +70,10 @@ export default function Feedback() {
           console.error(error);
         }
       }
-    }
 
-    fetchData();
-  }, []);
+      fetchData();
+    }
+  }, [isFocused]);
 
   const filteredList = useMemo(() => {
     if (!searchText.trim()) return feedbackList;
@@ -166,7 +166,6 @@ export default function Feedback() {
       setOpenModalItemId(null);
   };
 
-  // (자식 모달에서 호출 대비 - 실제 렌더링은 이 화면에서 안함)
   const openDeleteModal = () => setDeleteModal(true);
   const closeDeleteModal = () => setDeleteModal(false);
   const openMemoModal = () => setMemoModal(true);
@@ -332,11 +331,12 @@ export default function Feedback() {
                         isModalVisible={isModalVisible}
                         openMemoModal={openMemoModal}
                         openDeleteModal={openDeleteModal}
-                        isPinned={isPinned}
                         onTogglePin={() => togglePin(item)}
                         onUpdateTitle={handleUpdateTitle}
                         onUpdateMemo={handleUpdateMemo}
                         onDelete={handleDelete}
+                        onPin={handlePin}
+                        isPinned={item.pin === "Y"}
                       />
                     </View>
                   </View>
