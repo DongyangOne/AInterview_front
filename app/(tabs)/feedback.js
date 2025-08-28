@@ -24,6 +24,9 @@ export default function Feedback() {
   const [openModalItemId, setOpenModalItemId] = useState(null);
   const [loadingId, setLoadingId] = useState(null);
   const [searchText, setSearchText] = useState("");
+  const [usersId, setUsersId] = useState(null); // ✅ 전달용 userId 보관
+  const [deleteModal, setDeleteModal] = useState(false); // (자식에서 호출 대비)
+  const [memoModal, setMemoModal] = useState(false);     // (자식에서 호출 대비)
   const route = useRouter();
   const isFocused = useIsFocused();
   useEffect(() => {
@@ -31,6 +34,7 @@ export default function Feedback() {
       async function fetchData() {
         try {
           const usersId = await AsyncStorage.getItem("userId");
+          setUsersId(usersId);
 
           console.log(usersId);
           if (!usersId) {
@@ -75,12 +79,12 @@ export default function Feedback() {
     if (!searchText.trim()) return feedbackList;
 
     const lowerSearch = searchText.trim().toLowerCase();
-    const normalize = (str) => str.trim().toLowerCase();
+    const normalize = (str) => (str ?? "").trim().toLowerCase();
 
     return feedbackList.filter((item) => {
       return (
         normalize(item.title).includes(lowerSearch) ||
-        item.date.includes(lowerSearch)
+        (item.date ?? "").includes(lowerSearch)
       );
     });
   }, [searchText, feedbackList]);
@@ -92,16 +96,54 @@ export default function Feedback() {
       if (a.pin === "Y" && b.pin !== "Y") return -1;
       if (a.pin !== "Y" && b.pin === "Y") return 1;
 
-      if (mode === "date") {
-        return new Date(b.date) - new Date(a.date);
-      } else if (mode === "alphabet") {
-        return a.title.localeCompare(b.title, "ko");
+      if (mode === "alphabet") {
+        return (a.title ?? "").localeCompare(b.title ?? "", "ko");
       }
-
+      // 기본/날짜 정렬
       return new Date(b.date) - new Date(a.date);
     });
   }, [filteredList, mode]);
 
+  // ✅ 북마크 토글 (pin/unpin)
+  const togglePin = async (item) => {
+    if (!usersId) return;
+    const willPin = item.pin !== "Y";
+
+    const url = willPin
+      ? `${process.env.EXPO_PUBLIC_API_URL}/feedback/pin/${usersId}/${item.id}`
+      : `${process.env.EXPO_PUBLIC_API_URL}/feedback/unpin/${usersId}/${item.id}`;
+
+    try {
+      setLoadingId(item.id);
+
+      // UI 먼저 변경
+      setFeedbackList((prev) =>
+        prev.map((v) =>
+          v.id === item.id ? { ...v, pin: willPin ? "Y" : "N" } : v
+        )
+      );
+
+      const res = await axios.patch(url);
+
+      if (!res?.data?.success) {
+        // 실패 시 롤백
+        setFeedbackList((prev) =>
+          prev.map((v) => (v.id === item.id ? { ...v, pin: item.pin } : v))
+        );
+        Alert.alert("실패", res?.data?.message || "요청을 처리하지 못했습니다.");
+      }
+    } catch (e) {
+      // 롤백
+      setFeedbackList((prev) =>
+        prev.map((v) => (v.id === item.id ? { ...v, pin: item.pin } : v))
+      );
+      Alert.alert("네트워크 오류", "잠시 후 다시 시도해 주세요.");
+    } finally {
+      setLoadingId(null);
+    }
+  };
+
+  // (옵션) 목록 내 값 업데이트/삭제 콜백
   const handleUpdateTitle = (id, newTitle) => {
     setFeedbackList((prev) =>
       prev.map((item) => (item.id === id ? { ...item, title: newTitle } : item))
@@ -132,9 +174,7 @@ export default function Feedback() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.head}>
-        <Text style={{ fontSize: 20, fontWeight: "500" }}>
-          나의 피드백 목록
-        </Text>
+        <Text style={{ fontSize: 20, fontWeight: "500" }}>나의 피드백 목록</Text>
       </View>
 
       <View style={styles.search}>
@@ -207,7 +247,16 @@ export default function Feedback() {
 
           return (
             <Pressable
-              onPress={() => route.push("/screens/FeedbackDetail")}
+              onPress={() =>
+                route.push({
+                  pathname: "/screens/Feedback_result",
+                  params: {
+                    userId: usersId,     // ✅ 상세로 전달
+                    feedbackId: item.id, // ✅ 상세로 전달
+                    title: item.title,
+                  },
+                })
+              }
               style={[
                 styles.contentBox,
                 {
@@ -296,7 +345,13 @@ export default function Feedback() {
 
               <View>
                 <Text style={styles.fontTw2}>{item.title}</Text>
-                <Text style={styles.fontTw3}>{item.memo}</Text>
+                <Text
+                  style={styles.fontTw3}
+                  numberOfLines={2}
+                  ellipsizeMode="tail"
+                >
+                  {item.memo ?? "메모 없음"}
+                </Text>
               </View>
             </Pressable>
           );
@@ -337,7 +392,7 @@ const styles = StyleSheet.create({
     borderWidth: 0.5,
     borderColor: "#cccccc",
     width: "100%",
-    height: 135,
+    minHeight: 135, // ✅ 고정 높이 → 최소 높이로
     marginBottom: 10,
     marginTop: 10,
     backgroundColor: "white",
