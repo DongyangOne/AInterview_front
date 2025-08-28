@@ -26,6 +26,7 @@ export default function FeedbackResult() {
   const [pros, setPros] = useState("");
   const [cons, setCons] = useState("");
   const [tip, setTip] = useState("");
+  const [createdAt, setCreatedAt] = useState("");
 
   // 로딩/에러
   const [loading, setLoading] = useState(false);
@@ -65,6 +66,16 @@ export default function FeedbackResult() {
         });
         const data = res.data?.data || {};
 
+        if(data.created_at) {
+        const date = new Date(data.created_at);
+        const formatted = date.toLocaleDateString("ko-KR", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        }).replace(/\. /g, ".").replace(/\.$/,"");
+        setCreatedAt(formatted);
+        }
+
         // 응답 값 매핑
         setPros(data.good || "");
         setCons(data.bad || "");
@@ -103,7 +114,9 @@ export default function FeedbackResult() {
         <View style={styles.headerRow}>
           {/* 제목 */}
           <Text style={styles.topTitle}>{title || "피드백"}</Text>
-          <Text style={styles.date}>{formattedDate}</Text>
+          <Text style={styles.date}>
+          {createdAt || "날짜 없음"}
+          </Text>
         </View>
       </View>
 

@@ -34,6 +34,7 @@ export default function Feedback() {
       async function fetchData() {
         try {
           const usersId = await AsyncStorage.getItem("userId");
+          setUsersId(usersId);
 
           console.log(usersId);
           if (!usersId) {
