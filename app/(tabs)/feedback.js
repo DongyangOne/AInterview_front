@@ -16,7 +16,7 @@ import EditListModal from "../../components/Modal/EditListModal";
 import { useRouter } from "expo-router";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
+import { useIsFocused } from "@react-navigation/native";
 export default function Feedback() {
   const [feedbackList, setFeedbackList] = useState([]);
   const [open, setOpen] = useState(false);
@@ -28,43 +28,51 @@ export default function Feedback() {
   const [deleteModal, setDeleteModal] = useState(false); // (자식에서 호출 대비)
   const [memoModal, setMemoModal] = useState(false);     // (자식에서 호출 대비)
   const route = useRouter();
-
+  const isFocused = useIsFocused();
   useEffect(() => {
-    async function fetchData() {
-      try {
-        const uid = await AsyncStorage.getItem("userId");
-        setUsersId(uid);
+    if (isFocused) {
+      async function fetchData() {
+        try {
+          const usersId = await AsyncStorage.getItem("userId");
 
-        if (!uid) {
-          console.log("userId가 저장되어 있지 않습니다.");
-          return;
+          console.log(usersId);
+          if (!usersId) {
+            console.log("userId가 저장되어 있지 않습니다.");
+            return;
+          }
+
+          if (usersId !== null) {
+            await axios
+              .get(`${process.env.EXPO_PUBLIC_API_URL}/feedback/${usersId}`)
+              .then(async (res) => {
+                const data = res.data;
+
+                const mappedData = data.data.map((item) => ({
+                  id: item.id.toString(),
+                  date: new Date(item.created_at).toLocaleDateString("ko-KR", {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  }),
+                  title: item.title,
+                  memo: item.memo,
+                  pin: item.pin || "N",
+                }));
+
+                setFeedbackList(mappedData);
+              })
+              .catch((err) => {
+                console.error("조회 실패.", err);
+              });
+          }
+        } catch (error) {
+          console.error(error);
         }
-
-        const res = await axios.get(
-          `${process.env.EXPO_PUBLIC_API_URL}/feedback/${uid}`
-        );
-        const data = res.data;
-
-        const mappedData = (data?.data ?? []).map((item) => ({
-          id: String(item.id),
-          date: new Date(item.created_at).toLocaleDateString("ko-KR", {
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-          }),
-          title: item.title ?? "",
-          memo: item.memo ?? "",
-          pin: item.pin || "N",
-        }));
-
-        setFeedbackList(mappedData);
-      } catch (error) {
-        console.error("피드백 목록 조회 실패:", error?.response?.data || error);
       }
-    }
 
-    fetchData();
-  }, []);
+      fetchData();
+    }
+  }, [isFocused]);
 
   const filteredList = useMemo(() => {
     if (!searchText.trim()) return feedbackList;
@@ -150,8 +158,13 @@ export default function Feedback() {
   const handleDelete = (id) => {
     setFeedbackList((prev) => prev.filter((item) => item.id !== id));
   };
+  const handlePin = (id, newPin) => {
+    setFeedbackList((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, pin: newPin } : item))
+    ),
+      setOpenModalItemId(null);
+  };
 
-  // (자식 모달에서 호출 대비 - 실제 렌더링은 이 화면에서 안함)
   const openDeleteModal = () => setDeleteModal(true);
   const closeDeleteModal = () => setDeleteModal(false);
   const openMemoModal = () => setMemoModal(true);
@@ -317,11 +330,12 @@ export default function Feedback() {
                         isModalVisible={isModalVisible}
                         openMemoModal={openMemoModal}
                         openDeleteModal={openDeleteModal}
-                        isPinned={isPinned}
                         onTogglePin={() => togglePin(item)}
                         onUpdateTitle={handleUpdateTitle}
                         onUpdateMemo={handleUpdateMemo}
                         onDelete={handleDelete}
+                        onPin={handlePin}
+                        isPinned={item.pin === "Y"}
                       />
                     </View>
                   </View>

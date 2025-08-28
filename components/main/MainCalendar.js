@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Text, View, TouchableOpacity, StyleSheet } from "react-native";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
+import { useIsFocused } from "@react-navigation/native";
 // 이번 주(일~토) 날짜 배열 반환
 function getCurrentWeekDates() {
   const today = new Date();
@@ -20,49 +20,51 @@ function WeeklyCalendar() {
   const weekDates = getCurrentWeekDates();
   const today = new Date();
   const [schedules, setSchedules] = useState({});
-
+  const isFocused = useIsFocused();
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const usersId = await AsyncStorage.getItem("userId");
-        await axios
-          .get(`${process.env.EXPO_PUBLIC_API_URL}/mainpage/calendar`, {
-            params: { userId: usersId },
-          })
-          .then((res) => {
-            // 이번 주 시작/끝
-            const weekStart = new Date(weekDates[0]);
-            weekStart.setHours(0, 0, 0, 0);
-            const weekEnd = new Date(weekDates[6]);
-            weekEnd.setHours(23, 59, 59, 999);
+    if (isFocused) {
+      const fetchData = async () => {
+        try {
+          const usersId = await AsyncStorage.getItem("userId");
+          await axios
+            .get(`${process.env.EXPO_PUBLIC_API_URL}/mainpage/calendar`, {
+              params: { userId: usersId },
+            })
+            .then((res) => {
+              // 이번 주 시작/끝
+              const weekStart = new Date(weekDates[0]);
+              weekStart.setHours(0, 0, 0, 0);
+              const weekEnd = new Date(weekDates[6]);
+              weekEnd.setHours(23, 59, 59, 999);
 
-            // 이번 주 일정만 필터링
-            const weeklyEvents = res.data.data.filter((item) => {
-              const date = new Date(item.time); //가져온 값의 시간
-              return date >= weekStart && date <= weekEnd;
+              // 이번 주 일정만 필터링
+              const weeklyEvents = res.data.data.filter((item) => {
+                const date = new Date(item.time); //가져온 값의 시간
+                return date >= weekStart && date <= weekEnd;
+              });
+
+              const scheduleMap = {};
+              weeklyEvents.forEach((item) => {
+                const date = new Date(item.time);
+                const dayIndex = date.getDay(); // 0:일,~6:토
+                if (!scheduleMap[dayIndex]) scheduleMap[dayIndex] = [];
+                scheduleMap[dayIndex].push(item.title);
+              });
+
+              setSchedules(scheduleMap);
+              console.log(res.data);
+            })
+            .catch((err) => {
+              console.log(err);
             });
+        } catch (err) {
+          console.error(err);
+        }
+      };
 
-            const scheduleMap = {};
-            weeklyEvents.forEach((item) => {
-              const date = new Date(item.time);
-              const dayIndex = date.getDay(); // 0:일,~6:토
-              if (!scheduleMap[dayIndex]) scheduleMap[dayIndex] = [];
-              scheduleMap[dayIndex].push(item.title);
-            });
-
-            setSchedules(scheduleMap);
-            console.log(res.data);
-          })
-          .catch((err) => {
-            console.log(err);
-          });
-      } catch (err) {
-        console.error(err);
-      }
-    };
-
-    fetchData();
-  }, []);
+      fetchData();
+    }
+  }, [isFocused]);
 
   return (
     <View style={styles.calendarContainer}>
