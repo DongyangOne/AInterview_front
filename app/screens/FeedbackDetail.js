@@ -23,7 +23,9 @@ export default function FeedbackDetail() {
   useEffect(() => {
     const fetchFeedback = async () => {
       try {
-        const res = await axios.get(`http://183.101.17.181:3001/feedback/${userId}/${feedbackId}`);
+        const res = await api.get(
+          `/feedback/${encodeURIComponent(userId)}/${encodeURIComponent(feedbackId)}`
+        );
         const data = res.data?.data || {};
 
         setTitle(data.title ?? "");

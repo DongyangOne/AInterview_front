@@ -1,8 +1,19 @@
+// Feedback_result.js
 import { useRouter, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import {View,Text,StyleSheet,TextInput,TouchableOpacity,Image,ScrollView,Dimensions} from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  Image,
+  ScrollView,
+  Dimensions,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import EditListModal from "../../components/Modal/EditListModal";
 
 const today = new Date();
 const formattedDate = today
@@ -19,10 +30,7 @@ const { width: SCREEN_WIDTH } = Dimensions.get("window");
 export default function FeedbackResult() {
   const route = useRouter();
 
-  // 메모
   const [memo, setMemo] = useState("");
-
-  // 장점/단점/피드백 상태
   const [pros, setPros] = useState("");
   const [cons, setCons] = useState("");
   const [tip, setTip] = useState("");
@@ -31,14 +39,15 @@ export default function FeedbackResult() {
   // 로딩/에러
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [modalVisible, setModalVisible] = useState(false);
+  // ✅ 추가: 최상단 고정 상태 (UI 변경 없음)
+  const [isPinned, setIsPinned] = useState(false);
 
-  // /feedback/[userId]/[feedbackId] 경로 파라미터
   const params = useLocalSearchParams();
   const userId = Array.isArray(params.userId) ? params.userId[0] : params.userId;
   const feedbackId = Array.isArray(params.feedbackId) ? params.feedbackId[0] : params.feedbackId;
   const title = Array.isArray(params.title) ? params.title[0] : params.title;
 
-  // axios 인스턴스 (env 사용)
   const api = axios.create({
     baseURL: process.env.EXPO_PUBLIC_API_URL || "",
     timeout: 15000,
@@ -51,19 +60,18 @@ export default function FeedbackResult() {
       try {
         setLoading(true);
         setError(null);
-
         const res = await api.get(
           `/feedback/${encodeURIComponent(userId)}/${encodeURIComponent(feedbackId)}`
         )
-        .then((r) => {
-            console.log("가져온 데이터",{
-                userId,
-                feedbackId,
-                title,
-                status: r?.status,
-            });
-            return r;
-        });
+       .then((r) => {
+           console.log("가져온 데이터",{
+               userId,
+               feedbackId,
+               title,
+               status: r?.status,
+           });
+           return r;
+       });
         const data = res.data?.data || {};
 
         if(data.created_at) {
@@ -81,6 +89,8 @@ export default function FeedbackResult() {
         setCons(data.bad || "");
         setTip(data.content || "");
         setMemo(data.memo || "");
+        // ✅ 목록과 동일 규칙: "Y"면 고정 (UI 영향 없음)
+        setIsPinned((data.pin || "N") === "Y");
       } catch (e) {
         setError("피드백을 불러오지 못했어요.");
         console.warn(e?.response?.data || e?.message);
@@ -96,14 +106,14 @@ export default function FeedbackResult() {
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff", paddingTop: 0 }}>
       <View style={styles.container}>
         <View style={styles.topHeader}>
-          <TouchableOpacity onPress={() => route.replace('/feedback')}>
+          <TouchableOpacity onPress={() => route.replace("/feedback")}>
             <Image
               source={require("../../assets/icons/arrow.png")}
               style={styles.arrowIcon}
             />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>피드백 상세</Text>
-          <TouchableOpacity onPress={() => {}}>
+          <TouchableOpacity onPress={() => setModalVisible(true)}>
             <Image
               source={require("../../assets/icons/dots.png")}
               style={styles.dotsIcon}
@@ -112,12 +122,24 @@ export default function FeedbackResult() {
         </View>
 
         <View style={styles.headerRow}>
-          {/* 제목 */}
           <Text style={styles.topTitle}>{title || "피드백"}</Text>
           <Text style={styles.date}>
           {createdAt || "날짜 없음"}
           </Text>
         </View>
+
+        {isPinned && (
+          <Image
+            source={require("../../assets/icons/bookmark.png")}
+            style={{
+              position: "absolute",
+              right: 18,
+              top: 90,
+              width: 50,
+              height: 70,
+            }}
+          />
+        )}
       </View>
 
       <View style={styles.fullLine} />
@@ -148,7 +170,6 @@ export default function FeedbackResult() {
 
           <Text style={styles.feedbackTitle}>피드백 및 평가</Text>
 
-          {/* 장점 */}
           <Text style={styles.labelGood}>장점</Text>
           <Text style={styles.bodyText}>
             {loading
@@ -160,7 +181,6 @@ export default function FeedbackResult() {
               : "장점 데이터가 없습니다."}
           </Text>
 
-          {/* 단점 */}
           <Text style={styles.labelBad}>단점</Text>
           <Text style={styles.bodyText}>
             {loading
@@ -172,7 +192,6 @@ export default function FeedbackResult() {
               : "단점 데이터가 없습니다."}
           </Text>
 
-          {/* 피드백 */}
           <Text style={styles.labelTip}>피드백</Text>
           <Text style={styles.bodyText}>
             {loading
@@ -209,6 +228,39 @@ export default function FeedbackResult() {
           </View>
         </View>
       </ScrollView>
+
+      {modalVisible && (
+        <View
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 9999,
+            elevation: 9999,
+          }}
+        >
+          <TouchableOpacity
+            style={{ flex: 1 }}
+            activeOpacity={1}
+            onPressOut={() => setModalVisible(false)}
+          />
+
+          <View style={{ position: "absolute", top: 20, right: 0 }}>
+            <EditListModal
+              item={{ id: feedbackId, title, memo }}
+              setOpenModalItemId={() => setModalVisible(false)}
+              isModalVisible={modalVisible}
+              isPinned={isPinned}
+              onUpdateTitle={(id, newTitle) => route.setParams({ title: newTitle })}
+              onUpdateMemo={(id, newMemo) => setMemo(newMemo)}
+              onDelete={(id) => route.replace("/feedback")}
+              onPin={(_id, newPin) => setIsPinned(newPin === "Y")}
+            />
+          </View>
+        </View>
+      )}
     </SafeAreaView>
   );
 }
