@@ -62,7 +62,16 @@ export default function FeedbackResult() {
         setError(null);
         const res = await api.get(
           `/feedback/${encodeURIComponent(userId)}/${encodeURIComponent(feedbackId)}`
-        );
+        )
+       .then((r) => {
+           console.log("가져온 데이터",{
+               userId,
+               feedbackId,
+               title,
+               status: r?.status,
+           });
+           return r;
+       });
         const data = res.data?.data || {};
 
         if(data.created_at) {
