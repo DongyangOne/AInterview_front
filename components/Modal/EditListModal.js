@@ -68,14 +68,7 @@ const EditListModal = ({
       setMemoInputText(item?.memo || "");
     }
   }, [isModalVisible, item]);
-  if (titleNum > 20) {
-    alert("범위를 초과하였습니다");
-  } else {
-  }
-  if (memoNum >= 50) {
-    alert("범위를 초과하였습니다");
-  } else {
-  }
+
 
   const [newTitle, setNewTitle] = useState("");
   const [newMemo, setNewMemo] = useState("");
@@ -227,6 +220,32 @@ const EditListModal = ({
     }
   };
 
+
+
+  // 글자 수 초과 모달
+  const [limitMessage, setLimitMessage] = useState("");
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (titleNum > 20) {
+      setOpen(true);
+      setTitleInputText(titleInputText.slice(0, 20));
+    } else if (memoNum > 50) {
+      setOpen(true);
+      setMemoInputText(memoInputText.slice(0, 50));
+    }
+  }, [titleNum, memoNum]);
+
+  // 모달 자동 닫기 (3초)
+  useEffect(() => {
+    if (open) {
+      const timer = setTimeout(() => {
+        setOpen(false);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [open]);
+
   return (
     <View style={[styles.container, { top: adjustedTop }]}>
       {isPinned ? (
@@ -305,6 +324,15 @@ const EditListModal = ({
               value={titleInputText}
               onChangeText={setTitleInputText}
             />
+            {open ?
+              <Modal visible={true} transparent={true} animationType="fade">
+                <View style={styles.limitModal}>
+                  <Image source={require('../../assets/icons/warning2.png')} style={{ width: 13, height: 13, top: 10, }} />
+                  <Text style={{ fontSize: 14, top: 12 }}>글자 수 제한을 초과하였습니다.</Text>
+                  <Text style={{ fontSize: 14, color: '#808080', top: 8 }}>다시 확인해주세요.</Text>
+                </View>
+              </Modal> : null}
+
             <View style={{ flexDirection: "row" }}>
               <TouchableOpacity
                 onPress={() => {
@@ -407,8 +435,18 @@ const EditListModal = ({
               }}
               placeholder="메모를 작성해주세요"
               value={memoInputText}
-              onChangeText={setMemoInputText}
+              onChangeText={() => { setMemoInputText }}
             />
+            {open ?
+              <Modal visible={true} transparent={true} animationType="fade">
+                <View style={styles.limitModal2}>
+                  <Image source={require('../../assets/icons/warning2.png')} style={{ width: 13, height: 13, top: 10 }} />
+                  <Text style={{ fontSize: 14, top: 12 }}>글자 수 제한을 초과하였습니다.</Text>
+                  <Text style={{ fontSize: 14, color: '#808080', top: 8 }}>다시 확인해주세요.</Text>
+                </View>
+              </Modal> : null
+            }
+
             <View style={{ flexDirection: "row" }}>
               <TouchableOpacity
                 onPress={() => {
@@ -572,6 +610,26 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+  limitModal: {
+    top: 167,
+    left: 75,
+    width: 240,
+    height: 80,
+    backgroundColor: 'white',
+    borderRadius: 10,
+    flexDirection: 'column',
+    alignItems: 'center',
+  },
+  limitModal2: {
+    top: 92,
+    left: 75,
+    width: 240,
+    height: 80,
+    backgroundColor: 'white',
+    borderRadius: 10,
+    flexDirection: 'column',
+    alignItems: 'center',
+  }
 });
 
 export default EditListModal;
