@@ -16,7 +16,7 @@ import EditListModal from "../../components/Modal/EditListModal";
 import { useRouter } from "expo-router";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
+import { useIsFocused } from "@react-navigation/native";
 export default function Feedback() {
   const [feedbackList, setFeedbackList] = useState([]);
   const [open, setOpen] = useState(false);
@@ -24,80 +24,70 @@ export default function Feedback() {
   const [openModalItemId, setOpenModalItemId] = useState(null);
   const [loadingId, setLoadingId] = useState(null);
   const [searchText, setSearchText] = useState("");
+  const [usersId, setUsersId] = useState(null); // ✅ 전달용 userId 보관
+  const [deleteModal, setDeleteModal] = useState(false); // (자식에서 호출 대비)
+  const [memoModal, setMemoModal] = useState(false);     // (자식에서 호출 대비)
   const route = useRouter();
-
+  const isFocused = useIsFocused();
   useEffect(() => {
-    async function fetchData() {
-      try {
-        const usersId = await AsyncStorage.getItem("userId");
+    if (isFocused) {
+      async function fetchData() {
+        try {
+          const usersId = await AsyncStorage.getItem("userId");
+          setUsersId(usersId);
 
-        console.log(usersId);
-        if (!usersId) {
-          console.log("userId가 저장되어 있지 않습니다.");
-          return;
-        }
+          console.log(usersId);
+          if (!usersId) {
+            console.log("userId가 저장되어 있지 않습니다.");
+            return;
+          }
 
-        if (usersId !== null) {
-          await axios
-            .get(`${process.env.EXPO_PUBLIC_API_URL}/feedback/${usersId}`)
-            .then(async (res) => {
-              const data = res.data;
+          if (usersId !== null) {
+            await axios
+              .get(`${process.env.EXPO_PUBLIC_API_URL}/feedback/${usersId}`)
+              .then(async (res) => {
+                const data = res.data;
 
-              const mappedData = data.data.map((item) => ({
-                id: item.id.toString(),
-                date: new Date(item.created_at).toLocaleDateString("ko-KR", {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                }),
-                title: item.title,
-                memo: item.memo,
-                pin: item.pin || "N",
+                const mappedData = data.data.map((item) => ({
+                  id: item.id.toString(),
+                  date: new Date(item.created_at).toLocaleDateString("ko-KR", {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  }),
+                  title: item.title,
+                  memo: item.memo,
+                  pin: item.pin || "N",
+                }));
+
+                setFeedbackList(mappedData);
               })
-
-              );
-
-
-              setFeedbackList(mappedData);
-            })
-            .catch((err) => {
-              console.error("조회 실패.", err);
-            })
+              .catch((err) => {
+                console.error("조회 실패.", err);
+              });
+          }
+        } catch (error) {
+          console.error(error);
         }
-
-
-      } catch (error) {
-        console.error(error);
       }
-    }
 
-    fetchData();
-  }, []);
+      fetchData();
+    }
+  }, [isFocused]);
 
   const filteredList = useMemo(() => {
     if (!searchText.trim()) return feedbackList;
 
     const lowerSearch = searchText.trim().toLowerCase();
-    const normalize = (str) => str.trim().toLowerCase();
+    const normalize = (str) => (str ?? "").trim().toLowerCase();
 
     return feedbackList.filter((item) => {
       return (
         normalize(item.title).includes(lowerSearch) ||
-        item.date.includes(lowerSearch)
+        (item.date ?? "").includes(lowerSearch)
       );
     });
   }, [searchText, feedbackList]);
-
-
-
-
-
-
-
-
-
-
-
 
   const sortedList = useMemo(() => {
     const listToSort = filteredList;
@@ -106,42 +96,85 @@ export default function Feedback() {
       if (a.pin === "Y" && b.pin !== "Y") return -1;
       if (a.pin !== "Y" && b.pin === "Y") return 1;
 
-      if (mode === "date") {
-        return new Date(a.date) - new Date(b.date);
-      } else if (mode === "alphabet") {
-        return a.title.localeCompare(b.title, "ko");
+      if (mode === "alphabet") {
+        return (a.title ?? "").localeCompare(b.title ?? "", "ko");
       }
-
-
-      return new Date(a.date) - new Date(b.date);
+      // 기본/날짜 정렬
+      return new Date(b.date) - new Date(a.date);
     });
   }, [filteredList, mode]);
 
+  // ✅ 북마크 토글 (pin/unpin)
+  const togglePin = async (item) => {
+    if (!usersId) return;
+    const willPin = item.pin !== "Y";
 
+    const url = willPin
+      ? `${process.env.EXPO_PUBLIC_API_URL}/feedback/pin/${usersId}/${item.id}`
+      : `${process.env.EXPO_PUBLIC_API_URL}/feedback/unpin/${usersId}/${item.id}`;
 
+    try {
+      setLoadingId(item.id);
 
+      // UI 먼저 변경
+      setFeedbackList((prev) =>
+        prev.map((v) =>
+          v.id === item.id ? { ...v, pin: willPin ? "Y" : "N" } : v
+        )
+      );
 
-  const handleSortByDate = () => setMode("date");
-  const handleSortByAlphabet = () => setMode("alphabet");
+      const res = await axios.patch(url);
 
+      if (!res?.data?.success) {
+        // 실패 시 롤백
+        setFeedbackList((prev) =>
+          prev.map((v) => (v.id === item.id ? { ...v, pin: item.pin } : v))
+        );
+        Alert.alert("실패", res?.data?.message || "요청을 처리하지 못했습니다.");
+      }
+    } catch (e) {
+      // 롤백
+      setFeedbackList((prev) =>
+        prev.map((v) => (v.id === item.id ? { ...v, pin: item.pin } : v))
+      );
+      Alert.alert("네트워크 오류", "잠시 후 다시 시도해 주세요.");
+    } finally {
+      setLoadingId(null);
+    }
+  };
+
+  // (옵션) 목록 내 값 업데이트/삭제 콜백
   const handleUpdateTitle = (id, newTitle) => {
-    setFeedbackList(prev =>
-      prev.map(item =>
-        item.id === id ? { ...item, title: newTitle } : item
-      )
+    setFeedbackList((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, title: newTitle } : item))
     );
   };
 
+  const handleUpdateMemo = (id, newMemo) => {
+    setFeedbackList((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, memo: newMemo } : item))
+    );
+  };
 
+  const handleDelete = (id) => {
+    setFeedbackList((prev) => prev.filter((item) => item.id !== id));
+  };
+  const handlePin = (id, newPin) => {
+    setFeedbackList((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, pin: newPin } : item))
+    ),
+      setOpenModalItemId(null);
+  };
 
-
+  const openDeleteModal = () => setDeleteModal(true);
+  const closeDeleteModal = () => setDeleteModal(false);
+  const openMemoModal = () => setMemoModal(true);
+  const closeMemoModal = () => setMemoModal(false);
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.head}>
-        <Text style={{ fontSize: 20, fontWeight: "500" }}>
-          나의 피드백 목록
-        </Text>
+        <Text style={{ fontSize: 20, fontWeight: "500" }}>나의 피드백 목록</Text>
       </View>
 
       <View style={styles.search}>
@@ -173,11 +206,13 @@ export default function Feedback() {
             }
           />
         </Pressable>
-        {open ? <AlignModal
-          setOpen={setOpen}
-          onSortByDate={handleSortByDate}
-          onSortByAlphabet={handleSortByAlphabet}
-        /> : null}
+        {open ? (
+          <AlignModal
+            setOpen={setOpen}
+            onSortByDate={() => setMode("date")}
+            onSortByAlphabet={() => setMode("alphabet")}
+          />
+        ) : null}
       </View>
 
       <FlatList
@@ -212,7 +247,16 @@ export default function Feedback() {
 
           return (
             <Pressable
-              onPress={() => route.push("/screens/FeedbackDetail")}
+              onPress={() =>
+                route.push({
+                  pathname: "/screens/Feedback_result",
+                  params: {
+                    userId: usersId,     // ✅ 상세로 전달
+                    feedbackId: item.id, // ✅ 상세로 전달
+                    title: item.title,
+                  },
+                })
+              }
               style={[
                 styles.contentBox,
                 {
@@ -285,7 +329,14 @@ export default function Feedback() {
                         item={item}
                         setOpenModalItemId={setOpenModalItemId}
                         isModalVisible={isModalVisible}
+                        openMemoModal={openMemoModal}
+                        openDeleteModal={openDeleteModal}
+                        onTogglePin={() => togglePin(item)}
                         onUpdateTitle={handleUpdateTitle}
+                        onUpdateMemo={handleUpdateMemo}
+                        onDelete={handleDelete}
+                        onPin={handlePin}
+                        isPinned={item.pin === "Y"}
                       />
                     </View>
                   </View>
@@ -294,7 +345,13 @@ export default function Feedback() {
 
               <View>
                 <Text style={styles.fontTw2}>{item.title}</Text>
-                <Text style={styles.fontTw3}>{item.memo}</Text>
+                <Text
+                  style={styles.fontTw3}
+                  numberOfLines={2}
+                  ellipsizeMode="tail"
+                >
+                  {item.memo ?? "메모 없음"}
+                </Text>
               </View>
             </Pressable>
           );
@@ -335,7 +392,7 @@ const styles = StyleSheet.create({
     borderWidth: 0.5,
     borderColor: "#cccccc",
     width: "100%",
-    height: 135,
+    minHeight: 135, // ✅ 고정 높이 → 최소 높이로
     marginBottom: 10,
     marginTop: 10,
     backgroundColor: "white",
