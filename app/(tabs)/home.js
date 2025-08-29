@@ -14,38 +14,41 @@ import MainQuestion from "../../components/main/MainQuestion";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
-
+import { useIsFocused } from "@react-navigation/native";
 export default function Home() {
   const scrollRef = useRef(null);
   const router = useRouter();
   const [weekSchedules, setWeekSchedules] = useState("0");
   const [nickname, setNickname] = useState(null);
+  const isFocused = useIsFocused();
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setNickname(await AsyncStorage.getItem("NickName"));
-        const usersId = await AsyncStorage.getItem("userId");
-        await axios
-          .get(`${process.env.EXPO_PUBLIC_API_URL}/mainpage/calendar`, {
-            params: { userId: usersId },
-          })
-          .then((res) => {
-            console.log(res.data);
-            const count = res.data.data.map((item) => ({
-              id: item.calendar_id.toString(),
-            }));
-            setWeekSchedules(count.length.toString());
-          })
-          .catch((err) => {
-            console.log(err);
-          });
-      } catch (err) {
-        console.error(err);
-      }
-    };
+    if (isFocused) {
+      const fetchData = async () => {
+        try {
+          setNickname(await AsyncStorage.getItem("NickName"));
+          const usersId = await AsyncStorage.getItem("userId");
+          await axios
+            .get(`${process.env.EXPO_PUBLIC_API_URL}/mainpage/calendar`, {
+              params: { userId: usersId },
+            })
+            .then((res) => {
+              console.log(res.data);
+              const count = res.data.data.map((item) => ({
+                id: item.calendar_id.toString(),
+              }));
+              setWeekSchedules(count.length.toString());
+            })
+            .catch((err) => {
+              console.log(err);
+            });
+        } catch (err) {
+          console.error(err);
+        }
+      };
 
-    fetchData();
-  }, []);
+      fetchData();
+    }
+  }, [isFocused]);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
@@ -134,6 +137,6 @@ const styles = StyleSheet.create({
     borderColor: "#CCCCCC",
     borderRadius: 10,
     marginTop: "5%",
-    height: 97,
+    minHeight: 97,
   },
 });
