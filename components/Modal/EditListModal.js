@@ -54,10 +54,7 @@ const EditListModal = ({
 
   const [selectedId, setSelectedId] = useState(null);
 
-  const openModal = (id) => {
-    setSelectedId(id);
-    setModalVisible(true);
-  };
+
   useEffect(() => {
     if (isModalVisible) {
       setTitleInputText(item?.title || "");
@@ -435,7 +432,7 @@ const EditListModal = ({
               }}
               placeholder="메모를 작성해주세요"
               value={memoInputText}
-              onChangeText={() => { setMemoInputText }}
+              onChangeText={setMemoInputText}
             />
             {open ?
               <Modal visible={true} transparent={true} animationType="fade">
