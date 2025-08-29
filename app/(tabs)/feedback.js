@@ -171,8 +171,6 @@ export default function Feedback() {
   const openMemoModal = () => setMemoModal(true);
   const closeMemoModal = () => setMemoModal(false);
 
-
-
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.head}>
@@ -360,8 +358,9 @@ export default function Feedback() {
         }}
       />
     </SafeAreaView>
-  )
+  );
 }
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
