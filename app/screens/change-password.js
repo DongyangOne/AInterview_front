@@ -104,7 +104,7 @@ export default function ChangePasswordScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
+        <TouchableOpacity onPress={() => router.replace("/myPage")}>
           <Image
             source={require("../../assets/icons/arrow1.png")}
             style={styles.backIcon}
