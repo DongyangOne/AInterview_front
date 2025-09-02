@@ -321,7 +321,7 @@ export default function Calendar() {
       const timeHHMMSS = `${hour}:${minute}:00`;
       const timeFull = `${selectedDate} ${timeHHMMSS}`;
       const importanceCode = importanceOut[priority];
-      const safeMemo = memo?.trim() ? memo : "-";
+      const safeMemo = memo?.trim() || "";
 
       const isOk = (data) =>
         data?.affected === 1 ||
@@ -388,7 +388,7 @@ export default function Calendar() {
       await fetchDay(selectedDate);
 
       if (!ok) {
-        setSaveError("일정 저장/수정에 실패했습니다.");
+        console.log("[calendar/save 실패] 저장/수정 결과가 OK 아님");
         return;
       }
 
@@ -438,21 +438,21 @@ export default function Calendar() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <View style={styles.container}>
-        <View style={styles.headerContainer}>
-          <Pressable style={styles.headerButton} onPress={openYM}>
-            <Text style={styles.headerText}>
-              {formatHeaderDate(selectedDate)}
-            </Text>
-            <Ionicons
-              name="chevron-down"
-              size={18}
-              color="#191919"
-              style={{ marginLeft: 6 }}
-            />
+        <View style={styles.calendarHeader}>
+          <Text style={styles.calendarHeaderText}>
+            {formatHeaderDate(selectedDate)}
+          </Text>
+          <Pressable
+            onPress={openYM}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <Ionicons name="chevron-down" size={18} color="#191919" />
           </Pressable>
         </View>
-
         <RNCalendar
+          renderHeader={(date) => {
+            return null;
+          }}
           key={calendarKey}
           current={selectedDate}
           onDayPress={onDayPress}
@@ -590,16 +590,26 @@ export default function Calendar() {
 
               <View style={styles.inputRow}>
                 <Text style={styles.label}>제목</Text>
-                <TextInput
-                  style={styles.input}
-                  value={title}
-                  onChangeText={(text) => {
-                    setTitle(text);
-                    if (text !== "") setTitleRequired(false);
-                  }}
-                  placeholder="제목을 입력하세요"
-                />
-                {titleRequired && <Text style={styles.required}>*</Text>}
+                <View style={{ flex: 1 }}>
+                  <TextInput
+                    style={styles.input}
+                    value={title}
+                    onChangeText={(text) => {
+                      setTitle(text);
+                      setTitleRequired(false);
+                      setSaveError("");
+                    }}
+                    placeholder="제목을 입력하세요"
+                  />
+                  {titleRequired && (
+                    <Text style={styles.errorMsg}>제목을 입력해주세요</Text>
+                  )}
+                  {title.length > 8 && (
+                    <Text style={styles.errorMsg}>
+                      8글자 미만으로 입력해주세요.
+                    </Text>
+                  )}
+                </View>
               </View>
 
               <View style={styles.inputRow}>
@@ -835,27 +845,19 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     backgroundColor: "#fff",
   },
-  headerContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 12,
-  },
-  headerButton: { flexDirection: "row", alignItems: "center" },
-  headerText: { fontSize: 20, fontWeight: "bold" },
-
   modalContent: {
     paddingHorizontal: SCREEN_PAD,
     paddingTop: 16,
     paddingBottom: 32,
     backgroundColor: "#fff",
-    minHeight: SCREEN_HEIGHT * 0.5,
+    minHeight: SCREEN_HEIGHT * 0.7,
   },
   modalDate: {
     color: "#191919",
     fontSize: 20,
     fontWeight: "bold",
     marginBottom: 12,
-    paddingTop: 20,
+    paddingTop: 12,
   },
 
   addModalOverlay: {
@@ -866,16 +868,20 @@ const styles = StyleSheet.create({
   addModal: {
     paddingHorizontal: SCREEN_PAD,
     backgroundColor: "#fff",
-    padding: 20,
+    paddingTop: 20,
     borderTopLeftRadius: 12,
     borderTopRightRadius: 12,
+    minHeight: SCREEN_HEIGHT * 0.6,
   },
   inputRow: {
     flexDirection: "row",
-    alignItems: "flex-start",
+    alignItems: "stretch",
     marginVertical: 12,
+    marginBottom: 10,
+    paddingBottom: 10,
+    minHeight: 50,
   },
-  label: { fontWeight: "bold", width: 80, fontSize: 15, marginTop: 10 },
+  label: { fontWeight: "bold", width: 80, fontSize: 15, marginTop: 4 },
   input: {
     flex: 1,
     borderWidth: 1,
@@ -883,6 +889,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingHorizontal: 10,
     paddingVertical: 10,
+    minHeight: 48,
   },
   memoInput: {
     flex: 1,
@@ -896,7 +903,7 @@ const styles = StyleSheet.create({
   footerButtons: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginTop: 1,
+    paddingVertical: 10,
   },
   cancelBtn: {
     backgroundColor: "#E5E5E5",
@@ -1078,7 +1085,17 @@ const styles = StyleSheet.create({
   errorMsg: {
     color: "#FF5A5A",
     fontSize: 13,
-    textAlign: "center",
-    marginTop: 10,
+    marginVertical: 10,
+  },
+  calendarHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginBottom: 12,
+  },
+  calendarHeaderText: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#191919",
   },
 });
