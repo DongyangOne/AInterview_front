@@ -3,18 +3,15 @@ import { View } from "react-native";
 import Svg, { Polygon, Line, Text as SvgText, G } from "react-native-svg";
 
 const RadarChart = ({ data }) => {
-  // ----- 크기/레이아웃 -----
-  const size = 300;          // 도형 기준 크기
-  const padX = 28;           // 좌우 여유(라벨 잘림 방지)
-  const padY = 28;           // 상하 여유
+
+  const size = 300;
+  const padX = 28;
+  const padY = 28;
   const center = size / 2;
   const count = 6;
-  const radius = size / 2 - 24; // 라벨과 겹치지 않게 살짝 안쪽
+  const radius = size / 2 - 24;
 
-  // ----- 각도 & 회전 -----
-  // 기본식(angle - Math.PI/2)에 회전값을 더해 전체를 회전.
-  // flat-top + '자세'가 현재 '표정' 위치에 오도록 60° 반시계 회전
-  const ROT = -Math.PI / 6; // -30도 (필요시 -Math.PI/6 ± Math.PI/3 로 미세 튜닝)
+  const ROT = -Math.PI / 6;
   const angles = Array.from({ length: count }, (_, i) => (Math.PI * 2 * i) / count);
 
   const getPoint = (angle: number, value: number) => {
@@ -24,15 +21,13 @@ const RadarChart = ({ data }) => {
     return `${x},${y}`;
   };
 
-  // ----- 데이터(라벨과 1:1 매칭) -----
-  // 원하는 시계방향: 자세 → 자신감 → 위기대처능력 → 업무이해도 → 말투 → 표정
   const values = [
-    data?.pose,           // 자세
-    data?.confidence,     // 자신감
-    data?.risk_response,  // 위기 대처능력
-    data?.understanding,  // 업무이해도
-    data?.tone,           // 말투
-    data?.facial,         // 표정
+    data?.pose,
+    data?.confidence,
+    data?.risk_response,
+    data?.understanding,
+    data?.tone,
+    data?.facial,
   ];
   const normalized = values.map((v) => Math.min((Number(v) || 0) / 100, 1));
   const points = normalized.map((v, i) => getPoint(angles[i], v)).join(" ");
@@ -41,21 +36,20 @@ const RadarChart = ({ data }) => {
 
   return (
     <View style={{ alignItems: "center", marginBottom: 20 }}>
-      {/* 여백 포함한 전체 캔버스 크기 */}
       <Svg width={size + padX * 2} height={size + padY * 2}>
-        {/* 전체를 padX, padY만큼 안쪽으로 이동 */}
         <G transform={`translate(${padX}, ${padY})`}>
-          {/* 배경 그리드(회색 라인) */}
-          {[0.25, 0.5, 0.75, 1].map((level, i) => (
-            <Polygon
-              key={`grid-${i}`}
-              points={angles.map((angle) => getPoint(angle, level)).join(" ")}
-              fill="none"
-              stroke="#000"
-              strokeWidth={0.7}
-              opacity={0.6}
-            />
-          ))}
+
+        {Array.from({ length: 6 }, (_, i) => (i + 1) / 6).map((level, i) => (
+          <Polygon
+            key={`grid-${i}`}
+            points={angles.map((angle) => getPoint(angle, level)).join(" ")}
+            fill="none"
+            stroke="#000"
+            strokeWidth={0.7}
+            opacity={0.6}
+          />
+        ))}
+
 
           {/* 축 라인 */}
           {angles.map((angle, i) => {
