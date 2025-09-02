@@ -10,7 +10,7 @@ import {
   ScrollView,
   Image,
 } from "react-native";
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Dimensions } from "react-native";
@@ -45,30 +45,29 @@ const EditListModal = ({
   const [titleNum, setTitleNum] = useState(0);
   const [memoNum, setMemoNum] = useState(0);
 
+  const [open, setOpen] = useState(false);
+
   useEffect(() => {
     setTitleNum(titleInputText.length);
   }, [titleInputText]);
+
   useEffect(() => {
-    setMemoNum(memoInputText.length);
+    setMemoNum(memoInputText.replace(/\r?\n/g, "").length);
   }, [memoInputText]);
 
   const [selectedId, setSelectedId] = useState(null);
-
 
   useEffect(() => {
     if (isModalVisible) {
       setTitleInputText(item?.title || "");
     }
   }, [isModalVisible, item]);
+
   useEffect(() => {
     if (isModalVisible) {
       setMemoInputText(item?.memo || "");
     }
   }, [isModalVisible, item]);
-
-
-  const [newTitle, setNewTitle] = useState("");
-  const [newMemo, setNewMemo] = useState("");
 
   const changeTitle = async (itemId, newTitle) => {
     try {
@@ -88,7 +87,6 @@ const EditListModal = ({
             });
             const updatedFeedback = ress.data;
             console.log("수정된 데이터:", updatedFeedback);
-
           })
           .catch((err) => {
             console.error("title을 수정하지 못했습니다.", err);
@@ -217,23 +215,6 @@ const EditListModal = ({
     }
   };
 
-
-
-  // 글자 수 초과 모달
-  const [limitMessage, setLimitMessage] = useState("");
-  const [open, setOpen] = useState(false);
-
-  useEffect(() => {
-    if (titleNum > 20) {
-      setOpen(true);
-      setTitleInputText(titleInputText.slice(0, 20));
-    } else if (memoNum > 50) {
-      setOpen(true);
-      setMemoInputText(memoInputText.slice(0, 50));
-    }
-  }, [titleNum, memoNum]);
-
-  // 모달 자동 닫기 (3초)
   useEffect(() => {
     if (open) {
       const timer = setTimeout(() => {
@@ -242,6 +223,26 @@ const EditListModal = ({
       return () => clearTimeout(timer);
     }
   }, [open]);
+
+  const handleMemoChange = (text) => {
+    const cleanText = text.replace(/\r?\n/g, "");
+
+    if (cleanText.length > 50) {
+      setOpen(true);
+      const limitedText = cleanText.substring(0, 50);
+      setMemoInputText(limitedText);
+      return;
+    }
+
+    setMemoInputText(text);
+  };
+
+  const handleSaveMemo = async () => {
+    const memoToSave = memoInputText.replace(/\r?\n/g, "");
+    await changeMemo(selectedId, memoToSave);
+    onUpdateMemo && onUpdateMemo(selectedId, memoToSave);
+    setMemoModalVisible(false);
+  };
 
   return (
     <View style={[styles.container, { top: adjustedTop }]}>
@@ -320,15 +321,24 @@ const EditListModal = ({
               }}
               value={titleInputText}
               onChangeText={setTitleInputText}
+              maxLength={20}
             />
-            {open ?
+            {open ? (
               <Modal visible={true} transparent={true} animationType="fade">
                 <View style={styles.limitModal}>
-                  <Image source={require('../../assets/icons/warning2.png')} style={{ width: 13, height: 13, top: 10, }} />
-                  <Text style={{ fontSize: 14, top: 12 }}>글자 수 제한을 초과하였습니다.</Text>
-                  <Text style={{ fontSize: 14, color: '#808080', top: 8 }}>다시 확인해주세요.</Text>
+                  <Image
+                    source={require("../../assets/icons/warning2.png")}
+                    style={{ width: 13, height: 13, top: 10 }}
+                  />
+                  <Text style={{ fontSize: 14, top: 12 }}>
+                    글자 수 제한을 초과하였습니다.
+                  </Text>
+                  <Text style={{ fontSize: 14, color: "#808080", top: 8 }}>
+                    다시 확인해주세요.
+                  </Text>
                 </View>
-              </Modal> : null}
+              </Modal>
+            ) : null}
 
             <View style={{ flexDirection: "row" }}>
               <TouchableOpacity
@@ -352,7 +362,7 @@ const EditListModal = ({
 
               <TouchableOpacity
                 onPress={async () => {
-                  await changeTitle(selectedId, titleInputText); // 서버 PATCH
+                  await changeTitle(selectedId, titleInputText);
                   onUpdateTitle && onUpdateTitle(selectedId, titleInputText);
                   setTitleModalVisible(false);
                 }}
@@ -426,23 +436,33 @@ const EditListModal = ({
                 borderWidth: 0.5,
                 borderColor: "#CCCCCC",
                 paddingLeft: 20,
-                paddingBottom: 170,
+                paddingTop: 20,
+                paddingBottom: 20,
                 fontSize: 16,
-                multiline: "true",
               }}
               placeholder="메모를 작성해주세요"
               value={memoInputText}
               onChangeText={setMemoInputText}
+              multiline={true}
+              textAlignVertical="top"
             />
-            {open ?
+
+            {open ? (
               <Modal visible={true} transparent={true} animationType="fade">
                 <View style={styles.limitModal2}>
-                  <Image source={require('../../assets/icons/warning2.png')} style={{ width: 13, height: 13, top: 10 }} />
-                  <Text style={{ fontSize: 14, top: 12 }}>글자 수 제한을 초과하였습니다.</Text>
-                  <Text style={{ fontSize: 14, color: '#808080', top: 8 }}>다시 확인해주세요.</Text>
+                  <Image
+                    source={require("../../assets/icons/warning2.png")}
+                    style={{ width: 13, height: 13, top: 10 }}
+                  />
+                  <Text style={{ fontSize: 14, top: 12 }}>
+                    글자 수 제한을 초과하였습니다.
+                  </Text>
+                  <Text style={{ fontSize: 14, color: "#808080", top: 8 }}>
+                    다시 확인해주세요.
+                  </Text>
                 </View>
-              </Modal> : null
-            }
+              </Modal>
+            ) : null}
 
             <View style={{ flexDirection: "row" }}>
               <TouchableOpacity
@@ -464,13 +484,7 @@ const EditListModal = ({
                 </View>
               </TouchableOpacity>
 
-              <TouchableOpacity
-                onPress={async () => {
-                  await changeMemo(selectedId, memoInputText); // 서버 PATCH
-                  onUpdateMemo && onUpdateMemo(selectedId, memoInputText); // 부모에 반영
-                  setMemoModalVisible(false);
-                }}
-              >
+              <TouchableOpacity onPress={handleSaveMemo}>
                 <View
                   style={[
                     styles.modalBtn,
@@ -554,8 +568,8 @@ const EditListModal = ({
                 onPress={async () => {
                   const success = await feedbackDelete(selectedId);
                   if (success) {
-                    onDelete && onDelete(selectedId); // 부모 state 반영
-                    close(); // 메인 모달도 닫기
+                    onDelete && onDelete(selectedId);
+                    close();
                   } else {
                     Alert.alert("삭제 실패", "서버에서 삭제하지 못했습니다.");
                   }
@@ -612,21 +626,21 @@ const styles = StyleSheet.create({
     left: 75,
     width: 240,
     height: 80,
-    backgroundColor: 'white',
+    backgroundColor: "white",
     borderRadius: 10,
-    flexDirection: 'column',
-    alignItems: 'center',
+    flexDirection: "column",
+    alignItems: "center",
   },
   limitModal2: {
     top: 92,
     left: 75,
     width: 240,
     height: 80,
-    backgroundColor: 'white',
+    backgroundColor: "white",
     borderRadius: 10,
-    flexDirection: 'column',
-    alignItems: 'center',
-  }
+    flexDirection: "column",
+    alignItems: "center",
+  },
 });
 
 export default EditListModal;
