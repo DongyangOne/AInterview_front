@@ -22,7 +22,6 @@ export default function SignUpForm() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [agreePush, setAgreePush] = useState(false);
-
   const [idError, setIdError] = useState("");
   const [nicknameError, setNicknameError] = useState("");
   const [passwordError, setPasswordError] = useState("");
@@ -31,8 +30,7 @@ export default function SignUpForm() {
   const [submitting, setSubmitting] = useState(false);
 
   const badWords = ["욕", "fuck", "shit", "바보", "멍청이"];
-  const containsBadWord = (text) =>
-    badWords.some((word) => text.includes(word));
+  const containsBadWord = (t) => badWords.some((w) => t.includes(w));
 
   const checkDuplicateId = async () => {
     const trimmedId = id.trim();
@@ -40,30 +38,37 @@ export default function SignUpForm() {
     if (!trimmedId) {
       setIdError("아이디를 입력해 주세요.");
       return;
-    } else if (!/^[A-Za-z0-9]{3,15}$/.test(trimmedId)) {
+    }
+    if (!/^[A-Za-z0-9]{3,15}$/.test(trimmedId)) {
       setIdError("아이디는 3~15자의 영문자, 숫자만 사용할 수 있어요.");
       return;
     }
 
-    try {
-      const res = await axios.post(
-        "http://183.101.17.181:3001/sign/userIdCheck",
-        {
-          loginUserId: trimmedId,
+    axios
+      .post(`${process.env.EXPO_PUBLIC_API_URL}/sign/userIdCheck`, {
+        loginUserId: trimmedId,
+      })
+      .then((res) => {
+        console.log("[userIdCheck:success]", res.status, res.data);
+        setIdError("");
+      })
+      .catch((err) => {
+        console.log(
+          "[userIdCheck:error]",
+          err.response?.status,
+          err.response?.data || err.message
+        );
+        if (err?.response?.status === 409) {
+          setIdError(err.response.data.message || "이미 사용 중인 아이디예요.");
+        } else {
+          setIdError("");
         }
-      );
-      const ok =
-        res?.data === true ||
-        res?.data?.idCheck === true ||
-        res?.data?.available === true ||
-        res?.data?.ok === true;
-      setIdError(ok ? "" : "사용할 수 없는 아이디예요.");
-    } catch {
-      setIdError("중복 확인 중 오류가 발생했어요.");
-    }
+      });
   };
 
   const validate = async () => {
+    if (submitting) return;
+
     let valid = true;
     setIdError("");
     setNicknameError("");
@@ -102,23 +107,25 @@ export default function SignUpForm() {
       setConfirmPasswordError("비밀번호가 일치하지 않아요.");
       valid = false;
     }
+
     if (!agreeTerms) {
       setTermsError("이용약관에 동의해 주세요.");
       valid = false;
     }
+
     if (!valid) return;
 
-    try {
-      const res = await axios.post(
-        "http://183.101.17.181:3001/sign/signup",
+    setSubmitting(true);
+
+    axios
+      .post(
+        `${process.env.EXPO_PUBLIC_API_URL}/sign/signup`,
         {
           loginUserId: id.trim(),
           nickname: nickname.trim(),
           password,
-          passwordCheck: confirmPassword,
-          service: "app",
-          appPush: agreePush,
-          idCheck: true,
+          service: agreeTerms ? "Y" : "N",
+          appPush: agreePush ? "Y" : "N",
         },
         {
           headers: {
@@ -126,17 +133,28 @@ export default function SignUpForm() {
             Accept: "application/json",
           },
         }
-      );
-
-      await AsyncStorage.setItem("userId", id.trim());
-      if (res?.data?.token)
-        await AsyncStorage.setItem("accessToken", res.data.token);
-      router.replace("/Login");
-    } catch (e) {
-      if (e.response?.data?.message) {
-        setConfirmPasswordError(e.response.data.message);
-      }
-    }
+      )
+      .then(async (res) => {
+        console.log("[signup:success]", res.status, res.data);
+        await AsyncStorage.setItem("userId", id.trim());
+        if (res?.data?.token) {
+          await AsyncStorage.setItem("accessToken", res.data.token);
+        }
+        router.replace("/Login");
+      })
+      .catch((e) => {
+        console.log(
+          "[signup:error]",
+          e.response?.status,
+          e.response?.data || e.message
+        );
+        if (e.response?.data?.message) {
+          setConfirmPasswordError(e.response.data.message);
+        }
+      })
+      .finally(() => {
+        setSubmitting(false);
+      });
   };
 
   return (
@@ -151,6 +169,7 @@ export default function SignUpForm() {
         </TouchableOpacity>
         <Text style={styles.headerText}>회원가입</Text>
       </View>
+
       <ScrollView>
         <Text style={styles.label}>아이디</Text>
         <View style={styles.inputRow}>
@@ -158,7 +177,10 @@ export default function SignUpForm() {
             style={styles.inputFull}
             placeholder="3~15자 영대소문자, 숫자 사용 가능"
             value={id}
-            onChangeText={setId}
+            onChangeText={(t) => {
+              setId(t);
+              setIdError("");
+            }}
             autoCapitalize="none"
             editable={!submitting}
           />
