@@ -10,7 +10,7 @@ import {
   Image,
   KeyboardAvoidingView,
   Platform,
-  Alert,
+  Modal,
 } from "react-native";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -22,6 +22,7 @@ export default function ChangeNicknameScreen() {
   const [isValid, setIsValid] = useState(true);
   const [loading, setLoading] = useState(false);
   const [userId, setUserId] = useState("");
+  const [modalVisible, setModalVisible] = useState(false);
 
   useEffect(() => {
     const nicknameRegex = /^[a-z0-9가-힣]{2,8}$/i;
@@ -55,12 +56,10 @@ export default function ChangeNicknameScreen() {
         if (response.data.success) {
           AsyncStorage.setItem("NickName", nickname)
             .then(() => {
-              Alert.alert("성공", `닉네임이 ${nickname}(으)로 변경되었습니다.`, [
-                { text: "확인", onPress: () => router.replace("/home") },
-              ]);
+              setModalVisible(true);
             })
             .catch((err) => {
-              console.error("[AsyncStorage.setItem] Error:", err);
+              console.log("[AsyncStorage.setItem] Error:", err);
             });
         } else {
           Alert.alert(
@@ -70,13 +69,18 @@ export default function ChangeNicknameScreen() {
         }
       })
       .catch((error) => {
-        console.error("[changeName] Error:", error);
+        console.log("[changeName] Error:", error);
         Alert.alert("에러", "서버와의 통신에 실패했습니다.");
       })
       .finally(() => {
         setLoading(false);
       });
   };
+
+    const handleModalConfirm = () => {
+        setModalVisible(false);
+        router.replace("/home");
+    };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -123,6 +127,65 @@ export default function ChangeNicknameScreen() {
           <Text style={styles.buttonText}>{loading ? "처리 중..." : "확인"}</Text>
         </TouchableOpacity>
       </View>
+
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={handleModalConfirm}
+        >
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: "#00000040",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <View
+          style={{
+            width: 339,
+            backgroundColor: "white",
+            borderRadius: 12,
+            padding: 24,
+            alignItems: "center",
+          }}
+        >
+          <Text
+            style={{
+              fontSize: 16,
+              color: "#000000",
+              fontWeight: "600",
+              marginBottom: 24,
+            }}
+          >
+            닉네임이 {nickname}(으)로 변경되었습니다.
+          </Text>
+
+          <TouchableOpacity
+            style={{
+              width: "100%",
+              paddingVertical: 12,
+              borderRadius: 8,
+              alignItems: "center",
+              backgroundColor: "#5900FF",
+              marginTop: 8,
+            }}
+            onPress={handleModalConfirm}
+          >
+            <Text
+              style={{
+                color: "#fff",
+                fontSize: 14,
+                fontWeight: "600",
+              }}
+            >
+              완료
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
     </SafeAreaView>
   );
 }
