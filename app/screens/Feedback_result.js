@@ -14,6 +14,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import EditListModal from "../../components/Modal/EditListModal";
+import RadarChart from "../../components/Modal/RadarChart";
 
 const today = new Date();
 const formattedDate = today
@@ -35,6 +36,15 @@ export default function FeedbackResult() {
   const [cons, setCons] = useState("");
   const [tip, setTip] = useState("");
   const [createdAt, setCreatedAt] = useState("");
+  const [scores, setScores] = useState({
+    pose: 0,
+    confidence: 0,
+    facial: 0,
+    risk_response: 0,
+    tone: 0,
+    understanding: 0,
+  });
+
 
   // 로딩/에러
   const [loading, setLoading] = useState(false);
@@ -91,6 +101,14 @@ export default function FeedbackResult() {
         setMemo(data.memo || "");
         // ✅ 목록과 동일 규칙: "Y"면 고정 (UI 영향 없음)
         setIsPinned((data.pin || "N") === "Y");
+        setScores({
+          pose: data.pose || 0,
+          confidence: data.confidence || 0,
+          facial: data.facial || 0,
+          risk_response: data.risk_response || 0,
+          tone: data.tone || 0,
+          understanding: data.understanding || 0,
+        });
       } catch (e) {
         setError("피드백을 불러오지 못했어요.");
         console.warn(e?.response?.data || e?.message);
@@ -147,22 +165,7 @@ export default function FeedbackResult() {
       <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
         <View style={styles.container}>
           <Text style={styles.graphTitle}>사용자 분석 그래프</Text>
-          <View style={styles.graphWrapper}>
-            <Image
-              source={require("../../assets/images/feedbackresult.png")}
-              style={styles.graphImage}
-            />
-            <Text style={[styles.graphLabel, styles.labelTopLeft]}>자세</Text>
-            <Text style={[styles.graphLabel, styles.labelTopRight]}>자신감</Text>
-            <Text style={[styles.graphLabel, styles.labelLeft]}>표정</Text>
-            <Text style={[styles.graphLabel, styles.labelRight]}>
-              위기 대처{"\n"}능력
-            </Text>
-            <Text style={[styles.graphLabel, styles.labelBottomLeft]}>말투</Text>
-            <Text style={[styles.graphLabel, styles.labelBottomRight]}>
-              업무이해도
-            </Text>
-          </View>
+ <RadarChart data={scores} />
 
           <Text style={styles.improvementText}>
             저번보다 <Text style={styles.highlight}>자세</Text>가 더 좋아졌어요!
