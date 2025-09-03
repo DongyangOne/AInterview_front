@@ -88,7 +88,7 @@ const RadarChart = ({ data }) => {
                 <React.Fragment key={`label-${i}-frag`}>
                   <SvgText
                     key={`label-${i}-1`}
-                    x={x}
+                    x={x+7}
                     y={y - 8}
                     fontSize="13"
                     fill="#000"
@@ -98,8 +98,8 @@ const RadarChart = ({ data }) => {
                   </SvgText>
                   <SvgText
                     key={`label-${i}-2`}
-                    x={x}
-                    y={y + 8}
+                    x={x+7}
+                    y={y + 9}
                     fontSize="13"
                     fill="#000"
                     textAnchor="middle"
