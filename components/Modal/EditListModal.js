@@ -351,8 +351,6 @@ const styles = StyleSheet.create({
     width: 157,
     height: 182,
     position: "absolute",
-    // top: 50,
-    // right: 1,
     top: -20,
     right: 35,
     shadowColor: "#000",
