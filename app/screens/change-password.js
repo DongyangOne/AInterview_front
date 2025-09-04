@@ -49,6 +49,14 @@ export default function ChangePasswordScreen() {
       return;
     }
 
+    if(
+       newPassword == currentPassword ||
+       !validatePassword(newPassword)
+    ) {
+        setFormatError("새 비밀번호가 기존 비밀번호와 같습니다.");
+        return;
+    }
+
     if (newPassword !== confirmPassword) {
       setMatchError("비밀번호가 일치하지 않습니다.");
       return;
