@@ -9,6 +9,7 @@ import {
   Image,
   KeyboardAvoidingView,
   Platform,
+  Modal,
 } from "react-native";
 import axios from "axios";
 import { useRouter } from "expo-router";
@@ -25,6 +26,7 @@ export default function ChangePasswordScreen() {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [modalVisible, setModalVisible] = useState(false);
 
   // 각각 에러 메시지
   const [currentPwError, setCurrentPwError] = useState("");
@@ -47,6 +49,14 @@ export default function ChangePasswordScreen() {
       return;
     }
 
+    if(
+       newPassword == currentPassword ||
+       !validatePassword(newPassword)
+    ) {
+        setFormatError("새 비밀번호가 기존 비밀번호와 같습니다.");
+        return;
+    }
+
     if (newPassword !== confirmPassword) {
       setMatchError("비밀번호가 일치하지 않습니다.");
       return;
@@ -63,8 +73,7 @@ export default function ChangePasswordScreen() {
         })
         .then((response) => {
           console.log("[changePw] Response:", response.data);
-          alert("비밀번호 변경 완료");
-          router.back();
+          setModalVisible(true);
         });
     } catch (error) {
       console.log("[changePw] Error:", error?.response?.data || error);
@@ -99,6 +108,11 @@ export default function ChangePasswordScreen() {
         setApiError("비밀번호 변경 중 오류가 발생했습니다.");
       }
     }
+  };
+
+  const handleModalConfirm = () => {
+      setModalVisible(false);
+      router.replace("/home");
   };
 
   return (
@@ -177,6 +191,65 @@ export default function ChangePasswordScreen() {
           <Text style={styles.buttonText}>확인</Text>
         </TouchableOpacity>
       </View>
+
+      <Modal
+          animationType="fade"
+          transparent={true}
+          visible={modalVisible}
+          onRequestClose={handleModalConfirm}
+          >
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: "#00000040",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <View
+            style={{
+              width: 339,
+              backgroundColor: "white",
+              borderRadius: 12,
+              padding: 24,
+              alignItems: "center",
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 16,
+                color: "#000000",
+                fontWeight: "600",
+                marginBottom: 24,
+              }}
+            >
+              비밀번호 변경 완료
+            </Text>
+
+            <TouchableOpacity
+              style={{
+                width: "100%",
+                paddingVertical: 12,
+                borderRadius: 8,
+                alignItems: "center",
+                backgroundColor: "#5900FF",
+                marginTop: 8,
+              }}
+              onPress={handleModalConfirm}
+            >
+              <Text
+                style={{
+                  color: "#fff",
+                  fontSize: 14,
+                  fontWeight: "600",
+                }}
+              >
+                완료
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
