@@ -1,3 +1,5 @@
+// Feedback.js
+
 import {
   View,
   Text,
@@ -17,6 +19,7 @@ import { useRouter } from "expo-router";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useIsFocused } from "@react-navigation/native";
+
 export default function Feedback() {
   const [feedbackList, setFeedbackList] = useState([]);
   const [open, setOpen] = useState(false);
@@ -24,11 +27,12 @@ export default function Feedback() {
   const [openModalItemId, setOpenModalItemId] = useState(null);
   const [loadingId, setLoadingId] = useState(null);
   const [searchText, setSearchText] = useState("");
-  const [usersId, setUsersId] = useState(null); // ✅ 전달용 userId 보관
-  const [deleteModal, setDeleteModal] = useState(false); // (자식에서 호출 대비)
-  const [memoModal, setMemoModal] = useState(false);     // (자식에서 호출 대비)
+  const [usersId, setUsersId] = useState(null);
+  const [deleteModal, setDeleteModal] = useState(false);
+  const [memoModal, setMemoModal] = useState(false);
   const route = useRouter();
   const isFocused = useIsFocused();
+
   useEffect(() => {
     if (isFocused) {
       async function fetchData() {
@@ -99,12 +103,10 @@ export default function Feedback() {
       if (mode === "alphabet") {
         return (a.title ?? "").localeCompare(b.title ?? "", "ko");
       }
-      // 기본/날짜 정렬
       return new Date(b.date) - new Date(a.date);
     });
   }, [filteredList, mode]);
 
-  // ✅ 북마크 토글 (pin/unpin)
   const togglePin = async (item) => {
     if (!usersId) return;
     const willPin = item.pin !== "Y";
@@ -116,7 +118,6 @@ export default function Feedback() {
     try {
       setLoadingId(item.id);
 
-      // UI 먼저 변경
       setFeedbackList((prev) =>
         prev.map((v) =>
           v.id === item.id ? { ...v, pin: willPin ? "Y" : "N" } : v
@@ -126,14 +127,12 @@ export default function Feedback() {
       const res = await axios.patch(url);
 
       if (!res?.data?.success) {
-        // 실패 시 롤백
         setFeedbackList((prev) =>
           prev.map((v) => (v.id === item.id ? { ...v, pin: item.pin } : v))
         );
         Alert.alert("실패", res?.data?.message || "요청을 처리하지 못했습니다.");
       }
     } catch (e) {
-      // 롤백
       setFeedbackList((prev) =>
         prev.map((v) => (v.id === item.id ? { ...v, pin: item.pin } : v))
       );
@@ -143,7 +142,6 @@ export default function Feedback() {
     }
   };
 
-  // (옵션) 목록 내 값 업데이트/삭제 콜백
   const handleUpdateTitle = (id, newTitle) => {
     setFeedbackList((prev) =>
       prev.map((item) => (item.id === id ? { ...item, title: newTitle } : item))
@@ -251,8 +249,8 @@ export default function Feedback() {
                 route.push({
                   pathname: "/screens/Feedback_result",
                   params: {
-                    userId: usersId,     // ✅ 상세로 전달
-                    feedbackId: item.id, // ✅ 상세로 전달
+                    userId: usersId,
+                    feedbackId: item.id,
                     title: item.title,
                   },
                 })
@@ -301,46 +299,32 @@ export default function Feedback() {
                   />
                 </TouchableOpacity>
 
-                {isModalVisible ? (
+                {isModalVisible && (
                   <View
                     style={{
                       position: "absolute",
                       top: 0,
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
+                      right: 1,
                       zIndex: 10000,
                       elevation: 10000,
                       overflow: "visible",
                     }}
-                    pointerEvents="box-none"
                   >
-                    <View
-                      style={{
-                        position: "absolute",
-                        top: 0,
-                        right: 1,
-                        zIndex: 10000,
-                        elevation: 10000,
-                        overflow: "visible",
-                      }}
-                    >
-                      <EditListModal
-                        item={item}
-                        setOpenModalItemId={setOpenModalItemId}
-                        isModalVisible={isModalVisible}
-                        openMemoModal={openMemoModal}
-                        openDeleteModal={openDeleteModal}
-                        onTogglePin={() => togglePin(item)}
-                        onUpdateTitle={handleUpdateTitle}
-                        onUpdateMemo={handleUpdateMemo}
-                        onDelete={handleDelete}
-                        onPin={handlePin}
-                        isPinned={item.pin === "Y"}
-                      />
-                    </View>
+                    <EditListModal
+                      item={item}
+                      setOpenModalItemId={setOpenModalItemId}
+                      isModalVisible={isModalVisible}
+                      openMemoModal={openMemoModal}
+                      openDeleteModal={openDeleteModal}
+                      onTogglePin={() => togglePin(item)}
+                      onUpdateTitle={handleUpdateTitle}
+                      onUpdateMemo={handleUpdateMemo}
+                      onDelete={handleDelete}
+                      onPin={handlePin}
+                      isPinned={item.pin === "Y"}
+                    />
                   </View>
-                ) : null}
+                )}
               </View>
 
               <View>
@@ -392,7 +376,7 @@ const styles = StyleSheet.create({
     borderWidth: 0.5,
     borderColor: "#cccccc",
     width: "100%",
-    minHeight: 135, // ✅ 고정 높이 → 최소 높이로
+    minHeight: 135,
     marginBottom: 10,
     marginTop: 10,
     backgroundColor: "white",

@@ -13,7 +13,7 @@ import {
   Dimensions,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import EditListModal from "../../components/Modal/EditListModal";
+import Feedback_resultModal from "../../components/Modal/Feedback_resultModal";
 import RadarChart from "../../components/Modal/RadarChart";
 
 const today = new Date();
@@ -251,7 +251,7 @@ export default function FeedbackResult() {
           />
 
           <View style={{ position: "absolute", top: 20, right: 0 }}>
-            <EditListModal
+            <Feedback_resultModal
               item={{ id: feedbackId, title, memo }}
               setOpenModalItemId={() => setModalVisible(false)}
               isModalVisible={modalVisible}
