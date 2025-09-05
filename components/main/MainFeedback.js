@@ -95,6 +95,7 @@ function MainFeedback() {
       fetchData();
     }
   }, [isFocused]);
+
   const scoreArray = [
     { label: "자세", percent: scores.pose },
     { label: "자신감", percent: scores.confidence },
@@ -103,15 +104,15 @@ function MainFeedback() {
     { label: "말투", percent: scores.tone },
     { label: "업무이해도", percent: scores.understanding },
   ];
+  //상위 3개
   const TopScores = [...scoreArray]
     .sort((a, b) => b.percent - a.percent)
     .slice(0, 3);
+  // 하위 3개
   const BottomScores = [...scoreArray]
     .sort((a, b) => a.percent - b.percent)
     .slice(0, 3);
-  const expandedNotice = {
-    c: "다음 면접에서는 자신감, 표정, 말투에 더 노력해 보는 게 좋을 것 같아요",
-  };
+
   const toggleTextHeight = () => {
     setTextBoxHeight((prev) => (prev === 227 ? 412 : 227));
     setShouldScroll(true);
@@ -185,7 +186,6 @@ function MainFeedback() {
             <Text style={styles.detailText}>
               {firstfb?.content ? firstfb.content : "로딩 중"}
             </Text>
-            <Text style={styles.detailText}>{expandedNotice.c}</Text>
           </ScrollView>
         </View>
       )}
