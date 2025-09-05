@@ -19,13 +19,11 @@ function formatDate(dateStr) {
   const day = String(dateObj.getDate()).padStart(2, "0");
   return `${year}.${month}.${day}`;
 }
-
 const getTimes = (apiDate) => {
   const now = new Date();
   const date = new Date(apiDate);
   const diffMs = now.getTime() - date.getTime();
   const minutes = Math.floor(diffMs / 1000 / 60);
-
   if (minutes <= 1) {
     return "방금 전";
   } else if (minutes < 60) {
@@ -44,7 +42,6 @@ const getTimes = (apiDate) => {
     return `${years}년 전`;
   }
 };
-
 function MainFeedback() {
   const [shouldScroll, setShouldScroll] = useState(false);
   const scrollRef = useRef(null);
@@ -53,6 +50,15 @@ function MainFeedback() {
   const [fetime, setFetime] = useState("");
   const [feedtitle, setFeedTitle] = useState("");
   const isFocused = useIsFocused();
+  const [scores, setScores] = useState({
+    pose: 0,
+    confidence: 0,
+    facial: 0,
+    risk_response: 0,
+    tone: 0,
+    understanding: 0,
+  });
+
   useEffect(() => {
     if (isFocused) {
       const fetchData = async () => {
@@ -68,6 +74,14 @@ function MainFeedback() {
                 setFeedback(res.data.data);
                 setFetime(formatDate(firstData.created_at));
                 setFeedTitle(firstData.title);
+                setScores({
+                  pose: firstData.pose || 0,
+                  confidence: firstData.confidence || 0,
+                  facial: firstData.facial || 0,
+                  risk_response: firstData.risk_response || 0,
+                  tone: firstData.tone || 0,
+                  understanding: firstData.understanding || 0,
+                });
                 console.log("메인피드백", res.data.data);
               }
             })
@@ -81,21 +95,23 @@ function MainFeedback() {
       fetchData();
     }
   }, [isFocused]);
-
-  const evaluationData = [
-    { label: "업무이해도", percent: 77 },
-    { label: "기술역량", percent: 65 },
-    { label: "의사소통", percent: 88 },
+  const scoreArray = [
+    { label: "자세", percent: scores.pose },
+    { label: "자신감", percent: scores.confidence },
+    { label: "표정", percent: scores.facial },
+    { label: "위기대처능력", percent: scores.risk_response },
+    { label: "말투", percent: scores.tone },
+    { label: "업무이해도", percent: scores.understanding },
   ];
-
-  const expandedNotice = [
-    {
-      a: "위기대처능력 73% 자세 64% 자신감 55%",
-      b: "닉네임님은 지난 aa 회사 면접에서 업무이해도, 위기대처능력, 자세에서는 강한 편이고, 자신감, 표정, 말투에서는 아쉬운 편이에요.",
-      c: "다음 면접에서는 자신감, 표정, 말투에 더 노력해 보는 게 좋을 것 같아요",
-    },
-  ];
-
+  const TopScores = [...scoreArray]
+    .sort((a, b) => b.percent - a.percent)
+    .slice(0, 3);
+  const BottomScores = [...scoreArray]
+    .sort((a, b) => a.percent - b.percent)
+    .slice(0, 3);
+  const expandedNotice = {
+    c: "다음 면접에서는 자신감, 표정, 말투에 더 노력해 보는 게 좋을 것 같아요",
+  };
   const toggleTextHeight = () => {
     setTextBoxHeight((prev) => (prev === 227 ? 412 : 227));
     setShouldScroll(true);
@@ -122,8 +138,7 @@ function MainFeedback() {
         </Text>
       </View>
 
-      {/* 퍼센트 바 */}
-      {evaluationData.map((item, i) => (
+      {TopScores.map((item, i) => (
         <View key={i} style={styles.barRow}>
           <Text style={styles.barLabel}>{item.label}</Text>
           <View style={styles.barWrapper}>
@@ -132,8 +147,7 @@ function MainFeedback() {
           <Text style={styles.barPercent}>{item.percent}%</Text>
         </View>
       ))}
-
-      {/* 확장 내용 */}
+      {/* 화살표 클릭   */}
       {textBoxHeight === 412 && (
         <View style={styles.expandedSection}>
           <ScrollView
@@ -142,28 +156,36 @@ function MainFeedback() {
             showsVerticalScrollIndicator={false}
             ref={scrollRef}
           >
-            {expandedNotice.map((item, i) => (
-              <View key={i}>
-                <View style={styles.keywordRow}>
-                  {item.a.split(" ").map((word, idx) => (
-                    <Text
-                      key={idx}
-                      style={[
-                        styles.keywordText,
-                        /\d+%/.test(word) && styles.keywordHighlight,
-                      ]}
-                    >
-                      {word + " "}
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-around",
+                marginBottom: 12,
+              }}
+            >
+              {BottomScores.map((item, i) => (
+                <View
+                  key={i}
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    marginTop: 47,
+                  }}
+                >
+                  <Text style={styles.keywordText}>
+                    {item.label + " "}
+                    <Text style={styles.keywordHighlight}>
+                      {typeof item.percent === "number" ? item.percent : 0}%
                     </Text>
-                  ))}
+                  </Text>
                 </View>
-                <Text style={styles.detailText}>
-                  {firstfb?.content ? firstfb.content : "로딩 중"}
-                </Text>
-                {/**아직 해당 db에 값이 없어서 임시 출력 */}
-                <Text style={styles.detailText}>{item.c}</Text>
-              </View>
-            ))}
+              ))}
+            </View>
+            {/* content와 expandedNotice.c는 한 번만 출력 */}
+            <Text style={styles.detailText}>
+              {firstfb?.content ? firstfb.content : "로딩 중"}
+            </Text>
+            <Text style={styles.detailText}>{expandedNotice.c}</Text>
           </ScrollView>
         </View>
       )}
@@ -198,7 +220,6 @@ function MainFeedback() {
     </View>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     backgroundColor: "#fff",
@@ -317,5 +338,4 @@ const styles = StyleSheet.create({
     alignSelf: "center",
   },
 });
-
 export default MainFeedback;
