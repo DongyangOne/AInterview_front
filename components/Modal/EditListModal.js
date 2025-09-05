@@ -47,13 +47,15 @@ const EditListModal = ({
   }, [titleInputText]);
 
   useEffect(() => {
-    setMemoNum(memoInputText.replace(/\r?\n/g, "").length);
+    if (memoInputText != null) {
+      setMemoNum(memoInputText.replace(/\r?\n/g, "").length);
+    }
   }, [memoInputText]);
 
   useEffect(() => {
     if (isModalVisible) {
       setTitleInputText(item?.title || "");
-      setMemoInputText(item?.memo || "");
+      setMemoInputText(item?.memo ?? "");
     }
   }, [isModalVisible, item]);
 
@@ -165,10 +167,10 @@ const EditListModal = ({
   };
 
   const handleMemoChange = (text) => {
-    const cleanedText = text.replace(/\r?\n/g, "");
-    if (cleanedText.length >= 50) {
+    const cleanedText = (text ?? "").replace(/\r?\n/g, "");
+    if (cleanedText.length > 50) {
       setOpen(true);
-      setMemoInputText(text.substring(0));
+      setMemoInputText(text.substring(0, text.length - (cleanedText.length - 50)));
     } else {
       setOpen(false);
       setMemoInputText(text);
@@ -185,7 +187,7 @@ const EditListModal = ({
   }, [open]);
 
   const handleSaveMemo = async () => {
-    const memoToSave = memoInputText.replace(/\r?\n/g, "");
+    const memoToSave = (memoInputText ?? "").replace(/\r?\n/g, "");
     await changeMemo(selectedId, memoToSave);
     setMemoModalVisible(false);
   };
@@ -207,7 +209,7 @@ const EditListModal = ({
   };
 
   return (
-    <View style={[styles.container,]}>
+    <View style={[styles.container2,]}>
       {isPinned ? (
         <Pressable onPress={() => feedbackUnPin(item.id)} style={[styles.wrapText, { borderBottomWidth: 0.3 }]}>
           <Text style={styles.text}>최상단 고정 해제</Text>
@@ -285,7 +287,6 @@ const EditListModal = ({
               onChangeText={handleMemoChange}
               multiline={true}
               textAlignVertical="top"
-              maxLength={50}
             />
             {open ? (<Modal visible={open} transparent={true} animationType="fade">
               <View style={styles.limitModal2}>
@@ -347,6 +348,20 @@ const EditListModal = ({
 
 const styles = StyleSheet.create({
   container: {
+    backgroundColor: "white",
+    width: 157,
+    height: 182,
+    position: "absolute",
+    top: -20,
+    right: 35,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 4,
+    zIndex: 9999,
+  },
+  container2: {
     backgroundColor: "white",
     width: 157,
     height: 182,
