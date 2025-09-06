@@ -278,7 +278,7 @@ const styles = StyleSheet.create({
   },
   barLabel: {
     marginRight: "3%",
-    minWidth: 65,
+    minWidth: 75,
     width: "10%",
   },
   barWrapper: {
