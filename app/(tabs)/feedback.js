@@ -26,7 +26,7 @@ export default function Feedback() {
   const [searchText, setSearchText] = useState("");
   const [usersId, setUsersId] = useState(null); // ✅ 전달용 userId 보관
   const [deleteModal, setDeleteModal] = useState(false); // (자식에서 호출 대비)
-  const [memoModal, setMemoModal] = useState(false);     // (자식에서 호출 대비)
+  const [memoModal, setMemoModal] = useState(false); // (자식에서 호출 대비)
   const route = useRouter();
   const isFocused = useIsFocused();
   useEffect(() => {
@@ -130,7 +130,10 @@ export default function Feedback() {
         setFeedbackList((prev) =>
           prev.map((v) => (v.id === item.id ? { ...v, pin: item.pin } : v))
         );
-        Alert.alert("실패", res?.data?.message || "요청을 처리하지 못했습니다.");
+        Alert.alert(
+          "실패",
+          res?.data?.message || "요청을 처리하지 못했습니다."
+        );
       }
     } catch (e) {
       // 롤백
@@ -174,7 +177,9 @@ export default function Feedback() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.head}>
-        <Text style={{ fontSize: 20, fontWeight: "500" }}>나의 피드백 목록</Text>
+        <Text style={{ fontSize: 20, fontWeight: "500" }}>
+          나의 피드백 목록
+        </Text>
       </View>
 
       <View style={styles.search}>
@@ -251,7 +256,7 @@ export default function Feedback() {
                 route.push({
                   pathname: "/screens/Feedback_result",
                   params: {
-                    userId: usersId,     // ✅ 상세로 전달
+                    userId: usersId, // ✅ 상세로 전달
                     feedbackId: item.id, // ✅ 상세로 전달
                     title: item.title,
                   },
@@ -273,7 +278,7 @@ export default function Feedback() {
                   style={{
                     width: 50,
                     height: 50,
-                    marginLeft: 270,
+                    marginLeft: "75%",
                     top: -12,
                     position: "absolute",
                   }}
