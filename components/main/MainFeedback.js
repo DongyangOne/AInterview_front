@@ -19,6 +19,7 @@ function formatDate(dateStr) {
   const day = String(dateObj.getDate()).padStart(2, "0");
   return `${year}.${month}.${day}`;
 }
+//시간 계산
 const getTimes = (apiDate) => {
   const now = new Date();
   const date = new Date(apiDate);
@@ -112,7 +113,7 @@ function MainFeedback() {
   const BottomScores = [...scoreArray]
     .sort((a, b) => a.percent - b.percent)
     .slice(0, 3);
-
+  //메인 피드백 박스 크기 조절
   const toggleTextHeight = () => {
     setTextBoxHeight((prev) => (prev === 227 ? 412 : 227));
     setShouldScroll(true);
@@ -148,7 +149,7 @@ function MainFeedback() {
           <Text style={styles.barPercent}>{item.percent}%</Text>
         </View>
       ))}
-      {/* 화살표 클릭   */}
+      {/* 화살표 클릭 시 나오는 화면  */}
       {textBoxHeight === 412 && (
         <View style={styles.expandedSection}>
           <ScrollView
@@ -160,7 +161,8 @@ function MainFeedback() {
             <View
               style={{
                 flexDirection: "row",
-                justifyContent: "space-around",
+                justifyContent: "center", // 가로 방향 중앙 정렬
+                alignItems: "center", // 세로 방향 중앙 정렬
                 marginBottom: 12,
               }}
             >
@@ -168,7 +170,6 @@ function MainFeedback() {
                 <View
                   key={i}
                   style={{
-                    flexDirection: "row",
                     alignItems: "center",
                     marginTop: 47,
                   }}
@@ -182,7 +183,7 @@ function MainFeedback() {
                 </View>
               ))}
             </View>
-            {/* content와 expandedNotice.c는 한 번만 출력 */}
+
             <Text style={styles.detailText}>
               {firstfb?.content ? firstfb.content : "로딩 중"}
             </Text>
