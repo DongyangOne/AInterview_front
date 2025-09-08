@@ -324,7 +324,7 @@ const EditListModal = ({
       <Modal animationType="fade" transparent={true} visible={deleteModalVisible} onRequestClose={() => setDeleteModalVisible(false)}>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Image source={require("../../assets/images/tri.png")} style={styles.deleteIcon} />
+            <Image source={require("../../assets/icons/warning.png")} style={styles.deleteIcon} />
             <Text style={styles.deleteTitle}>정말 삭제 하시겠습니까?</Text>
             <Text style={styles.deleteSubtitle}>삭제하시면 복구가 불가합니다.</Text>
             <View style={styles.buttonContainer}>
