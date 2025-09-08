@@ -347,20 +347,6 @@ const EditListModal = ({
 };
 
 const styles = StyleSheet.create({
-  container: {
-    backgroundColor: "white",
-    width: 157,
-    height: 182,
-    position: "absolute",
-    top: -20,
-    right: 35,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 4,
-    zIndex: 9999,
-  },
   container2: {
     backgroundColor: "white",
     width: 157,

@@ -7,24 +7,19 @@ import {
     TextInput,
     TouchableOpacity,
     Alert,
-    ScrollView,
     Image,
+    Dimensions,
 } from "react-native";
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Dimensions } from "react-native";
 
 const screenHeight = Dimensions.get("window").height;
 
 const menuHeight = 200;
 const topPosition = 50;
-const adjustedTop =
-    topPosition + menuHeight > screenHeight
-        ? screenHeight - menuHeight - 20
-        : topPosition;
 
-const Feedback_resultModal = ({
+const EditListModal = ({
     item,
     setOpenModalItemId,
     isModalVisible,
@@ -45,68 +40,45 @@ const Feedback_resultModal = ({
     const [titleNum, setTitleNum] = useState(0);
     const [memoNum, setMemoNum] = useState(0);
 
+    const [open, setOpen] = useState(false);
+
     useEffect(() => {
         setTitleNum(titleInputText.length);
     }, [titleInputText]);
+
     useEffect(() => {
-        setMemoNum(memoInputText.length);
+        if (memoInputText != null) {
+            setMemoNum(memoInputText.replace(/\r?\n/g, "").length);
+        }
     }, [memoInputText]);
 
-    const [selectedId, setSelectedId] = useState(null);
-
-    const openModal = (id) => {
-        setSelectedId(id);
-        setModalVisible(true);
-    };
     useEffect(() => {
         if (isModalVisible) {
             setTitleInputText(item?.title || "");
+            setMemoInputText(item?.memo ?? "");
         }
     }, [isModalVisible, item]);
-    useEffect(() => {
-        if (isModalVisible) {
-            setMemoInputText(item?.memo || "");
-        }
-    }, [isModalVisible, item]);
-    if (titleNum > 20) {
-        alert("범위를 초과하였습니다");
-    } else {
-    }
-    if (memoNum >= 50) {
-        alert("범위를 초과하였습니다");
-    } else {
-    }
 
-    const [newTitle, setNewTitle] = useState("");
-    const [newMemo, setNewMemo] = useState("");
+    const [selectedId, setSelectedId] = useState(null);
 
     const changeTitle = async (itemId, newTitle) => {
         try {
             const usersId = await AsyncStorage.getItem("userId");
             const feedbackId = itemId;
-            console.log(usersId);
 
             if (usersId) {
-                await axios
-                    .get(
-                        `${process.env.EXPO_PUBLIC_API_URL}/feedback/${usersId}/${feedbackId}/title`
-                    )
-                    .then(async (res) => {
-                        const url = `${process.env.EXPO_PUBLIC_API_URL}/feedback/${usersId}/${feedbackId}/title`;
-                        const ress = await axios.patch(url, {
-                            title: newTitle,
-                        });
-                        const updatedFeedback = ress.data;
-                        console.log("수정된 데이터:", updatedFeedback);
-                    })
-                    .catch((err) => {
-                        console.error("title을 수정하지 못했습니다.", err);
-                    });
+                const url = `${process.env.EXPO_PUBLIC_API_URL}/feedback/${usersId}/${feedbackId}/title`;
+                const res = await axios.patch(url, {
+                    title: newTitle,
+                });
+                const updatedFeedback = res.data;
+                onUpdateTitle(itemId, newTitle);
+                console.log("수정된 데이터:", updatedFeedback);
             } else {
                 console.log("userId가 저장되어 있지 않습니다.");
             }
         } catch (err) {
-            console.error("오류발생", err);
+            console.error("title을 수정하지 못했습니다.", err);
         }
     };
 
@@ -114,29 +86,20 @@ const Feedback_resultModal = ({
         try {
             const usersId = await AsyncStorage.getItem("userId");
             const feedbackId = itemId;
-            console.log(usersId);
 
             if (usersId) {
-                await axios
-                    .get(
-                        `${process.env.EXPO_PUBLIC_API_URL}/feedback/${usersId}/${feedbackId}/memo`
-                    )
-                    .then(async (res) => {
-                        const url = `${process.env.EXPO_PUBLIC_API_URL}/feedback/${usersId}/${feedbackId}/memo`;
-                        const ress = await axios.patch(url, {
-                            memo: newMemo,
-                        });
-                        const updatedFeedback = ress.data;
-                        console.log("수정된 데이터:", updatedFeedback);
-                    })
-                    .catch((err) => {
-                        console.error("memo를 수정하지 못했습니다.", err);
-                    });
+                const url = `${process.env.EXPO_PUBLIC_API_URL}/feedback/${usersId}/${feedbackId}/memo`;
+                const res = await axios.patch(url, {
+                    memo: newMemo,
+                });
+                const updatedFeedback = res.data;
+                onUpdateMemo(itemId, newMemo);
+                console.log("수정된 데이터:", updatedFeedback);
             } else {
-                console.log("memo가 저장되어 있지 않습니다.");
+                console.log("userId가 저장되어 있지 않습니다.");
             }
         } catch (err) {
-            console.error("오류발생", err);
+            console.error("memo를 수정하지 못했습니다.", err);
         }
     };
 
@@ -166,80 +129,93 @@ const Feedback_resultModal = ({
         try {
             const usersId = await AsyncStorage.getItem("userId");
             const feedbackId = itemId;
-            console.log(usersId);
+            if (!usersId) return;
 
-            if (usersId) {
-                await axios
-                    .patch(
-                        `${process.env.EXPO_PUBLIC_API_URL}/feedback/pin/${feedbackId}/${usersId}`
-                    )
-                    .then(async (res) => {
-                        const updatedFeedback = res.data;
-                        console.log(
-                            "최상단 고정 완료 feedbackId:",
-                            feedbackId,
-                            updatedFeedback
-                        );
-                        onPin && onPin(feedbackId, "Y");
-                    })
-                    .catch((err) => {
-                        console.log(feedbackId, usersId);
-                        console.log("최상단 고정을 수정하지 못했습니다.", err);
-                    });
-            } else {
-                console.log("memo가 저장되어 있지 않습니다.");
-            }
+            const url = `${process.env.EXPO_PUBLIC_API_URL}/feedback/pin/${feedbackId}/${usersId}`;
+            const res = await axios.patch(url);
+            const updatedFeedback = res.data;
+            onPin(feedbackId, "Y");
+            console.log("최상단 고정 완료 feedbackId:", feedbackId, updatedFeedback);
         } catch (err) {
-            console.error("오류발생", err);
+            console.error("최상단 고정을 수정하지 못했습니다.", err);
         }
     };
+
     const feedbackUnPin = async (itemId) => {
         try {
             const usersId = await AsyncStorage.getItem("userId");
             const feedbackId = itemId;
+            if (!usersId) return;
 
-            console.log(usersId);
-
-            if (usersId) {
-                await axios
-                    .patch(
-                        `${process.env.EXPO_PUBLIC_API_URL}/feedback/unpin/${feedbackId}/${usersId}`
-                    )
-                    .then(async (res) => {
-                        const updatedFeedback = res.data;
-                        console.log(
-                            "최상단 고정 해제 완료 feedbackId:",
-                            feedbackId,
-                            updatedFeedback
-                        );
-                        onPin && onPin(feedbackId, "N");
-                    })
-                    .catch((err) => {
-                        console.log(feedbackId, usersId);
-                        console.log("최상단 고정해제를 수정하지 못했습니다.", err);
-                    });
-            } else {
-                console.log("오류발생");
-            }
+            const url = `${process.env.EXPO_PUBLIC_API_URL}/feedback/unpin/${feedbackId}/${usersId}`;
+            const res = await axios.patch(url);
+            const updatedFeedback = res.data;
+            onPin(feedbackId, "N");
+            console.log("최상단 고정 해제 완료 feedbackId:", feedbackId, updatedFeedback);
         } catch (err) {
-            console.error("오류발생", err);
+            console.error("최상단 고정해제를 수정하지 못했습니다.", err);
         }
     };
 
+    const handleTitleChange = (text) => {
+        if (text.length >= 20) {
+            setOpen(true);
+        } else {
+            setOpen(false);
+        }
+        setTitleInputText(text);
+    };
+
+    const handleMemoChange = (text) => {
+        const cleanedText = (text ?? "").replace(/\r?\n/g, "");
+        if (cleanedText.length > 50) {
+            setOpen(true);
+            setMemoInputText(text.substring(0, text.length - (cleanedText.length - 50)));
+        } else {
+            setOpen(false);
+            setMemoInputText(text);
+        }
+    };
+
+    useEffect(() => {
+        if (open) {
+            const timer = setTimeout(() => {
+                setOpen(false);
+            }, 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [open]);
+
+    const handleSaveMemo = async () => {
+        const memoToSave = (memoInputText ?? "").replace(/\r?\n/g, "");
+        await changeMemo(selectedId, memoToSave);
+        setMemoModalVisible(false);
+    };
+
+    const handleSaveTitle = async () => {
+        await changeTitle(selectedId, titleInputText);
+        setTitleModalVisible(false);
+    };
+
+    const handleConfirmDelete = async () => {
+        const success = await feedbackDelete(selectedId);
+        if (success) {
+            onDelete && onDelete(selectedId);
+            close();
+        } else {
+            Alert.alert("삭제 실패", "서버에서 삭제하지 못했습니다.");
+        }
+        setDeleteModalVisible(false);
+    };
+
     return (
-        <View style={[styles.container, { top: adjustedTop }]}>
+        <View style={[styles.container,]}>
             {isPinned ? (
-                <Pressable
-                    onPress={() => feedbackUnPin(item.id)}
-                    style={[styles.wrapText, { borderBottomWidth: 0.3 }]}
-                >
+                <Pressable onPress={() => feedbackUnPin(item.id)} style={[styles.wrapText, { borderBottomWidth: 0.3 }]}>
                     <Text style={styles.text}>최상단 고정 해제</Text>
                 </Pressable>
             ) : (
-                <Pressable
-                    onPress={() => feedbackPin(item.id)}
-                    style={[styles.wrapText, { borderBottomWidth: 0.3 }]}
-                >
+                <Pressable onPress={() => feedbackPin(item.id)} style={[styles.wrapText, { borderBottomWidth: 0.3 }]}>
                     <Text style={styles.text}>최상단 고정</Text>
                 </Pressable>
             )}
@@ -254,96 +230,41 @@ const Feedback_resultModal = ({
             >
                 <Text style={styles.text}>제목 수정</Text>
             </Pressable>
-            <Modal
-                animationType="fade"
-                transparent={true}
-                visible={titleModalVisible}
-                onRequestClose={() => setTitleModalVisible(false)}
-            >
-                <View
-                    style={{
-                        flex: 1,
-                        backgroundColor: "rgba(0, 0, 0, 0.5)",
-                        justifyContent: "center",
-                        alignItems: "center",
-                    }}
-                >
-                    <View
-                        style={{
-                            width: 350,
-                            height: 210,
-                            padding: 20,
-                            backgroundColor: "white",
-                            borderRadius: 10,
-                            elevation: 5,
-                            alignItems: "center",
-                        }}
-                    >
-                        <Text style={{ fontSize: 18, fontWeight: "600", marginBottom: 15 }}>
-                            제목 수정
-                        </Text>
-                        <Text
-                            style={{
-                                fontSize: 12,
-                                marginBottom: 7,
-                                marginLeft: 240,
-                                color: "#808080",
-                            }}
-                        >
-                            {titleNum}/20
-                        </Text>
+            <Modal animationType="fade" transparent={true} visible={titleModalVisible} onRequestClose={() => setTitleModalVisible(false)}>
+                <View style={styles.modalOverlay}>
+                    <View style={styles.modalContent}>
+                        <Text style={styles.modalTitle}>제목 수정</Text>
+                        <Text style={styles.charCount}>{titleNum}/20</Text>
                         <TextInput
-                            style={{
-                                width: 300,
-                                height: 50,
-                                borderRadius: 10,
-                                borderWidth: 0.5,
-                                borderColor: "#CCCCCC",
-                                paddingLeft: 20,
-                            }}
+                            style={styles.textInput}
                             value={titleInputText}
-                            onChangeText={setTitleInputText}
+                            onChangeText={handleTitleChange}
+                            maxLength={20}
                         />
-                        <View style={{ flexDirection: "row" }}>
-                            <TouchableOpacity
-                                onPress={() => {
-                                    setTitleModalVisible(false), setTitleNum(0);
-                                }}
-                            >
-                                <View
-                                    style={[
-                                        styles.modalBtn,
-                                        {
-                                            marginRight: 15,
-                                            marginTop: 15,
-                                            backgroundColor: "#DDDDDD",
-                                        },
-                                    ]}
-                                >
-                                    <Text style={{ fontSize: 16 }}>취소</Text>
+                        {open ? (<Modal visible={open} transparent={true} animationType="fade">
+                            <View style={styles.limitModal}>
+                                <Image source={require("../../assets/icons/warning2.png")} style={styles.warningIcon} />
+                                <Text style={styles.warningText}>글자 수 제한을 초과하였습니다.</Text>
+                                <Text style={styles.subWarningText}>다시 확인해주세요.</Text>
+                            </View>
+                        </Modal>
+                        ) : null}
+                        <View style={styles.buttonContainer}>
+                            <TouchableOpacity onPress={() => setTitleModalVisible(false)}>
+                                <View style={[styles.modalBtn, styles.cancelBtn]}>
+                                    <Text style={styles.btnText}>취소</Text>
                                 </View>
                             </TouchableOpacity>
-
-                            <TouchableOpacity
-                                onPress={async () => {
-                                    await changeTitle(selectedId, titleInputText); // 서버 PATCH
-                                    onUpdateTitle && onUpdateTitle(selectedId, titleInputText);
-                                    setTitleModalVisible(false);
-                                }}
-                            >
-                                <View
-                                    style={[
-                                        styles.modalBtn,
-                                        { marginTop: 15, backgroundColor: "#5900FF" },
-                                    ]}
-                                >
-                                    <Text style={{ fontSize: 16, color: "white" }}>저장</Text>
+                            <TouchableOpacity onPress={handleSaveTitle}>
+                                <View style={[styles.modalBtn, styles.saveBtn]}>
+                                    <Text style={[styles.btnText, styles.saveText]}>저장</Text>
                                 </View>
                             </TouchableOpacity>
                         </View>
                     </View>
                 </View>
-            </Modal>
+            </Modal >
+
             <Pressable
                 onPress={() => {
                     setMemoModalVisible(true);
@@ -354,100 +275,43 @@ const Feedback_resultModal = ({
             >
                 <Text style={styles.text}>메모 수정</Text>
             </Pressable>
-            <Modal
-                animationType="fade"
-                transparent={true}
-                visible={memoModalVisible}
-                onRequestClose={() => setMemoModalVisible(false)}
-            >
-                <View
-                    style={{
-                        flex: 1,
-                        backgroundColor: "rgba(0, 0, 0, 0.5)",
-                        justifyContent: "center",
-                        alignItems: "center",
-                    }}
-                >
-                    <View
-                        style={{
-                            width: 350,
-                            height: 380,
-                            padding: 20,
-                            backgroundColor: "white",
-                            borderRadius: 10,
-                            elevation: 5,
-                            alignItems: "center",
-                        }}
-                    >
-                        <Text style={{ fontSize: 18, fontWeight: 600, marginBottom: 15 }}>
-                            메모 수정
-                        </Text>
-                        <Text
-                            style={{
-                                fontSize: 12,
-                                marginBottom: 7,
-                                marginLeft: 240,
-                                color: "#808080",
-                            }}
-                        >
-                            {memoNum}/50
-                        </Text>
+            <Modal animationType="fade" transparent={true} visible={memoModalVisible} onRequestClose={() => setMemoModalVisible(false)}>
+                <View style={styles.modalOverlay}>
+                    <View style={[styles.modalContent2, styles.memoModalContent]}>
+                        <Text style={styles.modalTitle}>메모 수정</Text>
+                        <Text style={styles.charCount}>{memoNum}/50</Text>
                         <TextInput
-                            style={{
-                                width: 295,
-                                height: 230,
-                                borderRadius: 10,
-                                borderWidth: 0.5,
-                                borderColor: "#CCCCCC",
-                                paddingLeft: 20,
-                                paddingBottom: 170,
-                                fontSize: 16,
-                                multiline: "true",
-                            }}
+                            style={styles.memoTextInput}
                             placeholder="메모를 작성해주세요"
                             value={memoInputText}
-                            onChangeText={setMemoInputText}
+                            onChangeText={handleMemoChange}
+                            multiline={true}
+                            textAlignVertical="top"
                         />
-                        <View style={{ flexDirection: "row" }}>
-                            <TouchableOpacity
-                                onPress={() => {
-                                    setMemoModalVisible(false), setMemoNum(0);
-                                }}
-                            >
-                                <View
-                                    style={[
-                                        styles.modalBtn,
-                                        {
-                                            marginRight: 15,
-                                            marginTop: 15,
-                                            backgroundColor: "#DDDDDD",
-                                        },
-                                    ]}
-                                >
-                                    <Text style={{ fontSize: 16 }}>취소</Text>
+                        {open ? (<Modal visible={open} transparent={true} animationType="fade">
+                            <View style={styles.limitModal2}>
+                                <Image source={require("../../assets/icons/warning2.png")} style={styles.warningIcon} />
+                                <Text style={styles.warningText}>글자 수 제한을 초과하였습니다.</Text>
+                                <Text style={styles.subWarningText}>다시 확인해주세요.</Text>
+                            </View>
+                        </Modal>
+                        ) : null}
+                        <View style={styles.buttonContainer}>
+                            <TouchableOpacity onPress={() => setMemoModalVisible(false)}>
+                                <View style={[styles.modalBtn, styles.cancelBtn]}>
+                                    <Text style={styles.btnText}>취소</Text>
                                 </View>
                             </TouchableOpacity>
-
-                            <TouchableOpacity
-                                onPress={async () => {
-                                    await changeMemo(selectedId, memoInputText); // 서버 PATCH
-                                    onUpdateMemo && onUpdateMemo(selectedId, memoInputText); // 부모에 반영
-                                    setMemoModalVisible(false);
-                                }}
-                            >
-                                <View
-                                    style={[
-                                        styles.modalBtn,
-                                        { marginTop: 15, backgroundColor: "#5900FF" },
-                                    ]}
-                                >
-                                    <Text style={{ fontSize: 16, color: "white" }}>저장</Text>
+                            <TouchableOpacity onPress={handleSaveMemo}>
+                                <View style={[styles.modalBtn, styles.saveBtn]}>
+                                    <Text style={[styles.btnText, styles.saveText]}>저장</Text>
                                 </View>
                             </TouchableOpacity>
                         </View>
                     </View>
                 </View>
             </Modal>
+
             <Pressable
                 onPress={() => {
                     setDeleteModalVisible(true);
@@ -457,89 +321,28 @@ const Feedback_resultModal = ({
             >
                 <Text style={styles.text}>기록 삭제</Text>
             </Pressable>
-            <Modal
-                animationType="fade"
-                transparent={true}
-                visible={deleteModalVisible}
-                onRequestClose={() => setDeleteModalVisible(false)}
-            >
-                <View
-                    style={{
-                        flex: 1,
-                        backgroundColor: "rgba(0, 0, 0, 0.5)",
-                        justifyContent: "center",
-                        alignItems: "center",
-                    }}
-                >
-                    <View
-                        style={{
-                            width: 350,
-                            height: 215,
-                            padding: 20,
-                            backgroundColor: "white",
-                            borderRadius: 10,
-                            elevation: 5,
-                            alignItems: "center",
-                        }}
-                    >
-                        <Image
-                            source={require("../../assets/images/tri.png")}
-                            style={{ width: 50, height: 50 }}
-                        />
-
-                        <Text style={{ fontSize: 20, fontWeight: "600", marginTop: 20 }}>
-                            정말 삭제 하시겠습니까?
-                        </Text>
-                        <Text style={{ fontSize: 14, color: "#808080", marginTop: 5 }}>
-                            삭제하시면 복구가 불가합니다.
-                        </Text>
-
-                        <View style={{ flexDirection: "row" }}>
-                            <TouchableOpacity
-                                onPress={() => {
-                                    setDeleteModalVisible(false);
-                                }}
-                            >
-                                <View
-                                    style={[
-                                        styles.modalBtn,
-                                        {
-                                            marginRight: 15,
-                                            marginTop: 15,
-                                            backgroundColor: "#DDDDDD",
-                                        },
-                                    ]}
-                                >
-                                    <Text style={{ fontSize: 16 }}>취소</Text>
+            <Modal animationType="fade" transparent={true} visible={deleteModalVisible} onRequestClose={() => setDeleteModalVisible(false)}>
+                <View style={styles.modalOverlay}>
+                    <View style={styles.modalContent}>
+                        <Image source={require("../../assets/images/tri.png")} style={styles.deleteIcon} />
+                        <Text style={styles.deleteTitle}>정말 삭제 하시겠습니까?</Text>
+                        <Text style={styles.deleteSubtitle}>삭제하시면 복구가 불가합니다.</Text>
+                        <View style={styles.buttonContainer}>
+                            <TouchableOpacity onPress={() => setDeleteModalVisible(false)}>
+                                <View style={[styles.modalBtn, styles.cancelBtn]}>
+                                    <Text style={styles.btnText}>취소</Text>
                                 </View>
                             </TouchableOpacity>
-
-                            <TouchableOpacity
-                                onPress={async () => {
-                                    const success = await feedbackDelete(selectedId);
-                                    if (success) {
-                                        onDelete && onDelete(selectedId); // 부모 state 반영
-                                        close(); // 메인 모달도 닫기
-                                    } else {
-                                        Alert.alert("삭제 실패", "서버에서 삭제하지 못했습니다.");
-                                    }
-                                    setDeleteModalVisible(false);
-                                }}
-                            >
-                                <View
-                                    style={[
-                                        styles.modalBtn,
-                                        { marginTop: 15, backgroundColor: "#FF3B30" },
-                                    ]}
-                                >
-                                    <Text style={{ fontSize: 16, color: "white" }}>삭제</Text>
+                            <TouchableOpacity onPress={handleConfirmDelete}>
+                                <View style={[styles.modalBtn, styles.deleteBtn]}>
+                                    <Text style={[styles.btnText, styles.saveText]}>삭제</Text>
                                 </View>
                             </TouchableOpacity>
                         </View>
                     </View>
                 </View>
             </Modal>
-        </View>
+        </View >
     );
 };
 
@@ -558,19 +361,154 @@ const styles = StyleSheet.create({
         elevation: 4,
         zIndex: 9999,
     },
+
     wrapText: {
         height: 45,
         justifyContent: "center",
         alignItems: "center",
     },
     text: { fontSize: 14 },
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: "rgba(0, 0, 0, 0.5)",
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    modalContent: {
+        width: 350,
+        padding: 20,
+        backgroundColor: "white",
+        borderRadius: 10,
+        elevation: 5,
+        alignItems: "center",
+        top: -40
+    },
+    modalContent2: {
+        width: 350,
+        padding: 20,
+        backgroundColor: "white",
+        borderRadius: 10,
+        elevation: 5,
+        alignItems: "center",
+    },
+
+    memoModalContent: {
+        height: 380,
+    },
+    modalTitle: {
+        fontSize: 18,
+        fontWeight: "600",
+        marginBottom: 15,
+    },
+    charCount: {
+        fontSize: 12,
+        marginBottom: 7,
+        marginLeft: "auto",
+        color: "#808080",
+    },
+    textInput: {
+        width: 300,
+        height: 50,
+        borderRadius: 10,
+        borderWidth: 0.5,
+        borderColor: "#CCCCCC",
+        paddingLeft: 20,
+    },
+    memoTextInput: {
+        width: 295,
+        height: 230,
+        borderRadius: 10,
+        borderWidth: 0.5,
+        borderColor: "#CCCCCC",
+        paddingLeft: 20,
+        paddingRight: 20,
+        paddingTop: 20,
+        paddingBottom: 20,
+        fontSize: 16,
+    },
+    buttonContainer: {
+        flexDirection: "row",
+        marginTop: 15,
+    },
     modalBtn: {
         width: 140,
         height: 45,
         borderRadius: 10,
         justifyContent: "center",
         alignItems: "center",
+        marginHorizontal: 7.5,
+    },
+    cancelBtn: {
+        backgroundColor: "#DDDDDD",
+    },
+    saveBtn: {
+        backgroundColor: "#5900FF",
+    },
+    deleteBtn: {
+        backgroundColor: "#FF3B30",
+    },
+    btnText: {
+        fontSize: 16,
+    },
+    saveText: {
+        color: "white",
+    },
+    limitModal: {
+        position: "absolute",
+        top: 107,
+        left: 75,
+        width: 240,
+        height: 80,
+        backgroundColor: "white",
+        borderRadius: 10,
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        elevation: 5,
+        padding: 10,
+    },
+    limitModal2: {
+        position: "absolute",
+        top: 92,
+        left: 75,
+        width: 240,
+        height: 80,
+        backgroundColor: "white",
+        borderRadius: 10,
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        elevation: 5,
+        padding: 10,
+    },
+    warningIcon: {
+        width: 13,
+        height: 13,
+    },
+    warningText: {
+        fontSize: 14,
+        marginTop: 5,
+    },
+    subWarningText: {
+        fontSize: 14,
+        color: "#808080",
+        marginTop: 2,
+    },
+    deleteIcon: {
+        width: 50,
+        height: 50,
+        marginBottom: 10,
+    },
+    deleteTitle: {
+        fontSize: 20,
+        fontWeight: "600",
+        marginTop: 10,
+    },
+    deleteSubtitle: {
+        fontSize: 14,
+        color: "#808080",
+        marginTop: 5,
     },
 });
 
-export default Feedback_resultModal;
+export default EditListModal;
