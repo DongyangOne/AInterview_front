@@ -16,6 +16,7 @@ import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Modalize } from "react-native-modalize";
 import { getMarkedDates, dayStyles } from "../screens/ScheduleCheck";
+import ScheduleList from "../screens/ScheduleList";
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 const SCREEN_PAD = 32;
@@ -28,7 +29,6 @@ const todayISO = () => {
   return `${y}-${m}-${d}`;
 };
 
-const importanceOut = { "매우 중요": "S", 보통: "I", "중요하지 않음": "N" };
 const importanceIn = (val) => {
   switch (val) {
     case "S":
@@ -70,7 +70,9 @@ const normalizeList = (arr = []) =>
   });
 
 export default function Calendar() {
+  const modalRef = useRef(null);
   const KOREAN_DAY_NAMES = ["일", "월", "화", "수", "목", "금", "토"];
+  const [showFAB, setShowFAB] = useState(false);
   const [selectedDate, setSelectedDate] = useState(todayISO());
   const [schedules, setSchedules] = useState({});
   const [loading, setLoading] = useState(false);
@@ -193,6 +195,11 @@ export default function Calendar() {
       setSelectedDate(dateStr);
     }
     await fetchDay(dateStr);
+    if (modalRef.current) {
+      setTimeout(() => {
+        modalRef.current?.open?.();
+      }, 150);
+    }
   };
 
   const openYM = () => {
@@ -260,27 +267,27 @@ export default function Calendar() {
             return (
               <Pressable
                 onPress={() => onDayPress({ dateString: date.dateString })}
-                style={dayStyles.dayCell}
+                style={styles.dayCell}
               >
                 <View
                   style={[
-                    dayStyles.dayCircle,
-                    selected && dayStyles.dayCircleSelected,
+                    styles.dayCircle,
+                    selected && styles.dayCircleSelected,
                   ]}
                 >
                   {hasEvent && (
                     <View
                       style={[
-                        dayStyles.eventDotTop,
-                        selected && dayStyles.eventDotOnSelected,
+                        styles.eventDotTop,
+                        selected && styles.eventDotOnSelected,
                       ]}
                     />
                   )}
                   <Text
                     style={[
-                      dayStyles.dayLabel,
-                      selected && dayStyles.dayLabelSelected,
-                      state === "disabled" && dayStyles.dayLabelDisabled,
+                      styles.dayLabel,
+                      selected && styles.dayLabelSelected,
+                      state === "disabled" && styles.dayLabelDisabled,
                     ]}
                   >
                     {date.day}
@@ -295,6 +302,18 @@ export default function Calendar() {
             selectedDayTextColor: "#ffffff",
             selectedDayBackgroundColor: "#5B28EB",
           }}
+        />
+
+        <ScheduleList
+          modalRef={modalRef}
+          schedules={schedules}
+          selectedDate={selectedDate}
+          onOpenAddModal={() => {}}
+          onOpenEditModal={() => {}}
+          onOpenDeleteModal={() => {}}
+          onModalOpen={() => setShowFAB(true)}
+          onModalClose={() => setShowFAB(false)}
+          showFAB={showFAB}
         />
 
         {showYMPicker && (
