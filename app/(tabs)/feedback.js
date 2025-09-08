@@ -130,7 +130,10 @@ export default function Feedback() {
         setFeedbackList((prev) =>
           prev.map((v) => (v.id === item.id ? { ...v, pin: item.pin } : v))
         );
-        Alert.alert("실패", res?.data?.message || "요청을 처리하지 못했습니다.");
+        Alert.alert(
+          "실패",
+          res?.data?.message || "요청을 처리하지 못했습니다."
+        );
       }
     } catch (e) {
       setFeedbackList((prev) =>
@@ -172,7 +175,9 @@ export default function Feedback() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.head}>
-        <Text style={{ fontSize: 20, fontWeight: "500" }}>나의 피드백 목록</Text>
+        <Text style={{ fontSize: 20, fontWeight: "500" }}>
+          나의 피드백 목록
+        </Text>
       </View>
 
       <View style={styles.search}>
@@ -271,7 +276,7 @@ export default function Feedback() {
                   style={{
                     width: 50,
                     height: 50,
-                    marginLeft: 270,
+                    marginLeft: "75%",
                     top: -12,
                     position: "absolute",
                   }}
