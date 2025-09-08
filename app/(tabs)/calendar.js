@@ -6,7 +6,6 @@ import {
   StyleSheet,
   Dimensions,
   Modal,
-  Alert,
 } from "react-native";
 import { Calendar as RNCalendar } from "react-native-calendars";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -14,9 +13,10 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import WheelPickerExpo from "react-native-wheel-picker-expo";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Modalize } from "react-native-modalize";
-import { getMarkedDates, dayStyles } from "../screens/ScheduleCheck";
+
 import ScheduleList from "../screens/ScheduleList";
+import ScheduleAddModal from "../screens/ScheduleAddModal";
+import { getMarkedDates, dayStyles } from "../screens/ScheduleCheck";
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 const SCREEN_PAD = 32;
@@ -29,6 +29,7 @@ const todayISO = () => {
   return `${y}-${m}-${d}`;
 };
 
+const importanceOut = { "매우 중요": "S", 보통: "I", "중요하지 않음": "N" };
 const importanceIn = (val) => {
   switch (val) {
     case "S":
@@ -71,12 +72,20 @@ const normalizeList = (arr = []) =>
 
 export default function Calendar() {
   const modalRef = useRef(null);
+  const modalAddRef = useRef(null);
   const KOREAN_DAY_NAMES = ["일", "월", "화", "수", "목", "금", "토"];
   const [showFAB, setShowFAB] = useState(false);
+
   const [selectedDate, setSelectedDate] = useState(todayISO());
+  const [showAddModal, setShowAddModal] = useState(false);
+
   const [schedules, setSchedules] = useState({});
   const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+
   const [userId, setUserId] = useState(null);
+  const [isEditing, setIsEditing] = useState(false); // isEditing 상태는 handleSave에서 사용됨
+  const [editingItem, setEditingItem] = useState(null); // isEditing 상태는 handleSave에서 사용됨
   const [showYMPicker, setShowYMPicker] = useState(false);
   const [pickerYear, setPickerYear] = useState(new Date().getFullYear());
   const [pickerMonth, setPickerMonth] = useState(
@@ -202,6 +211,87 @@ export default function Calendar() {
     }
   };
 
+  const handleSave = async (scheduleData) => {
+    if (!userId) {
+      console.log("handleSave userId:", userId);
+      return;
+    }
+
+    try {
+      setSaving(true);
+      const { title, hour, minute, priority, memo } = scheduleData;
+      const { year, month, day } = splitDate(selectedDate);
+      const timeFull = `${selectedDate} ${hour}:${minute}:00`;
+      const importanceCode = importanceOut[priority];
+      const safeMemo = memo?.trim() || "";
+
+      const isOk = (data) =>
+        data?.affected === 1 ||
+        data?.affectedRows > 0 ||
+        data?.success === true ||
+        data?.result === true ||
+        data?.result === "success" ||
+        data?.status === "OK";
+
+      let ok = false;
+
+      await axios
+        .get(`${process.env.EXPO_PUBLIC_API_URL}/calendar/add`, {
+          params: {
+            userId,
+            title,
+            time: timeFull,
+            importance: importanceCode,
+            memo: safeMemo,
+            year,
+            month: Number(month),
+            day: Number(day),
+          },
+          headers: { "Cache-Control": "no-cache" },
+        })
+        .then((res) => {
+          console.log("[calendar/add 성공]", res.status, res.data);
+          ok = isOk(res.data);
+        })
+        .catch((error) => {
+          console.log(
+            "[calendar/add 실패]",
+            error.response?.status,
+            error.response?.data || error.message
+          );
+        });
+
+      await fetchDay(selectedDate);
+
+      if (!ok) {
+        console.log("[calendar/save 실패] 저장/수정 결과가 OK 아님");
+        return;
+      }
+
+      setTimeout(() => {
+        modalAddRef.current?.close();
+        setShowAddModal(false);
+      }, 300);
+    } catch (e) {
+      console.log("[calendar/save 예외]", e.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleOpenAddModal = () => {
+    setShowAddModal(true);
+    setTimeout(() => {
+      modalAddRef.current?.open();
+    }, 300);
+  };
+
+  const handleCancelModal = () => {
+    setTimeout(() => {
+      setShowAddModal(false);
+    }, 300);
+  };
+
   const openYM = () => {
     const { year, month } = splitDate(selectedDate);
     setPickerYear(year);
@@ -217,12 +307,16 @@ export default function Calendar() {
   };
 
   const calendarKey = selectedDate.slice(0, 7);
+
   const currYear = new Date().getFullYear();
   const years = Array.from({ length: 10 }, (_, i) => currYear - 5 + i);
   const months = Array.from({ length: 12 }, (_, i) => pad(i + 1));
 
   const markedDates = useMemo(() => {
-    const map = getMarkedDates(schedules);
+    const map = {};
+    Object.keys(schedules || {}).forEach((iso) => {
+      if (schedules[iso]?.length) map[iso] = { hasEvent: true };
+    });
     map[selectedDate] = { ...(map[selectedDate] || {}), selected: true };
     return map;
   }, [schedules, selectedDate]);
@@ -267,27 +361,27 @@ export default function Calendar() {
             return (
               <Pressable
                 onPress={() => onDayPress({ dateString: date.dateString })}
-                style={styles.dayCell}
+                style={dayStyles.dayCell}
               >
                 <View
                   style={[
-                    styles.dayCircle,
-                    selected && styles.dayCircleSelected,
+                    dayStyles.dayCircle,
+                    selected && dayStyles.dayCircleSelected,
                   ]}
                 >
                   {hasEvent && (
                     <View
                       style={[
-                        styles.eventDotTop,
-                        selected && styles.eventDotOnSelected,
+                        dayStyles.eventDotTop,
+                        selected && dayStyles.eventDotOnSelected,
                       ]}
                     />
                   )}
                   <Text
                     style={[
-                      styles.dayLabel,
-                      selected && styles.dayLabelSelected,
-                      state === "disabled" && styles.dayLabelDisabled,
+                      dayStyles.dayLabel,
+                      selected && dayStyles.dayLabelSelected,
+                      state === "disabled" && dayStyles.dayLabelDisabled,
                     ]}
                   >
                     {date.day}
@@ -308,13 +402,23 @@ export default function Calendar() {
           modalRef={modalRef}
           schedules={schedules}
           selectedDate={selectedDate}
-          onOpenAddModal={() => {}}
+          onOpenAddModal={handleOpenAddModal}
           onOpenEditModal={() => {}}
           onOpenDeleteModal={() => {}}
           onModalOpen={() => setShowFAB(true)}
           onModalClose={() => setShowFAB(false)}
           showFAB={showFAB}
         />
+
+        {showAddModal && (
+          <ScheduleAddModal
+            modalAddRef={modalAddRef}
+            selectedDate={selectedDate}
+            onSave={handleSave}
+            onCancel={handleCancelModal}
+            saving={saving}
+          />
+        )}
 
         {showYMPicker && (
           <Modal transparent animationType="fade">
