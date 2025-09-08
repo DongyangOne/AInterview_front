@@ -434,6 +434,7 @@ const styles = StyleSheet.create({
     borderWidth: 0.5,
     borderColor: "#CCCCCC",
     paddingLeft: 20,
+    paddingRight: 20,
     paddingTop: 20,
     paddingBottom: 20,
     fontSize: 16,
