@@ -159,6 +159,7 @@ export default function TabLayout() {
         <Tabs.Screen
           name="calendar"
           options={{
+            headerShown: false,
             tabBarIcon: ({ color, focused }) => (
               <View style={{ alignItems: "center" }}>
                 <Image

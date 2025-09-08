@@ -54,7 +54,7 @@ export default function ScheduleList({
       <Modalize
         ref={modalRef}
         modalHeight={1000}
-        snapPoint={1000 * 0.5}
+        snapPoint={1000 * 0.62}
         handlePosition="inside"
         panGestureEnabled
         withHandle
