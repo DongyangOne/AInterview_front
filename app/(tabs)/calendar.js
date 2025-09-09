@@ -6,6 +6,7 @@ import {
   StyleSheet,
   Dimensions,
   Modal,
+  Alert,
 } from "react-native";
 import { Calendar as RNCalendar } from "react-native-calendars";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -75,22 +76,17 @@ export default function Calendar() {
   const modalAddRef = useRef(null);
   const KOREAN_DAY_NAMES = ["일", "월", "화", "수", "목", "금", "토"];
   const [showFAB, setShowFAB] = useState(false);
-
   const [selectedDate, setSelectedDate] = useState(todayISO());
-  const [showAddModal, setShowAddModal] = useState(false);
-
   const [schedules, setSchedules] = useState({});
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-
   const [userId, setUserId] = useState(null);
-  const [isEditing, setIsEditing] = useState(false); // isEditing 상태는 handleSave에서 사용됨
-  const [editingItem, setEditingItem] = useState(null); // isEditing 상태는 handleSave에서 사용됨
   const [showYMPicker, setShowYMPicker] = useState(false);
   const [pickerYear, setPickerYear] = useState(new Date().getFullYear());
   const [pickerMonth, setPickerMonth] = useState(
     String(new Date().getMonth() + 1).padStart(2, "0")
   );
+  const [showAddModal, setShowAddModal] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -213,7 +209,7 @@ export default function Calendar() {
 
   const handleSave = async (scheduleData) => {
     if (!userId) {
-      console.log("handleSave userId:", userId);
+      Alert.alert("저장 오류", "로그인 정보가 없습니다.");
       return;
     }
 
@@ -264,6 +260,7 @@ export default function Calendar() {
       await fetchDay(selectedDate);
 
       if (!ok) {
+        Alert.alert("저장 실패", "일정 저장에 실패했습니다.");
         console.log("[calendar/save 실패] 저장/수정 결과가 OK 아님");
         return;
       }
@@ -273,6 +270,7 @@ export default function Calendar() {
         setShowAddModal(false);
       }, 300);
     } catch (e) {
+      Alert.alert("오류", e.message);
       console.log("[calendar/save 예외]", e.message);
     } finally {
       setSaving(false);
@@ -313,10 +311,7 @@ export default function Calendar() {
   const months = Array.from({ length: 12 }, (_, i) => pad(i + 1));
 
   const markedDates = useMemo(() => {
-    const map = {};
-    Object.keys(schedules || {}).forEach((iso) => {
-      if (schedules[iso]?.length) map[iso] = { hasEvent: true };
-    });
+    const map = getMarkedDates(schedules);
     map[selectedDate] = { ...(map[selectedDate] || {}), selected: true };
     return map;
   }, [schedules, selectedDate]);
@@ -381,7 +376,7 @@ export default function Calendar() {
                     style={[
                       dayStyles.dayLabel,
                       selected && dayStyles.dayLabelSelected,
-                      state === "disabled" && dayStyles.dayLabelDisabled,
+                      state === "disabled" && styles.dayLabelDisabled,
                     ]}
                   >
                     {date.day}
@@ -403,14 +398,18 @@ export default function Calendar() {
           schedules={schedules}
           selectedDate={selectedDate}
           onOpenAddModal={handleOpenAddModal}
-          onOpenEditModal={() => {}}
-          onOpenDeleteModal={() => {}}
+          onOpenEditModal={() => {
+            Alert.alert("수정", "수정 기능은 제외되었습니다.");
+          }}
+          onOpenDeleteModal={() => {
+            Alert.alert("삭제", "삭제 기능은 제외되었습니다.");
+          }}
           onModalOpen={() => setShowFAB(true)}
           onModalClose={() => setShowFAB(false)}
-          showFAB={showFAB}
+          showFAB={showFAB && !showAddModal}
         />
 
-        {showAddModal && (
+        {showAddModal ? (
           <ScheduleAddModal
             modalAddRef={modalAddRef}
             selectedDate={selectedDate}
@@ -418,7 +417,7 @@ export default function Calendar() {
             onCancel={handleCancelModal}
             saving={saving}
           />
-        )}
+        ) : null}
 
         {showYMPicker && (
           <Modal transparent animationType="fade">
