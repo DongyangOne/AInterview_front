@@ -28,7 +28,7 @@ export default function SignUpForm() {
   const [confirmPasswordError, setConfirmPasswordError] = useState("");
   const [termsError, setTermsError] = useState("");
   const [submitting, setSubmitting] = useState(false);
-
+  const [idCheckColor, setIdCheckColor] = useState("#e11d48");
   const badWords = ["욕", "fuck", "shit", "바보", "멍청이"];
   const containsBadWord = (t) => badWords.some((w) => t.includes(w));
 
@@ -37,10 +37,12 @@ export default function SignUpForm() {
 
     if (!trimmedId) {
       setIdError("아이디를 입력해 주세요.");
+      setIdCheckColor("#e11d48");
       return;
     }
     if (!/^[A-Za-z0-9]{3,15}$/.test(trimmedId)) {
       setIdError("아이디는 3~15자의 영문자, 숫자만 사용할 수 있어요.");
+      setIdCheckColor("#e11d48");
       return;
     }
 
@@ -50,7 +52,8 @@ export default function SignUpForm() {
       })
       .then((res) => {
         console.log("[userIdCheck:success]", res.status, res.data);
-        setIdError("");
+        setIdError("사용 가능한 아이디입니다.");
+        setIdCheckColor("#1900ff96");
       })
       .catch((err) => {
         console.log(
@@ -60,6 +63,7 @@ export default function SignUpForm() {
         );
         if (err?.response?.status === 409) {
           setIdError(err.response.data.message || "이미 사용 중인 아이디예요.");
+          setIdCheckColor("#e11d48");
         } else {
           setIdError("");
         }
@@ -193,7 +197,7 @@ export default function SignUpForm() {
           </TouchableOpacity>
         </View>
         <View style={styles.errorBox}>
-          <Text style={styles.error}>{idError}</Text>
+          <Text style={{ color: idCheckColor, fontSize: 12 }}>{idError}</Text>
         </View>
 
         <Text style={styles.label}>닉네임</Text>
