@@ -105,14 +105,18 @@ function MainFeedback() {
     { label: "말투", percent: scores.tone },
     { label: "업무이해도", percent: scores.understanding },
   ];
-  //상위 3개
+
+  // 상위 3개
   const TopScores = [...scoreArray]
     .sort((a, b) => b.percent - a.percent)
     .slice(0, 3);
-  // 하위 3개
-  const BottomScores = [...scoreArray]
-    .sort((a, b) => a.percent - b.percent)
-    .slice(0, 3);
+
+  // 상위 3개 제외하고 나머지만 추출
+  const TopScoreLabels = new Set(TopScores.map((item) => item.label));
+  const RestScores = scoreArray.filter(
+    (item) => !TopScoreLabels.has(item.label)
+  );
+  const BottomScores = [...RestScores].sort((a, b) => a.percent - b.percent);
   //메인 피드백 박스 크기 조절
   const toggleTextHeight = () => {
     setTextBoxHeight((prev) => (prev === 227 ? 412 : 227));
