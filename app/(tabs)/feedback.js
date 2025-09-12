@@ -336,6 +336,7 @@ export default function Feedback() {
                 <Text style={styles.titleText}>{item.title}</Text>
                 <Text
                   style={styles.memoText}
+                  //말줄임표
                   numberOfLines={1}
                   ellipsizeMode="tail"
                 >
