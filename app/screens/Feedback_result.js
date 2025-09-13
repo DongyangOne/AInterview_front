@@ -15,7 +15,6 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import Feedback_resultModal from "../../components/Modal/Feedback_resultModal";
 import RadarChart from "../../components/Modal/RadarChart";
-import LoadingModal from "../../components/Modal/LoadingModal";
 
 const today = new Date();
 const formattedDate = today
@@ -52,7 +51,6 @@ export default function FeedbackResult() {
   const [error, setError] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   // ✅ 추가: 최상단 고정 상태 (UI 변경 없음)
-  const [analyzingVisible, setAnalyzingVisible] = useState(false);
   const [isPinned, setIsPinned] = useState(false);
 
   const params = useLocalSearchParams();
@@ -111,11 +109,6 @@ export default function FeedbackResult() {
           tone: data.tone || 0,
           understanding: data.understanding || 0,
         });
-        const isAnalyzing =
-          (!data.good || data.good.trim() === "") ||
-          (!data.bad || data.bad.trim() === "") ||
-          (!data.content || data.content.trim() === "");
-        setAnalyzingVisible(isAnalyzing);
       } catch (e) {
         setError("피드백을 불러오지 못했어요.");
         console.warn(e?.response?.data || e?.message);
@@ -271,7 +264,6 @@ export default function FeedbackResult() {
           </View>
         </View>
       )}
-      <LoadingModal visible={analyzingVisible} />
     </SafeAreaView>
   );
 }
