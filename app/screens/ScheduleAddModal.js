@@ -100,6 +100,10 @@ export default function ScheduleAddModal({
         });
       })
       .then((res) => {
+        const calendarId = res.data.calendarId || res.data.id;
+        if (calendarId) {
+            AsyncStorage.setItem("calendarId", calendarId.toString());
+          }
         console.log("[schedule add] Response:", res.data);
         onSave &&
           onSave({
@@ -108,6 +112,7 @@ export default function ScheduleAddModal({
             minute,
             priority,
             memo,
+            calendarId
           });
         handleCancel();
       })
@@ -297,9 +302,7 @@ const styles = StyleSheet.create({
   inputRow: {
     flexDirection: "row",
     alignItems: "stretch",
-    marginVertical: 12,
     marginBottom: 10,
-    paddingBottom: 10,
     minHeight: 50,
   },
   label: { fontWeight: "bold", width: 80, fontSize: 15, marginTop: 4 },
@@ -325,6 +328,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     paddingVertical: 10,
+    marginTop: 15,
   },
   cancelBtn: {
     backgroundColor: "#E5E5E5",
@@ -370,6 +374,7 @@ const styles = StyleSheet.create({
   errorMsg: {
     color: "#FF5A5A",
     fontSize: 13,
-    marginVertical: 10,
+    paddingVertical: 5,
+    marginLeft: 10,
   },
 });

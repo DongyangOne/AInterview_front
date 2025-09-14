@@ -41,30 +41,29 @@ export const pad = (n) => String(n).padStart(2, "0");
 
 export default function ScheduleList({
   modalRef,
+  schedules,
   selectedDate,
-  onOpenAddModal,
   onOpenEditModal,
   onOpenDeleteModal,
   onModalOpen,
   onModalClose,
   showFAB,
+  setshowFAB,
+  onSave
 }) {
 
     const [addModalVisible, setAddModalVisible] = useState(false);
+    const [hideFAB, setHideFAB] = useState(false);
+    const handleOpenAddModal = () => {
+        setAddModalVisible(true);
+        setHideFAB(true);
+      };
+    const handleCloseAddModal = () => {
+        setAddModalVisible(false);
+        setHideFAB(false);
+      };
+    const scheduleArr = schedules[selectedDate] || [];
 
-    const handleOpenAddModal = () => setAddModalVisible(true);
-    const handleCloseAddModal = () => setAddModalVisible(false);
-    const [schedules, setSchedules] = useState({});
-
-    const handleAddSchedule = (newSchedule) => {
-      setSchedules(prev => ({
-        ...prev,
-        [selectedDate]: [
-          ...(prev[selectedDate] || []),
-          { ...newSchedule, id: Date.now() }
-        ]
-      }));
-    };
 
   return (
     <>
@@ -160,9 +159,9 @@ export default function ScheduleList({
         visible={addModalVisible}
         onClose={handleCloseAddModal}
         selectedDate={selectedDate}
-        onSave={handleAddSchedule}
+        onSave={onSave}
       />
-      {showFAB && (
+      {showFAB && !hideFAB && (
         <Pressable style={styles.fab} onPress={handleOpenAddModal}>
           <Ionicons name="add" size={28} color="#fff" />
         </Pressable>
