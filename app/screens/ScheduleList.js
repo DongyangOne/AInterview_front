@@ -43,7 +43,6 @@ export default function ScheduleList({
   modalRef,
   schedules,
   selectedDate,
-  onOpenEditModal,
   onOpenDeleteModal,
   onModalOpen,
   onModalClose,
@@ -53,7 +52,10 @@ export default function ScheduleList({
 }) {
 
     const [addModalVisible, setAddModalVisible] = useState(false);
+    const [editModalVisible, setEditModalVisible] = useState(false);
     const [hideFAB, setHideFAB] = useState(false);
+    const [editTarget, setEditTarget] = useState(null);
+
     const handleOpenAddModal = () => {
         setAddModalVisible(true);
         setHideFAB(true);
@@ -62,6 +64,17 @@ export default function ScheduleList({
         setAddModalVisible(false);
         setHideFAB(false);
       };
+    const handleOpenEditModal = (item) => {
+        setEditTarget(item);
+        setEditModalVisible(true);
+        setHideFAB(true);
+      };
+    const handleCloseEditModal = () => {
+        setEditModalVisible(false);
+        setEditTarget(null);
+        setHideFAB(false);
+      };
+
     const scheduleArr = schedules[selectedDate] || [];
 
 
@@ -93,8 +106,8 @@ export default function ScheduleList({
             })}
           </Text>
 
-          {schedules[selectedDate]?.length ? (
-            schedules[selectedDate]
+          {scheduleArr.length ? (
+            scheduleArr
               .sort((a, b) =>
                 `${a.hour}${a.minute}`.localeCompare(`${b.hour}${b.minute}`)
               )
@@ -112,7 +125,7 @@ export default function ScheduleList({
 
                   <Pressable
                     style={{ flex: 1 }}
-                    onPress={() => onOpenEditModal(item, idx)}
+                    onPress={() => handleOpenEditModal(item)}
                   >
                     <Text style={styles.scheduleTitle}>{item.title}</Text>
 
@@ -159,7 +172,23 @@ export default function ScheduleList({
         visible={addModalVisible}
         onClose={handleCloseAddModal}
         selectedDate={selectedDate}
-        onSave={onSave}
+        onSave={() => {
+          onSave && onSave();
+          handleCloseAddModal();
+        }}
+        isEditing={false}
+      />
+
+      <ScheduleAddModal
+        visible={editModalVisible}
+        onClose={handleCloseEditModal}
+        selectedDate={selectedDate}
+        onSave={() => {
+          onSave && onSave();
+          handleCloseAddModal();
+        }}
+        isEditing={true}
+        editData={editTarget}
       />
       {showFAB && !hideFAB && (
         <Pressable style={styles.fab} onPress={handleOpenAddModal}>

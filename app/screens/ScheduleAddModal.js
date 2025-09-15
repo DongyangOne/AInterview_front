@@ -1,4 +1,4 @@
-import React, { useRef, useState, useMemo } from "react";
+import React, { useRef, useState, useMemo, useEffect } from "react";
 import {
   View,
   Text,
@@ -29,18 +29,11 @@ export default function ScheduleAddModal({
   onClose,
   selectedDate,
   onSave,
-  isEditing,
+  isEditing = false,
+  editData = null,
   saving,
 }) {
   const modalAddRef = useRef(null);
-
-  React.useEffect(() => {
-    if (visible) {
-      modalAddRef.current?.open();
-    } else {
-      modalAddRef.current?.close();
-    }
-  }, [visible]);
 
   const [title, setTitle] = useState("");
   const [hour, setHour] = useState("10");
@@ -63,10 +56,48 @@ export default function ScheduleAddModal({
     []
   );
 
+  useEffect(() => {
+      if (visible) {
+        if (isEditing && editData) {
+          setTitle(editData.title || "");
+          setHour(editData.hour || "10");
+          setMinute(editData.minute || "00");
+          // priority: "S" | "I" | "N"으로 변환
+          setPriority(
+            editData.priority === "매우 중요"
+              ? "S"
+              : editData.priority === "중요하지 않음"
+              ? "N"
+              : "I"
+          );
+          setMemo(editData.memo || "");
+        } else {
+          setTitle("");
+          setHour("10");
+          setMinute("00");
+          setPriority("I");
+          setMemo("");
+        }
+        setSaveError("");
+      }
+    }, [visible, isEditing, editData]);
+
+    // **Modal open/close - modalize**
+    useEffect(() => {
+      if (visible) {
+        modalAddRef.current?.open();
+      } else {
+        modalAddRef.current?.close();
+      }
+    }, [visible]);
+
   // API 요구 포맷으로 반환 (예: 2025-09-13 10:00:00)
   const getApiDateTime = () => {
     // selectedDate가 JS Date 객체이어야 함!
-    const dateObj = new Date(selectedDate);
+    let dateObj = new Date(selectedDate);
+    if (isNaN(dateObj.getTime())) {
+      dateObj = new Date();
+    }
     const yyyy = dateObj.getFullYear();
     const mm = pad(dateObj.getMonth() + 1);
     const dd = pad(dateObj.getDate());
@@ -88,41 +119,66 @@ export default function ScheduleAddModal({
 
     AsyncStorage.getItem("userId")
       .then((userId) => {
-        return axios.get(`${process.env.EXPO_PUBLIC_API_URL}/calendar/add`, {
-          params: {
-            userId,
-            title,
-            time: getApiDateTime(),
-            importance: priority,   // 반드시 "S" | "I" | "N"
-            memo,
-          },
-          withCredentials: true
-        });
-      })
-      .then((res) => {
-        const calendarId = res.data.calendarId || res.data.id;
-        if (calendarId) {
-            AsyncStorage.setItem("calendarId", calendarId.toString());
-          }
-        console.log("[schedule add] Response:", res.data);
-        onSave &&
-          onSave({
-            title,
-            hour,
-            minute,
-            priority,
-            memo,
-            calendarId
-          });
-        handleCancel();
+        if (!userId) throw new Error("사용자 정보가 없습니다.");
+
+        const params = {
+          userId,
+          title,
+          time: getApiDateTime(),
+          importance: priority,
+          memo,
+        };
+
+        if (isEditing && editData?.id) {
+          return axios
+            .get(`${process.env.EXPO_PUBLIC_API_URL}/calendar/update`, {
+              params: { ...params, calendar_id: editData.id },
+              withCredentials: true,
+            })
+            .then((res) => {
+              console.log("[일정 수정 성공]", res.data);
+              onSave && onSave();
+              handleCancel();
+            })
+            .catch((err) => {
+              setSaveError(
+                "일정 수정 실패: " +
+                  (err?.response?.data?.message || err.message)
+              );
+              console.error("[일정 수정 실패]", err?.response?.data || err);
+            });
+        } else {
+          return axios
+            .get(`${process.env.EXPO_PUBLIC_API_URL}/calendar/add`, {
+              params,
+              withCredentials: true,
+            })
+            .then((res) => {
+              console.log("[일정 추가 성공]", res.data);
+              onSave && onSave();
+              handleCancel();
+            })
+            .catch((err) => {
+              setSaveError(
+                "일정 저장 실패: " +
+                  (err?.response?.data?.message || err.message)
+              );
+              console.error("[일정 추가 실패]", err?.response?.data || err);
+            });
+        }
       })
       .catch((err) => {
         setSaveError(
-          "일정 저장 실패: " + (err?.response?.data?.message || err.message)
+          (isEditing ? "일정 수정 실패: " : "일정 저장 실패: ") +
+            (err?.response?.data?.message || err.message)
         );
-        console.error("[schedule add] Error:", err?.response?.data || err);
+        console.error("[일정 작업 실패]", err?.response?.data || err);
       });
+
+      if(onSave) onSave();
+      handleCancel();
   };
+
 
   const handleCancel = () => {
     setTitle("");
@@ -141,12 +197,13 @@ export default function ScheduleAddModal({
   return (
     <Modalize
       ref={modalAddRef}
-      modalHeight={SCREEN_HEIGHT}
+      modalHeight={SCREEN_HEIGHT * 0.7}
       snapPoint={SCREEN_HEIGHT * 0.66}
       handlePosition="inside"
-      panGestureEnabled={true}
+      openAnimationConfig={{ timing: { duration: 180 } }}
+      panGestureEnabled
       withHandle={true}
-      onClosed={handleCancel}
+      onClose={handleCancel}
       modalStyle={{
         borderTopLeftRadius: 20,
         borderTopRightRadius: 20,
@@ -179,6 +236,7 @@ export default function ScheduleAddModal({
                 setTitleRequired(false);
                 setSaveError("");
               }}
+              maxLength={8}
               placeholder="제목을 입력하세요"
             />
             {titleRequired && (
@@ -233,6 +291,7 @@ export default function ScheduleAddModal({
             multiline
             value={memo}
             onChangeText={setMemo}
+            maxLength={100}
             placeholder="메모를 입력하세요"
           />
         </View>
@@ -251,7 +310,10 @@ export default function ScheduleAddModal({
         </View>
       </View>
       {showTimePicker && (
-        <Modal transparent animationType="slide">
+        <Modal
+          visible={showTimePicker}
+          transparent animationType="slide"
+          onRequestClose={() => setShowTimePicker(false)}>
           <View style={{
               ...styles.pickerContainer,
               backgroundColor: "rgba(0,0,0,0)",
@@ -268,6 +330,7 @@ export default function ScheduleAddModal({
               <WheelPickerExpo
                 height={150}
                 width={100}
+                initialSelectedIndex={Number(hour)}
                 items={hourList.map((h) => ({
                   label: `${h}시`,
                   value: h,
@@ -277,6 +340,7 @@ export default function ScheduleAddModal({
               <WheelPickerExpo
                 height={150}
                 width={100}
+                initialSelectedIndex={Number(minute)}
                 items={minuteList.map((m) => ({
                   label: `${m}분`,
                   value: m,
