@@ -2,6 +2,7 @@ import { View, Text, Pressable, StyleSheet } from "react-native";
 import React, { useState, useEffect, useRef } from "react";
 import { Modalize } from "react-native-modalize";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import ScheduleAddModal from "../screens/ScheduleAddModal";
 
 export const importanceIn = (val) => {
   switch (val) {
@@ -42,13 +43,28 @@ export default function ScheduleList({
   modalRef,
   schedules,
   selectedDate,
-  onOpenAddModal,
   onOpenEditModal,
   onOpenDeleteModal,
   onModalOpen,
   onModalClose,
   showFAB,
+  setshowFAB,
+  onSave
 }) {
+
+    const [addModalVisible, setAddModalVisible] = useState(false);
+    const [hideFAB, setHideFAB] = useState(false);
+    const handleOpenAddModal = () => {
+        setAddModalVisible(true);
+        setHideFAB(true);
+      };
+    const handleCloseAddModal = () => {
+        setAddModalVisible(false);
+        setHideFAB(false);
+      };
+    const scheduleArr = schedules[selectedDate] || [];
+
+
   return (
     <>
       <Modalize
@@ -139,8 +155,14 @@ export default function ScheduleList({
           )}
         </View>
       </Modalize>
-      {showFAB && (
-        <Pressable style={styles.fab} onPress={onOpenAddModal}>
+      <ScheduleAddModal
+        visible={addModalVisible}
+        onClose={handleCloseAddModal}
+        selectedDate={selectedDate}
+        onSave={onSave}
+      />
+      {showFAB && !hideFAB && (
+        <Pressable style={styles.fab} onPress={handleOpenAddModal}>
           <Ionicons name="add" size={28} color="#fff" />
         </Pressable>
       )}
