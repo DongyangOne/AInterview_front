@@ -10,7 +10,7 @@ import {
   Image,
   Dimensions,
 } from "react-native";
-import { useState, useEffect, memo } from "react";
+import { useState, useEffect, content } from "react";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -55,7 +55,7 @@ const EditListModal = ({
   useEffect(() => {
     if (isModalVisible) {
       setTitleInputText(item?.title || "");
-      setMemoInputText(item?.memo ?? "");
+      setMemoInputText(item?.content ?? "");
     }
   }, [isModalVisible, item]);
 
@@ -90,7 +90,7 @@ const EditListModal = ({
       if (usersId) {
         const url = `${process.env.EXPO_PUBLIC_API_URL}/feedback/${usersId}/${feedbackId}/memo`;
         const res = await axios.patch(url, {
-          memo: newMemo,
+          content: newMemo,
         });
         const updatedFeedback = res.data;
         onUpdateMemo(itemId, newMemo);

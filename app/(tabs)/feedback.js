@@ -60,7 +60,7 @@ export default function Feedback() {
                     day: "numeric",
                   }),
                   title: item.title,
-                  memo: item.memo,
+                  content: item.content,
                   pin: item.pin || "N",
                 }));
 
@@ -153,7 +153,7 @@ export default function Feedback() {
 
   const handleUpdateMemo = (id, newMemo) => {
     setFeedbackList((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, memo: newMemo } : item))
+      prev.map((item) => (item.id === id ? { ...item, content: newMemo } : item))
     );
   };
 
@@ -340,7 +340,7 @@ export default function Feedback() {
                   numberOfLines={1}
                   ellipsizeMode="tail"
                 >
-                  {item.memo ?? "메모 없음"}
+                  {item.content ?? "메모 없음"}
                 </Text>
               </View>
             </Pressable>
