@@ -113,35 +113,6 @@ export default function ScheduleList({
         });
     };
 
-    const handleConfirmDelete = () => {
-      if (deleteIdx == null) return;
-      const item = schedules[selectedDate][deleteIdx];
-      if (!item || !item.id) return;
-
-      axios
-        .get(`${process.env.EXPO_PUBLIC_API_URL}/calendar/delete`, {
-          params: { calendar_id: item.id },
-          withCredentials: true,
-        })
-        .then((res) => {
-          console.log("[삭제 요청 결과]", res.data);
-
-          if (res.data.success) {
-            console.log("일정 삭제 성공! 리스트 갱신.");
-            onSave && onSave();
-          } else {
-            console.log("삭제 실패:", res.data.message);
-          }
-          setDeleteModalVisible(false);
-          setDeleteIdx(null);
-        })
-        .catch((err) => {
-          console.log("[일정 삭제 에러]", err);
-          setDeleteModalVisible(false);
-          setDeleteIdx(null);
-        });
-    };
-
   return (
     <>
       <Modalize
