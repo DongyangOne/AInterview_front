@@ -308,12 +308,12 @@ export default function Calendar() {
           modalRef={modalRef}
           schedules={schedules}
           selectedDate={selectedDate}
-          onOpenAddModal={() => {}}
           onOpenEditModal={() => {}}
           onOpenDeleteModal={() => {}}
           onModalOpen={() => setShowFAB(true)}
           onModalClose={() => setShowFAB(false)}
           showFAB={showFAB}
+          onSave={() => fetchDay(selectedDate)}
         />
 
         {showYMPicker && (

@@ -153,7 +153,7 @@ export default function Feedback() {
 
   const handleUpdateMemo = (id, newMemo) => {
     setFeedbackList((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, content: newMemo } : item))
+      prev.map((item) => (item.id === id ? { ...item, memo: newMemo } : item))
     );
   };
 

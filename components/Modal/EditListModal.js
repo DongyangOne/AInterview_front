@@ -10,7 +10,7 @@ import {
   Image,
   Dimensions,
 } from "react-native";
-import { useState, useEffect, content } from "react";
+import { useState, useEffect, memo } from "react";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -55,7 +55,7 @@ const EditListModal = ({
   useEffect(() => {
     if (isModalVisible) {
       setTitleInputText(item?.title || "");
-      setMemoInputText(item?.content ?? "");
+      setMemoInputText(item?.memo ?? "");
     }
   }, [isModalVisible, item]);
 
@@ -90,11 +90,12 @@ const EditListModal = ({
       if (usersId) {
         const url = `${process.env.EXPO_PUBLIC_API_URL}/feedback/${usersId}/${feedbackId}/memo`;
         const res = await axios.patch(url, {
-          content: newMemo,
+          memo: newMemo,
         });
         const updatedFeedback = res.data;
         onUpdateMemo(itemId, newMemo);
         console.log("수정된 데이터:", updatedFeedback);
+        console.log(url);
       } else {
         console.log("userId가 저장되어 있지 않습니다.");
       }
