@@ -291,7 +291,7 @@ export default function ScheduleAddModal({
             multiline
             value={memo}
             onChangeText={setMemo}
-            maxLength={100}
+            maxLength={50}
             placeholder="메모를 입력하세요"
           />
         </View>
