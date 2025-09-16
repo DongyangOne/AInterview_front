@@ -46,8 +46,6 @@ export default function ScheduleList({
   modalRef,
   schedules,
   selectedDate,
-  onOpenEditModal,
-  onOpenDeleteModal,
   onModalOpen,
   onModalClose,
   showFAB,
@@ -60,15 +58,31 @@ export default function ScheduleList({
     const [addModalVisible, setAddModalVisible] = useState(false);
     const [hideFAB, setHideFAB] = useState(false);
 
+    const [isEditing, setIsEditing] = useState(false);  // 수정 모드 상태
+    const [editData, setEditData] = useState(null);     // 수정 대상 일정
+
+    const scheduleArr = schedules[selectedDate] || [];
+
+    const onOpenEditModal = (item, idx) => {
+        setIsEditing(true);
+        setEditData(item);
+        setAddModalVisible(true);
+        setHideFAB(true);
+      };
+
     const handleOpenAddModal = () => {
+        setIsEditing(false);
+        setEditData(null);
         setAddModalVisible(true);
         setHideFAB(true);
       };
     const handleCloseAddModal = () => {
+        setIsEditing(false);
+        setEditData(null);
         setAddModalVisible(false);
         setHideFAB(false);
       };
-    const scheduleArr = schedules[selectedDate] || [];
+
 
     const handleConfirmDelete = () => {
       if (deleteIdx == null) return;
@@ -130,8 +144,8 @@ export default function ScheduleList({
             contentContainerStyle={{ paddingBottom: 24 }}
             showsVerticalScrollIndicator={false}
           >
-          {schedules[selectedDate]?.length ? (
-            schedules[selectedDate]
+          {scheduleArr.length ? (
+            scheduleArr
               .sort((a, b) =>
                 `${a.hour}${a.minute}`.localeCompare(`${b.hour}${b.minute}`)
               )
@@ -200,7 +214,12 @@ export default function ScheduleList({
         visible={addModalVisible}
         onClose={handleCloseAddModal}
         selectedDate={selectedDate}
-        onSave={onSave}
+        onSave={() => {
+          onSave && onSave();
+          handleCloseAddModal();
+        }}
+        isEditing={isEditing}
+        editData={editData}
       />
       {showFAB && !hideFAB && (
         <Pressable style={styles.fab} onPress={handleOpenAddModal}>
