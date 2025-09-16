@@ -58,6 +58,7 @@ export default function ScheduleList({
     const [addModalVisible, setAddModalVisible] = useState(false);
     const [hideFAB, setHideFAB] = useState(false);
 
+
     const [isEditing, setIsEditing] = useState(false);  // 수정 모드 상태
     const [editData, setEditData] = useState(null);     // 수정 대상 일정
 
@@ -83,6 +84,34 @@ export default function ScheduleList({
         setHideFAB(false);
       };
 
+    const handleConfirmDelete = () => {
+      if (deleteIdx == null) return;
+      const item = schedules[selectedDate][deleteIdx];
+      if (!item || !item.id) return;
+
+      axios
+        .get(`${process.env.EXPO_PUBLIC_API_URL}/calendar/delete`, {
+          params: { calendar_id: item.id },
+          withCredentials: true,
+        })
+        .then((res) => {
+          console.log("[삭제 요청 결과]", res.data);
+
+          if (res.data.success) {
+            console.log("일정 삭제 성공! 리스트 갱신.");
+            onSave && onSave();
+          } else {
+            console.log("삭제 실패:", res.data.message);
+          }
+          setDeleteModalVisible(false);
+          setDeleteIdx(null);
+        })
+        .catch((err) => {
+          console.log("[일정 삭제 에러]", err);
+          setDeleteModalVisible(false);
+          setDeleteIdx(null);
+        });
+    };
 
     const handleConfirmDelete = () => {
       if (deleteIdx == null) return;
@@ -144,8 +173,10 @@ export default function ScheduleList({
             contentContainerStyle={{ paddingBottom: 24 }}
             showsVerticalScrollIndicator={false}
           >
+
           {scheduleArr.length ? (
             scheduleArr
+
               .sort((a, b) =>
                 `${a.hour}${a.minute}`.localeCompare(`${b.hour}${b.minute}`)
               )
