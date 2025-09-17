@@ -283,7 +283,7 @@ const EditListModal = ({
             <Text style={styles.charCount}>{memoNum}/50</Text>
             <TextInput
               style={styles.memoTextInput}
-              placeholder="메모를 작성해주세요"
+              placeholder={item.memo ? "" : "메모를 입력하세요."}
               value={memoInputText}
               onChangeText={handleMemoChange}
               multiline={true}

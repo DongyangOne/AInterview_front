@@ -60,6 +60,7 @@ export default function Feedback() {
                     day: "numeric",
                   }),
                   title: item.title,
+                  memo: item.memo,
                   content: item.content,
                   pin: item.pin || "N",
                 }));
