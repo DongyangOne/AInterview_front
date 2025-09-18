@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
     width: 4,
     height: 4,
     borderRadius: 2,
-    backgroundColor: "#222",
+    backgroundColor: "#5900FF",
     position: "absolute",
     top: 12,
     zIndex: 1,

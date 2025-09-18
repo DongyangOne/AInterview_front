@@ -1,7 +1,11 @@
-import { View, Text, Pressable, StyleSheet } from "react-native";
+import { View, Text, Pressable, StyleSheet, Dimensions, ScrollView, Modal, Image } from "react-native";
 import React, { useState, useEffect, useRef } from "react";
 import { Modalize } from "react-native-modalize";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import ScheduleAddModal from "../screens/ScheduleAddModal";
+import axios from "axios";
+
+const SCREEN_HEIGHT = Dimensions.get("window").height;
 
 export const importanceIn = (val) => {
   switch (val) {
@@ -42,19 +46,65 @@ export default function ScheduleList({
   modalRef,
   schedules,
   selectedDate,
-  onOpenAddModal,
   onOpenEditModal,
   onOpenDeleteModal,
   onModalOpen,
   onModalClose,
   showFAB,
+  setshowFAB,
+  onSave
 }) {
+
+    const [deleteIdx, setDeleteIdx] = useState(null);
+    const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+    const [addModalVisible, setAddModalVisible] = useState(false);
+    const [hideFAB, setHideFAB] = useState(false);
+
+    const handleOpenAddModal = () => {
+        setAddModalVisible(true);
+        setHideFAB(true);
+      };
+    const handleCloseAddModal = () => {
+        setAddModalVisible(false);
+        setHideFAB(false);
+      };
+    const scheduleArr = schedules[selectedDate] || [];
+
+    const handleConfirmDelete = () => {
+      if (deleteIdx == null) return;
+      const item = schedules[selectedDate][deleteIdx];
+      if (!item || !item.id) return;
+
+      axios
+        .get(`${process.env.EXPO_PUBLIC_API_URL}/calendar/delete`, {
+          params: { calendar_id: item.id },
+          withCredentials: true,
+        })
+        .then((res) => {
+          console.log("[삭제 요청 결과]", res.data);
+
+          if (res.data.success) {
+            console.log("일정 삭제 성공! 리스트 갱신.");
+            onSave && onSave();
+          } else {
+            console.log("삭제 실패:", res.data.message);
+          }
+          setDeleteModalVisible(false);
+          setDeleteIdx(null);
+        })
+        .catch((err) => {
+          console.log("[일정 삭제 에러]", err);
+          setDeleteModalVisible(false);
+          setDeleteIdx(null);
+        });
+    };
+
   return (
     <>
       <Modalize
         ref={modalRef}
-        modalHeight={1000}
-        snapPoint={1000 * 0.62}
+        modalHeight={SCREEN_HEIGHT}
+        snapPoint={SCREEN_HEIGHT * 0.62}
         handlePosition="inside"
         panGestureEnabled
         withHandle
@@ -76,7 +126,10 @@ export default function ScheduleList({
               weekday: "long",
             })}
           </Text>
-
+          <ScrollView
+            contentContainerStyle={{ paddingBottom: 24 }}
+            showsVerticalScrollIndicator={false}
+          >
           {schedules[selectedDate]?.length ? (
             schedules[selectedDate]
               .sort((a, b) =>
@@ -127,7 +180,10 @@ export default function ScheduleList({
                   </Pressable>
 
                   <Pressable
-                    onPress={() => onOpenDeleteModal(idx)}
+                    onPress={() =>{
+                      setDeleteIdx(idx);
+                      setDeleteModalVisible(true);
+                    }}
                     style={styles.trashBtn}
                   >
                     <Ionicons name="trash-outline" size={20} color="#888" />
@@ -137,12 +193,47 @@ export default function ScheduleList({
           ) : (
             <Text>일정이 없습니다.</Text>
           )}
+          </ScrollView>
         </View>
       </Modalize>
-      {showFAB && (
-        <Pressable style={styles.fab} onPress={onOpenAddModal}>
+      <ScheduleAddModal
+        visible={addModalVisible}
+        onClose={handleCloseAddModal}
+        selectedDate={selectedDate}
+        onSave={onSave}
+      />
+      {showFAB && !hideFAB && (
+        <Pressable style={styles.fab} onPress={handleOpenAddModal}>
           <Ionicons name="add" size={28} color="#fff" />
         </Pressable>
+      )}
+      {deleteModalVisible && (
+        <Modal
+          animationType="fade"
+          transparent={true}
+          visible={deleteModalVisible}
+          onRequestClose={() => setDeleteModalVisible(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.deleteModal}>
+              <Image source={require("../../assets/icons/warning.png")} style={styles.deleteIcon} />
+              <Text style={styles.deleteTitle}>정말 삭제 하시겠습니까?</Text>
+              <Text style={styles.deleteSubtitle}>삭제하시면 복구가 불가합니다.</Text>
+              <View style={styles.buttonContainer}>
+                <Pressable onPress={() => setDeleteModalVisible(false)}>
+                  <View style={[styles.modalBtn, styles.cancelBtn]}>
+                    <Text style={styles.btnText}>취소</Text>
+                  </View>
+                </Pressable>
+                <Pressable onPress={handleConfirmDelete}>
+                  <View style={[styles.modalBtn, styles.deleteBtn]}>
+                    <Text style={[styles.btnText, styles.saveText]}>삭제</Text>
+                  </View>
+                </Pressable>
+              </View>
+            </View>
+          </View>
+        </Modal>
       )}
     </>
   );
@@ -150,11 +241,12 @@ export default function ScheduleList({
 
 const styles = StyleSheet.create({
   modalContent: {
+    flex: 1,
     paddingHorizontal: 32,
     paddingTop: 16,
     paddingBottom: 32,
     backgroundColor: "#fff",
-    minHeight: 1000 * 0.5,
+    minHeight: 0,
   },
   modalDate: {
     color: "#191919",
@@ -200,4 +292,59 @@ const styles = StyleSheet.create({
     zIndex: 9999,
     elevation: 20,
   },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  deleteModal: {
+    width: 350,
+    padding: 20,
+    backgroundColor: "white",
+    borderRadius: 10,
+    elevation: 5,
+    alignItems: "center",
+    top: -40
+  },
+  deleteIcon: {
+    width: 50,
+    height: 50,
+    marginBottom: 10,
+  },
+  deleteTitle: {
+    fontSize: 20,
+    fontWeight: "600",
+    marginTop: 10,
+  },
+  deleteSubtitle: {
+    fontSize: 14,
+    color: "#808080",
+    marginTop: 5,
+  },
+  buttonContainer: {
+    flexDirection: "row",
+    marginTop: 15,
+  },
+  modalBtn: {
+    width: 140,
+    height: 45,
+    borderRadius: 10,
+    justifyContent: "center",
+    alignItems: "center",
+    marginHorizontal: 7.5,
+  },
+  cancelBtn: {
+    backgroundColor: "#DDDDDD",
+  },
+  deleteBtn: {
+    backgroundColor: "#FF3B30",
+  },
+  btnText: {
+    fontSize: 16,
+  },
+  saveText: {
+    color: "white",
+  },
+
 });

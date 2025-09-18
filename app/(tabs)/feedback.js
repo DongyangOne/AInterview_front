@@ -61,6 +61,7 @@ export default function Feedback() {
                   }),
                   title: item.title,
                   memo: item.memo,
+                  content: item.content,
                   pin: item.pin || "N",
                 }));
 
@@ -204,8 +205,8 @@ export default function Feedback() {
             style={{ width: 28, height: 14 }}
             source={
               open
-                ? require("../../assets/icons/arrow_down.png")
-                : require("../../assets/icons/arrow_up.png")
+                ? require("../../assets/icons/arrow_up.png")
+                : require("../../assets/icons/arrow_down.png")
             }
           />
         </Pressable>
@@ -332,14 +333,15 @@ export default function Feedback() {
                 )}
               </View>
 
-              <View>
-                <Text style={styles.fontTw2}>{item.title}</Text>
+              <View style={{ paddingLeft: 17, paddingRight: 17 }}>
+                <Text style={styles.titleText}>{item.title}</Text>
                 <Text
-                  style={styles.fontTw3}
-                  numberOfLines={2}
+                  style={styles.memoText}
+                  //말줄임표
+                  numberOfLines={1}
                   ellipsizeMode="tail"
                 >
-                  {item.memo ?? "메모 없음"}
+                  {item.content ?? "메모 없음"}
                 </Text>
               </View>
             </Pressable>
@@ -386,7 +388,12 @@ const styles = StyleSheet.create({
     marginTop: 10,
     backgroundColor: "white",
   },
-  fontTw1: { marginTop: 24, marginLeft: 17, fontSize: 14, color: "#808080" },
+  fontTw1: {
+    marginTop: 24,
+    marginLeft: 17,
+    fontSize: 14,
+    color: "#808080"
+  },
   fontTw2: {
     fontSize: 18,
     marginTop: 15,
@@ -394,9 +401,15 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     fontWeight: "600",
   },
-  fontTw3: {
+  titleText: {
+    fontSize: 18,
+    marginTop: 15,
+    marginBottom: 10,
+    fontWeight: "600",
+  },
+  memoText: {
     fontSize: 15,
-    marginLeft: 17,
+    marginRight: 60,
     marginBottom: 10,
     bottom: 5,
     color: "#808080",
