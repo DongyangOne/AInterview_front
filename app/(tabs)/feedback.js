@@ -61,6 +61,7 @@ export default function Feedback() {
                   }),
                   title: item.title,
                   memo: item.memo,
+                  content: item.content,
                   pin: item.pin || "N",
                 }));
 
@@ -204,8 +205,8 @@ export default function Feedback() {
             style={{ width: 28, height: 14 }}
             source={
               open
-                ? require("../../assets/icons/arrow_down.png")
-                : require("../../assets/icons/arrow_up.png")
+                ? require("../../assets/icons/arrow_up.png")
+                : require("../../assets/icons/arrow_down.png")
             }
           />
         </Pressable>
@@ -340,7 +341,7 @@ export default function Feedback() {
                   numberOfLines={1}
                   ellipsizeMode="tail"
                 >
-                  {item.memo ?? "메모 없음"}
+                  {item.content ?? "메모 없음"}
                 </Text>
               </View>
             </Pressable>
