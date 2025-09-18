@@ -62,10 +62,7 @@ export default function Home() {
           paddingHorizontal: "4%",
         }}
       >
-        <TouchableOpacity
-          onPress={() => router.push("../screens/bell")}
-          style={{ padding: 6 }}
-        >
+        <TouchableOpacity onPress={() => router.push("../screens/bell")}>
           <Image
             source={require("../../assets/icons/bell.png")}
             style={{ width: 24, height: 24, right: 32 }}
