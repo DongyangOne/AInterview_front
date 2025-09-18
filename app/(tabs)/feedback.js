@@ -205,8 +205,8 @@ export default function Feedback() {
             style={{ width: 28, height: 14 }}
             source={
               open
-                ? require("../../assets/icons/arrow_down.png")
-                : require("../../assets/icons/arrow_up.png")
+                ? require("../../assets/icons/arrow_up.png")
+                : require("../../assets/icons/arrow_down.png")
             }
           />
         </Pressable>

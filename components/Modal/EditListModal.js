@@ -299,12 +299,12 @@ const EditListModal = ({
             ) : null}
             <View style={styles.buttonContainer}>
               <TouchableOpacity onPress={() => setMemoModalVisible(false)}>
-                <View style={[styles.modalBtn, styles.cancelBtn]}>
+                <View style={[styles.cancelBtn]}>
                   <Text style={styles.btnText}>취소</Text>
                 </View>
               </TouchableOpacity>
               <TouchableOpacity onPress={handleSaveMemo}>
-                <View style={[styles.modalBtn, styles.saveBtn]}>
+                <View style={[styles.saveBtn]}>
                   <Text style={[styles.btnText, styles.saveText]}>저장</Text>
                 </View>
               </TouchableOpacity>
@@ -423,7 +423,7 @@ const styles = StyleSheet.create({
     paddingLeft: 20,
     paddingRight: 20,
     paddingTop: 20,
-    paddingBottom: 20,
+    paddingBottom: 10,
     fontSize: 16,
   },
   buttonContainer: {
@@ -439,9 +439,21 @@ const styles = StyleSheet.create({
     marginHorizontal: 7.5,
   },
   cancelBtn: {
+    width: 140,
+    height: 45,
+    borderRadius: 10,
+    justifyContent: "center",
+    alignItems: "center",
+    marginHorizontal: 7.5,
     backgroundColor: "#DDDDDD",
   },
   saveBtn: {
+    width: 140,
+    height: 45,
+    borderRadius: 10,
+    justifyContent: "center",
+    alignItems: "center",
+    marginHorizontal: 7.5,
     backgroundColor: "#5900FF",
   },
   deleteBtn: {
