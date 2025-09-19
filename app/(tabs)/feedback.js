@@ -28,10 +28,10 @@ export default function Feedback() {
   const [loadingId, setLoadingId] = useState(null);
   const [searchText, setSearchText] = useState("");
   const [usersId, setUsersId] = useState(null);
-  const [deleteModal, setDeleteModal] = useState(false);
-  const [memoModal, setMemoModal] = useState(false);
   const route = useRouter();
   const isFocused = useIsFocused();
+  const [list, setList] = useState(null);
+  const [listN, setListN] = useState("모든 피드백 : " + { listN });
 
   useEffect(() => {
     if (isFocused) {
@@ -64,7 +64,9 @@ export default function Feedback() {
                   content: item.content,
                   pin: item.pin || "N",
                 }));
-
+                console.log(data.data.length + "개의 피드백을 불러왔습니다.");
+                setListN(data.data.length);
+                setListN("모든 피드백 : " + { listN })
                 setFeedbackList(mappedData);
               })
               .catch((err) => {
@@ -83,6 +85,8 @@ export default function Feedback() {
   const filteredList = useMemo(() => {
     if (!searchText.trim()) return feedbackList;
 
+
+
     const lowerSearch = searchText.trim().toLowerCase();
     const normalize = (str) => (str ?? "").trim().toLowerCase();
 
@@ -93,6 +97,14 @@ export default function Feedback() {
       );
     });
   }, [searchText, feedbackList]);
+
+  useEffect(() => {
+    setListN("조회된 피드백 : " + filteredList.length + "건");
+  }, [filteredList]);
+
+  const label = searchText.trim()
+    ? `조회된 피드백 : ${filteredList.length}건`
+    : `모든 피드백`;
 
   const sortedList = useMemo(() => {
     const listToSort = filteredList;
@@ -195,7 +207,7 @@ export default function Feedback() {
       </View>
 
       <View style={styles.wrapFilter}>
-        <Text style={{ fontSize: 15, color: "#808080" }}>모든 피드백</Text>
+        <Text style={{ fontSize: 15, color: "#808080" }}>{label}</Text>
         <Pressable
           onPress={() => setOpen(!open)}
           style={{ flexDirection: "row", alignItems: "center" }}
@@ -248,6 +260,7 @@ export default function Feedback() {
         renderItem={({ item }) => {
           const isModalVisible = openModalItemId === item.id;
           const isPinned = item.pin === "Y";
+          const isContentEmpty = !(item.content ?? "").trim();
 
           return (
             <Pressable
@@ -268,8 +281,10 @@ export default function Feedback() {
                   overflow: "visible",
                   zIndex: isModalVisible ? 9999 : 0,
                   elevation: isModalVisible ? 9999 : 0,
+                  opacity: isContentEmpty ? 0.6 : 1,
                 },
               ]}
+              disabled={isContentEmpty}
             >
               {isPinned && (
                 <Image
@@ -297,7 +312,7 @@ export default function Feedback() {
                   onPress={() =>
                     setOpenModalItemId(isModalVisible ? null : item.id)
                   }
-                  disabled={loadingId === item.id}
+                  disabled={loadingId === item.id || isContentEmpty}
                 >
                   <Image
                     source={require("../../assets/icons/dot.png")}
@@ -341,7 +356,7 @@ export default function Feedback() {
                   numberOfLines={1}
                   ellipsizeMode="tail"
                 >
-                  {item.content ?? "메모 없음"}
+                  {(item.content ?? "").trim() !== "" ? item.content : "분석중..."}
                 </Text>
               </View>
             </Pressable>
