@@ -248,6 +248,7 @@ export default function Feedback() {
         renderItem={({ item }) => {
           const isModalVisible = openModalItemId === item.id;
           const isPinned = item.pin === "Y";
+          const isContentEmpty = !(item.content ?? "").trim();
 
           return (
             <Pressable
@@ -268,8 +269,10 @@ export default function Feedback() {
                   overflow: "visible",
                   zIndex: isModalVisible ? 9999 : 0,
                   elevation: isModalVisible ? 9999 : 0,
+                  opacity: isContentEmpty ? 0.6 : 1,
                 },
               ]}
+              disabled={isContentEmpty}
             >
               {isPinned && (
                 <Image
@@ -297,7 +300,7 @@ export default function Feedback() {
                   onPress={() =>
                     setOpenModalItemId(isModalVisible ? null : item.id)
                   }
-                  disabled={loadingId === item.id}
+                  disabled={loadingId === item.id || isContentEmpty}
                 >
                   <Image
                     source={require("../../assets/icons/dot.png")}
@@ -341,7 +344,7 @@ export default function Feedback() {
                   numberOfLines={1}
                   ellipsizeMode="tail"
                 >
-                  {item.content ?? "메모 없음"}
+                  {(item.content ?? "").trim() !== "" ? item.content : "분석중..."}
                 </Text>
               </View>
             </Pressable>
