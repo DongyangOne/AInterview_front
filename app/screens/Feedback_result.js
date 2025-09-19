@@ -58,7 +58,6 @@ export default function FeedbackResult() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
-  // ✅ 추가: 최상단 고정 상태 (UI 변경 없음)
   const [isPinned, setIsPinned] = useState(false);
 
   const params = useLocalSearchParams();
@@ -96,7 +95,7 @@ if (data.created_at) {
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, "0");
   const d = String(date.getDate()).padStart(2, "0");
-  const formatted = `${y}년 ${m}월 ${d}일`;   // 👉 원하는 형식
+  const formatted = `${y}년 ${m}월 ${d}일`;
   setCreatedAt(formatted);
 }
 
@@ -106,7 +105,6 @@ if (data.created_at) {
         setCons(data.bad || "");
         setTip(data.content || "");
         setMemo(data.memo || "");
-        // ✅ 목록과 동일 규칙: "Y"면 고정 (UI 영향 없음)
         setIsPinned((data.pin || "N") === "Y");
         setScores({
           pose: data.pose || 0,
@@ -127,7 +125,6 @@ if (data.created_at) {
     fetchFeedback();
   }, [userId, feedbackId]);
 
-  // 🔎 육각형 그래프에서 가장 큰 값의 항목 라벨 계산
   const bestAspectKey = useMemo(() => {
     const entries = Object.entries(scores);
     if (!entries.length) return "pose";
@@ -192,7 +189,7 @@ if (data.created_at) {
           <RadarChart data={scores} />
 
           <Text style={styles.improvementText}>
-            저번보다 <Text style={styles.highlight}>{bestAspectLabel}</Text>이(가) 더 좋아졌어요!
+            저번보다 <Text style={styles.highlight}>자세</Text>이(가) 더 좋아졌어요!
           </Text>
 
           <Text style={styles.feedbackTitle}>피드백 및 평가</Text>
@@ -231,7 +228,6 @@ if (data.created_at) {
           </Text>
 
           <Text style={styles.memoTitle}>메모</Text>
-          {/* 🛡️ 메모 조회만 가능하도록 입력 비활성화 */}
           <TextInput
             style={[styles.memoInput, styles.memoReadOnly]}
             multiline
@@ -243,7 +239,6 @@ if (data.created_at) {
             underlineColorAndroid="transparent"
           />
 
-          {/* 🧹 요구사항에 따라 하단 버튼(삭제/저장) 제거 */}
         </View>
       </ScrollView>
 
@@ -399,7 +394,7 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
   memoTitle: {
-    marginTop: 32,
+    marginTop: 61,
     fontSize: 16,
     fontWeight: "500",
     textAlign: "center",
@@ -413,10 +408,10 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#333",
     minHeight: 100,
-    marginTop: 12,
+    marginTop: 17,
     textAlignVertical: "top",
     fontFamily: "Pretendard",
-    marginBottom:100,
+    marginBottom:104,
   },
 
 });
