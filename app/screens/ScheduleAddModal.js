@@ -237,7 +237,7 @@ export default function ScheduleAddModal({
             <Text style={{ color: hour && minute ? "#191919" : "#888" }}>
             {hour || minute ? `${hour || "00"}:${minute || "00"}` : "시간을 선택하세요."}</Text>
           </Pressable>
-          {timeRequired && <Text style={styles.errorMsg}>시간을 선택하세요</Text>}
+          {timeRequired && <Text style={styles.errorMsg}>시간을 선택해 주세요.</Text>}
         </View>
         </View>
         <View style={styles.inputRow}>
