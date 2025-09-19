@@ -11,6 +11,7 @@ import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import RoundedBar from "./RoundedBar";
 import { useIsFocused } from "@react-navigation/native";
+
 function formatDate(dateStr) {
   if (!dateStr) return "";
   const dateObj = new Date(dateStr);
@@ -19,7 +20,8 @@ function formatDate(dateStr) {
   const day = String(dateObj.getDate()).padStart(2, "0");
   return `${year}.${month}.${day}`;
 }
-//시간 계산
+
+// 시간 계산
 const getTimes = (apiDate) => {
   const now = new Date();
   const date = new Date(apiDate);
@@ -43,6 +45,7 @@ const getTimes = (apiDate) => {
     return `${years}년 전`;
   }
 };
+
 function MainFeedback() {
   const [shouldScroll, setShouldScroll] = useState(false);
   const scrollRef = useRef(null);
@@ -117,12 +120,15 @@ function MainFeedback() {
     (item) => !TopScoreLabels.has(item.label)
   );
   const BottomScores = [...RestScores].sort((a, b) => a.percent - b.percent);
-  //메인 피드백 박스 크기 조절
+
+  // 메인 피드백 박스 크기 조절
   const toggleTextHeight = () => {
     setTextBoxHeight((prev) => (prev === 227 ? 412 : 227));
     setShouldScroll(true);
   };
+
   const firstfb = feedback?.[0];
+
   return firstfb ? (
     <View style={[styles.container, { minHeight: textBoxHeight }]}>
       {/* 헤더 영역 */}
@@ -153,7 +159,8 @@ function MainFeedback() {
           <Text style={styles.barPercent}>{item.percent}%</Text>
         </View>
       ))}
-      {/* 화살표 클릭 시 나오는 화면  */}
+
+      {/* 화살표 클릭 시 나오는 화면 */}
       {textBoxHeight === 412 && (
         <View style={styles.expandedSection}>
           <ScrollView
@@ -165,8 +172,8 @@ function MainFeedback() {
             <View
               style={{
                 flexDirection: "row",
-                justifyContent: "center", // 가로 방향 중앙 정렬
-                alignItems: "center", // 세로 방향 중앙 정렬
+                justifyContent: "center",
+                alignItems: "center",
                 marginBottom: 12,
               }}
             >
@@ -189,7 +196,7 @@ function MainFeedback() {
             </View>
 
             <Text style={styles.detailText}>
-              {firstfb?.content ? firstfb.content : "로딩 중"}
+              {firstfb?.content ? firstfb.content : "분석 중..."}
             </Text>
           </ScrollView>
         </View>
@@ -216,7 +223,6 @@ function MainFeedback() {
     </View>
   ) : (
     <View style={[styles.container, { minHeight: textBoxHeight }]}>
-      {/* 화살표 버튼 */}
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <Text style={{ fontSize: 16, color: "#191919" }}>
           최근 피드백이 없습니다.
@@ -225,6 +231,7 @@ function MainFeedback() {
     </View>
   );
 }
+
 const styles = StyleSheet.create({
   container: {
     backgroundColor: "#fff",
@@ -241,13 +248,13 @@ const styles = StyleSheet.create({
   },
   headerRow: {
     flexDirection: "row",
-    alignItems: "center",
-    height: 32,
-    marginTop: "3%",
+    alignItems: "baseline",
+    marginTop: 15,
+    marginBottom: 10,
   },
   titleSection: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "baseline",
     flex: 1,
     marginLeft: "4%",
   },
@@ -257,22 +264,24 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     fontWeight: "600",
     textAlign: "left",
+    textAlignVertical: "bottom",
   },
   date: {
     fontSize: 12,
     fontWeight: "400",
     color: "#191919",
     marginLeft: "3%",
-    lineHeight: 34,
+    textAlignVertical: "bottom",
   },
   rightTime: {
     fontSize: 12,
     fontWeight: "400",
     color: "#808080",
-    lineHeight: 34,
     textAlign: "right",
     marginRight: "2%",
     minWidth: 50,
+
+    textAlignVertical: "bottom",
   },
   barRow: {
     width: "95%",
@@ -343,4 +352,5 @@ const styles = StyleSheet.create({
     alignSelf: "center",
   },
 });
+
 export default MainFeedback;
