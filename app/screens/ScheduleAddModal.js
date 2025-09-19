@@ -36,6 +36,10 @@ export default function ScheduleAddModal({
 
   React.useEffect(() => {
     if (visible) {
+      setHour("");
+      setMinute("");
+      setTempHour("00");
+      setTempMinute("00");
       modalAddRef.current?.open();
     } else {
       modalAddRef.current?.close();
@@ -71,8 +75,8 @@ export default function ScheduleAddModal({
   );
 
   const openPicker = () => {
-    setTempHour(hour);
-    setTempMinute(minute);
+    setTempHour(hour || "00");
+    setTempMinute(minute || "00");
     setShowTimePicker(true);
   };
 
@@ -228,11 +232,13 @@ export default function ScheduleAddModal({
         </View>
         <View style={styles.inputRow}>
           <Text style={styles.label}>면접시간</Text>
+          <View style={{flex : 1}}>
           <Pressable style={styles.input} onPress={() => setShowTimePicker(true)}>
             <Text style={{ color: hour && minute ? "#191919" : "#888" }}>
             {hour || minute ? `${hour || "00"}:${minute || "00"}` : "시간을 선택하세요."}</Text>
           </Pressable>
-          {timeRequired && <Text style={styles.required}>*</Text>}
+          {timeRequired && <Text style={styles.errorMsg}>시간을 선택하세요</Text>}
+        </View>
         </View>
         <View style={styles.inputRow}>
           <Text style={styles.label}>중요도</Text>
@@ -307,7 +313,12 @@ export default function ScheduleAddModal({
               backgroundColor: "rgba(0,0,0,0)",
             }}>
             <View style={styles.pickerHeader}>
-              <Pressable onPress={() => setShowTimePicker(false)}>
+              <Pressable onPress={() => {
+               setShowTimePicker(false);
+               // wheel picker의 임시값 초기화
+               setTempHour("00");
+               setTempMinute("00");
+              }}>
                 <Text>취소</Text>
               </Pressable>
               <Pressable onPress={() => {
