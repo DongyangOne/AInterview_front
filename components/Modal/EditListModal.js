@@ -423,7 +423,7 @@ const styles = StyleSheet.create({
     paddingLeft: 20,
     paddingRight: 20,
     paddingTop: 20,
-    paddingBottom: 10,
+    // paddingBottom: 10,
     fontSize: 16,
   },
   buttonContainer: {
@@ -439,6 +439,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 7.5,
   },
   cancelBtn: {
+    marginTop: -3,
     width: 140,
     height: 45,
     borderRadius: 10,
@@ -448,6 +449,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#DDDDDD",
   },
   saveBtn: {
+    marginTop: -3,
     width: 140,
     height: 45,
     borderRadius: 10,

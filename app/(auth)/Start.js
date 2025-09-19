@@ -48,39 +48,6 @@ export default function Start() {
       >
         <Text style={styles.loginBtnText}>아이디로 로그인</Text>
       </TouchableOpacity>
-
-      <View style={styles.divider}>
-        <View style={styles.line} />
-        <Text style={styles.dividerText}>소셜 로그인</Text>
-        <View style={styles.line} />
-      </View>
-
-      <View style={styles.socialIcons}>
-        <TouchableOpacity onPress={() => handleSocialLogin("kakao")}>
-          <Image
-            source={require("../../assets/images/kakao.png")}
-            style={styles.icon}
-          />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => handleSocialLogin("google")}>
-          <Image
-            source={require("../../assets/images/google.png")}
-            style={styles.icon}
-          />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => handleSocialLogin("naver")}>
-          <Image
-            source={require("../../assets/images/naver.png")}
-            style={styles.icon}
-          />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => handleSocialLogin("facebook")}>
-          <Image
-            source={require("../../assets/images/facebook.png")}
-            style={styles.icon}
-          />
-        </TouchableOpacity>
-      </View>
     </View>
   );
 }
@@ -128,31 +95,5 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 14,
     fontWeight: "bold",
-  },
-  divider: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 16,
-    width: "100%",
-  },
-  line: {
-    flex: 1,
-    height: 1,
-    backgroundColor: "#ccc",
-  },
-  dividerText: {
-    marginHorizontal: 10,
-    color: "#808080",
-    fontSize: 12,
-  },
-  socialIcons: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    width: "80%",
-  },
-  icon: {
-    width: 40,
-    height: 40,
-    resizeMode: "contain",
   },
 });
