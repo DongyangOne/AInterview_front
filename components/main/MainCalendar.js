@@ -3,6 +3,7 @@ import { Text, View, TouchableOpacity, StyleSheet } from "react-native";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useIsFocused } from "@react-navigation/native";
+
 // 이번 주(일~토) 날짜 배열 반환
 function getCurrentWeekDates() {
   const today = new Date();
@@ -20,7 +21,9 @@ function WeeklyCalendar() {
   const weekDates = getCurrentWeekDates();
   const today = new Date();
   const [schedules, setSchedules] = useState({});
+  const [schedulesConut, setSchedulesConst] = useState({});
   const isFocused = useIsFocused();
+
   useEffect(() => {
     if (isFocused) {
       const fetchData = async () => {
@@ -44,14 +47,25 @@ function WeeklyCalendar() {
               });
 
               const scheduleMap = {};
+              const scheduleMapC = {}; // 요일별 총 개수 카운터로 사용
+
               weeklyEvents.forEach((item) => {
                 const date = new Date(item.time);
                 const dayIndex = date.getDay(); // 0:일,~6:토
+                const dayIndexC = date.getDay(); // 0:일,~6:토
                 if (!scheduleMap[dayIndex]) scheduleMap[dayIndex] = [];
-                scheduleMap[dayIndex].push(item.title);
+                // 요일별 총 개수 누적 (숫자)
+                if (!scheduleMapC[dayIndexC]) scheduleMapC[dayIndexC] = 0;
+                scheduleMapC[dayIndexC] += 1;
+
+                // 요일별 일정 최대 3개까지만 추가
+                if (scheduleMap[dayIndex].length < 3) {
+                  scheduleMap[dayIndex].push(item.title);
+                }
               });
 
               setSchedules(scheduleMap);
+              setSchedulesConst(scheduleMapC);
               console.log(res.data);
             })
             .catch((err) => {
@@ -75,6 +89,8 @@ function WeeklyCalendar() {
           date.getDate() === today.getDate();
 
         const scheduleText = schedules[date.getDay()];
+        // 해당 요일의 총 일정 개수 (없으면 0)
+        const scheduleCount = schedulesConut[date.getDay()] || 0;
 
         return (
           <TouchableOpacity
@@ -94,6 +110,9 @@ function WeeklyCalendar() {
                       {t}
                     </Text>
                   ))}
+                {scheduleCount > 3 && (
+                  <Text style={styles.countText}>+{scheduleCount - 3}</Text>
+                )}
               </>
             ) : (
               <>
@@ -105,6 +124,9 @@ function WeeklyCalendar() {
                       {t}
                     </Text>
                   ))}
+                {scheduleCount > 3 && (
+                  <Text style={styles.countText}>+{scheduleCount - 3}</Text>
+                )}
               </>
             )}
           </TouchableOpacity>
@@ -184,5 +206,10 @@ const styles = StyleSheet.create({
     maxWidth: 40,
     lineHeight: 10,
     alignSelf: "center",
+  },
+  countText: {
+    fontSize: 10,
+    color: "#888",
+    marginTop: 4,
   },
 });
