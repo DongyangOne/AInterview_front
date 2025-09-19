@@ -36,17 +36,28 @@ export default function ScheduleAddModal({
 
   React.useEffect(() => {
     if (visible) {
+      setHour("");
+      setMinute("");
+      setTempHour("00");
+      setTempMinute("00");
       modalAddRef.current?.open();
     } else {
       modalAddRef.current?.close();
     }
   }, [visible]);
 
+  React.useEffect(() => {
+    // 시간 또는 분이 변경되면 별도 처리 가능 (필요시)
+    console.log("시간 변경: ", hour, minute);
+  }, [hour, minute]);
+
   const [title, setTitle] = useState("");
-  const [hour, setHour] = useState("10");
-  const [minute, setMinute] = useState("00");
+  const [hour, setHour] = useState("");
+  const [minute, setMinute] = useState("");
+  const [tempHour, setTempHour] = useState("00");
+  const [tempMinute, setTempMinute] = useState("00");
   // 중요도 초기값 반드시 API value ("S"/"I"/"N")
-  const [priority, setPriority] = useState("I");
+  const [priority, setPriority] = useState("");
   const [memo, setMemo] = useState("");
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [titleRequired, setTitleRequired] = useState(false);
@@ -63,6 +74,12 @@ export default function ScheduleAddModal({
     []
   );
 
+  const openPicker = () => {
+    setTempHour(hour || "00");
+    setTempMinute(minute || "00");
+    setShowTimePicker(true);
+  };
+
   // API 요구 포맷으로 반환 (예: 2025-09-13 10:00:00)
   const getApiDateTime = () => {
     // selectedDate가 JS Date 객체이어야 함!
@@ -70,21 +87,42 @@ export default function ScheduleAddModal({
     const yyyy = dateObj.getFullYear();
     const mm = pad(dateObj.getMonth() + 1);
     const dd = pad(dateObj.getDate());
+    const h = hour !== "" ? pad(hour) : "00";
+    const m = minute !== "" ? pad(minute) : "00";
     return `${yyyy}-${mm}-${dd} ${pad(hour)}:${pad(minute)}:00`;
   };
 
   const handleSave = () => {
     const isTitleValid = title.trim() !== "";
+    if (!isTitleValid) {
+        setTitleRequired(true);
+        setPriorityRequired(false);
+        setTimeRequired(false);
+        return;
+      } else {
+        setTitleRequired(false);
+      }
+
     const isTimeValid = hour !== "" && minute !== "";
-    const isPriorityValid = !!priority;
+        if (!isTimeValid) {
+            setTimeRequired(true);
+            return;
+          } else {
+            setTimeRequired(false);
+          }
 
-    setTitleRequired(!isTitleValid);
-    setTimeRequired(!isTimeValid);
-    setPriorityRequired(!isPriorityValid);
+    const isPriorityValid = priority !== "";
+    if (!isPriorityValid) {
+        setPriorityRequired(true);
+        setTimeRequired(false);
+        return;
+      } else {
+        setPriorityRequired(false);
+      }
 
-    if (!isTitleValid || !isTimeValid || !isPriorityValid || title.length > 7) {
-      return;
-    }
+      if (title.length > 7) {
+        return;
+      }
 
     AsyncStorage.getItem("userId")
       .then((userId) => {
@@ -126,9 +164,9 @@ export default function ScheduleAddModal({
 
   const handleCancel = () => {
     setTitle("");
-    setHour("10");
-    setMinute("00");
-    setPriority("I");
+    setHour("");
+    setMinute("");
+    setPriority("");
     setMemo("");
     setSaveError("");
     onClose && onClose();
@@ -175,11 +213,14 @@ export default function ScheduleAddModal({
               style={styles.input}
               value={title}
               onChangeText={(text) => {
-                setTitle(text);
-                setTitleRequired(false);
-                setSaveError("");
+                if (text.length <= 7) {
+                  setTitle(text);
+                  setTitleRequired(false);
+                  setSaveError("");
+                }
               }}
               placeholder="제목을 입력하세요"
+              maxLength={7}
             />
             {titleRequired && (
               <Text style={styles.errorMsg}>제목을 입력해주세요</Text>
@@ -191,21 +232,28 @@ export default function ScheduleAddModal({
         </View>
         <View style={styles.inputRow}>
           <Text style={styles.label}>면접시간</Text>
+          <View style={{flex : 1}}>
           <Pressable style={styles.input} onPress={() => setShowTimePicker(true)}>
-            <Text>{`${hour}:${minute}`}</Text>
+            <Text style={{ color: hour && minute ? "#191919" : "#888" }}>
+            {hour || minute ? `${hour || "00"}:${minute || "00"}` : "시간을 선택하세요."}</Text>
           </Pressable>
-          {timeRequired && <Text style={styles.required}>*</Text>}
+          {timeRequired && <Text style={styles.errorMsg}>시간을 선택해 주세요.</Text>}
+        </View>
         </View>
         <View style={styles.inputRow}>
           <Text style={styles.label}>중요도</Text>
+          <View style={{flex : 1}}>
           <View style={styles.priorityBox}>
-            {importanceOptions.map((opt) => (
+            {importanceOptions.map((opt) => {
+            const selected = priority === opt.value;
+            return (
               <Pressable
                 key={opt.value}
                 style={[
                   styles.priorityBtn,
                   { borderColor: opt.color },
-                  priority === opt.value && { backgroundColor: opt.color },
+                  selected && { backgroundColor: opt.color, borderWidth: 2 },
+                  !selected && { backgroundColor: "#fff", borderWidth: 2 },
                 ]}
                 onPress={() => {
                   setPriority(opt.value);
@@ -214,17 +262,20 @@ export default function ScheduleAddModal({
               >
                 <Text
                   style={[
-                    { color: opt.color, fontSize: 12 },
-                    priority === opt.value && styles.selectedText,
-                    opt.value === "N" && { textAlign: "center" },
+                    { color: opt.color, fontSize: 13, fontWeight: 600, textAlign: "center"},
+                    selected && { color: "#fff" },
                   ]}
                 >
                   {opt.label}
                 </Text>
               </Pressable>
-            ))}
+              );
+            })}
           </View>
-          {priorityRequired && <Text style={styles.required}>*</Text>}
+          {priorityRequired && (
+            <Text style={styles.errorMsg}>중요도를 선택해 주세요</Text>
+          )}
+          </View>
         </View>
         <View style={styles.inputRow}>
           <Text style={styles.label}>메모</Text>
@@ -232,8 +283,13 @@ export default function ScheduleAddModal({
             style={styles.memoInput}
             multiline
             value={memo}
-            onChangeText={setMemo}
+            onChangeText={(text) => {
+            if (text.length <= 49) {  // 50자 미만(49자 이하) 제한
+                setMemo(text);
+              }
+            }}
             placeholder="메모를 입력하세요"
+            maxLength={49}
           />
         </View>
         {saveError !== "" && <Text style={styles.errorMsg}>{saveError}</Text>}
@@ -257,10 +313,19 @@ export default function ScheduleAddModal({
               backgroundColor: "rgba(0,0,0,0)",
             }}>
             <View style={styles.pickerHeader}>
-              <Pressable onPress={() => setShowTimePicker(false)}>
+              <Pressable onPress={() => {
+               setShowTimePicker(false);
+               // wheel picker의 임시값 초기화
+               setTempHour("00");
+               setTempMinute("00");
+              }}>
                 <Text>취소</Text>
               </Pressable>
-              <Pressable onPress={() => setShowTimePicker(false)}>
+              <Pressable onPress={() => {
+              setShowTimePicker(false);
+              setHour(tempHour);
+              setMinute(tempMinute);
+              }}>
                 <Text style={{ color: "#5B28EB" }}>확인</Text>
               </Pressable>
             </View>
@@ -268,20 +333,22 @@ export default function ScheduleAddModal({
               <WheelPickerExpo
                 height={150}
                 width={100}
+                initialSelectedIndex={tempHour ? hourList.indexOf(tempHour) : 0}
                 items={hourList.map((h) => ({
                   label: `${h}시`,
                   value: h,
                 }))}
-                onChange={({ item }) => setHour(item.value)}
+                onChange={({ item }) => setTempHour(item.value)}
               />
               <WheelPickerExpo
                 height={150}
                 width={100}
+                initialSelectedIndex={tempMinute ? minuteList.indexOf(tempMinute) : 0}
                 items={minuteList.map((m) => ({
                   label: `${m}분`,
                   value: m,
                 }))}
-                onChange={({ item }) => setMinute(item.value)}
+                onChange={({ item }) => setTempMinute(item.value)}
               />
             </View>
           </View>
@@ -370,6 +437,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     paddingBottom: 20,
     justifyContent: "center",
+    height: 270
   },
   errorMsg: {
     color: "#FF5A5A",
