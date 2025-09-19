@@ -7,41 +7,17 @@ export default function SignUp() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>소셜 계정으로 가입하기</Text>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.back()}>
+          <Image
+            source={require("../../assets/icons/bell_arrow.png")}
+            style={{ width: 24, height: 48 }}
+            resizeMode="contain"
+          />
+        </TouchableOpacity>
 
-      <View style={styles.socialRow}>
-        <TouchableOpacity>
-          <Image
-            source={require("../../assets/images/kakao.png")}
-            style={styles.icon}
-          />
-        </TouchableOpacity>
-        <TouchableOpacity>
-          <Image
-            source={require("../../assets/images/google.png")}
-            style={styles.icon}
-          />
-        </TouchableOpacity>
-        <TouchableOpacity>
-          <Image
-            source={require("../../assets/images/naver.png")}
-            style={styles.icon}
-          />
-        </TouchableOpacity>
-        <TouchableOpacity>
-          <Image
-            source={require("../../assets/images/facebook.png")}
-            style={styles.icon}
-          />
-        </TouchableOpacity>
+        <Text style={styles.headerText}>회원가입</Text>
       </View>
-
-      <View style={styles.separatorWrap}>
-        <View style={styles.separator} />
-        <Text style={styles.or}>또는</Text>
-        <View style={styles.separator} />
-      </View>
-
       <TouchableOpacity
         style={styles.button}
         onPress={() => router.push("/(auth)/SignUpForm")}
@@ -65,41 +41,25 @@ export default function SignUp() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 30,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "white",
+    paddingHorizontal: 24,
+    paddingTop: 40,
+    backgroundColor: "#fff",
   },
-  title: {
-    fontSize: 14,
-    marginBottom: 20,
-  },
-  socialRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    width: "70%",
-    marginBottom: 30,
-  },
-  icon: {
-    width: 40,
-    height: 40,
-    marginHorizontal: 8,
-  },
-  separatorWrap: {
+  header: {
+    height: 56,
     flexDirection: "row",
     alignItems: "center",
-    marginVertical: 10,
-    width: "80%",
+    backgroundColor: "#fff",
+    marginBottom: 300,
   },
-  separator: {
-    flex: 1,
-    height: 1,
-    backgroundColor: "#ccc",
-  },
-  or: {
-    marginHorizontal: 8,
-    fontSize: 12,
-    color: "#777",
+  headerText: {
+    position: "absolute",
+    left: 50,
+    right: 50,
+    textAlign: "center",
+    fontSize: 20,
+    fontWeight: "400",
+    color: "#191919",
   },
   button: {
     backgroundColor: "#5900FF",
@@ -118,6 +78,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
     fontSize: 12,
     color: "#777",
+    textAlign: "center",
   },
   link: {
     color: "#5900FF",

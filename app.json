@@ -22,7 +22,7 @@
     },
 
     "android": {
-      "package": "com.dana7259.ainterviewfront",
+      "package": "com.example.ainterviewfront",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -36,16 +36,6 @@
       "favicon": "./assets/images/favicon.png"
     },
 
-    "plugins": [
-      [
-        "@react-native-seoul/kakao-login",
-        {
-          "kakaoAppKey": "44682a4b6329aa1fc5f9ddf575f9bf2a"
-        }
-      ],
-      "expo-router"
-    ],
-
     "experiments": {
       "typedRoutes": true
     },
@@ -55,8 +45,6 @@
       "eas": {
         "projectId": "76a53025-9fcf-4966-8b97-149ba97debf4"
       }
-    },
-
-    "owner": "dana7259"
+    }
   }
 }
