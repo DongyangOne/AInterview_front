@@ -188,9 +188,7 @@ if (data.created_at) {
           <Text style={styles.graphTitle}>사용자 분석 그래프</Text>
           <RadarChart data={scores} />
 
-          <Text style={styles.improvementText}>
-            저번보다 <Text style={styles.highlight}>자세</Text>이(가) 더 좋아졌어요!
-          </Text>
+            {/*저번보다 OO이(가) 더 좋아졌어요! text style : improvementText*/}
 
           <Text style={styles.feedbackTitle}>피드백 및 평가</Text>
 
