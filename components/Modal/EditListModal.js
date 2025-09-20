@@ -167,16 +167,14 @@ const EditListModal = ({
     setTitleInputText(text);
   };
 
+
+
   const handleMemoChange = (text) => {
+    setMemoInputText(text); // 그냥 그대로 저장
     const cleanedText = (text ?? "").replace(/\r?\n/g, "");
-    if (cleanedText.length > 50) {
-      setOpen(true);
-      setMemoInputText(text.substring(0, text.length - (cleanedText.length - 50)));
-    } else {
-      setOpen(false);
-      setMemoInputText(text);
-    }
+    setMemoNum(cleanedText.length);
   };
+
 
   useEffect(() => {
     if (open) {
@@ -187,11 +185,20 @@ const EditListModal = ({
     }
   }, [open]);
 
+
+
   const handleSaveMemo = async () => {
     const memoToSave = (memoInputText ?? "").replace(/\r?\n/g, "");
+
+    if (memoToSave.length > 50) {
+      setOpen(true); // 글자 수 제한 모달 띄움
+      return;
+    }
+
     await changeMemo(selectedId, memoToSave);
     setMemoModalVisible(false);
   };
+
 
   const handleSaveTitle = async () => {
     await changeTitle(selectedId, titleInputText);
