@@ -169,6 +169,9 @@ export default function ScheduleAddModal({
     setPriority("");
     setMemo("");
     setSaveError("");
+    setTitleRequired(false);
+    setTimeRequired(false);
+    setPriorityRequired(false);
     onClose && onClose();
   };
 
