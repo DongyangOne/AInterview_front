@@ -1,3 +1,4 @@
+// Feedback_result.js
 import { useRouter, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState, useMemo } from "react";
 import axios from "axios";
@@ -53,6 +54,7 @@ export default function FeedbackResult() {
     understanding: 0,
   });
 
+  // 로딩/에러
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
@@ -138,6 +140,9 @@ export default function FeedbackResult() {
 
   const bestAspectLabel = LABELS_KO[bestAspectKey] || "자세";
 
+  // 🔐 제목 길이에 따라 레이아웃 분기 (10자 이상 ⇒ 두 줄)
+  const isLongTitle = (title || "피드백")?.length >= 10;
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff", paddingTop: 0 }}>
       <View style={styles.container}>
@@ -157,12 +162,32 @@ export default function FeedbackResult() {
           </TouchableOpacity>
         </View>
 
-        <View style={styles.headerBlock}>
-          <Text style={styles.topTitle} numberOfLines={1} ellipsizeMode="tail">
-            {title || "피드백"}
-          </Text>
-          <Text style={styles.dateLine}>{createdAt || "날짜 없음"}</Text>
-        </View>
+        {/* ✅ 조건부 레이아웃 */}
+        {!isLongTitle ? (
+          // 한 줄: 제목(왼쪽) + 날짜(오른쪽)
+          <View style={styles.headerRow}>
+            <Text
+              style={[styles.topTitle, styles.topTitleRow]}
+              numberOfLines={1}
+              ellipsizeMode="tail"
+            >
+              {title || "피드백"}
+            </Text>
+            <Text style={styles.date}>{createdAt || "날짜 없음"}</Text>
+          </View>
+        ) : (
+          // 두 줄: 1줄 - 제목 / 2줄 - 날짜(오른쪽 정렬)
+          <View style={styles.headerCol}>
+            <Text
+              style={styles.topTitle}
+              numberOfLines={1}
+              ellipsizeMode="tail"
+            >
+              {title || "피드백"}
+            </Text>
+            <Text style={styles.dateRight}>{createdAt || "날짜 없음"}</Text>
+          </View>
+        )}
 
         {isPinned && (
           <Image
@@ -309,8 +334,33 @@ const styles = StyleSheet.create({
     resizeMode: "contain",
   },
 
-  headerBlock: {
+  /** 기본: 한 줄(제목-날짜) */
+  headerRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginTop: 30,
+    width: "100%",
+  },
+  // 한 줄 레이아웃에서 제목이 너무 길 때 오른쪽 날짜를 침범하지 않도록
+  topTitleRow: {
+    flexShrink: 1,
+    marginRight: 8,
+  },
+
+  /** 10자 이상일 때: 두 줄(제목 / 날짜 오른쪽) */
+  headerCol: {
+    marginTop: 30,
+    width: "100%",
+  },
+  dateRight: {
+    marginTop: 6,
+    fontSize: 18,
+    fontWeight: "300",
+    fontFamily: "Pretendard",
+    color: "#808080",
+    textAlign: "right",
+    alignSelf: "flex-end",
     width: "100%",
   },
 
@@ -330,9 +380,8 @@ const styles = StyleSheet.create({
     fontFamily: "Pretendard",
     color: "#191919",
   },
-  dateLine: {
-    marginTop: 6,
-    fontSize: 16,
+  date: {
+    fontSize: 18,
     fontWeight: "300",
     fontFamily: "Pretendard",
     color: "#808080",
@@ -411,4 +460,3 @@ const styles = StyleSheet.create({
     marginBottom: 104,
   },
 });
-
