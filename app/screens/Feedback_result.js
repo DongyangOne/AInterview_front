@@ -16,16 +16,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import Feedback_resultModal from "../../components/Modal/Feedback_resultModal";
 import RadarChart from "../../components/Modal/RadarChart";
 
-const today = new Date();
-const formattedDate = today
-  .toLocaleDateString("ko-KR", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  })
-  .replace(/\. /g, ".")
-  .replace(/\.$/, "");
-
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 const LABELS_KO = {
@@ -77,17 +67,9 @@ export default function FeedbackResult() {
       try {
         setLoading(true);
         setError(null);
-        const res = await api
-          .get(`/feedback/${encodeURIComponent(userId)}/${encodeURIComponent(feedbackId)}`)
-          .then((r) => {
-            console.log("가져온 데이터", {
-              userId,
-              feedbackId,
-              title,
-              status: r?.status,
-            });
-            return r;
-          });
+        const res = await api.get(
+          `/feedback/${encodeURIComponent(userId)}/${encodeURIComponent(feedbackId)}`
+        );
         const data = res.data?.data || {};
 
         if (data.created_at) {
@@ -140,9 +122,6 @@ export default function FeedbackResult() {
 
   const bestAspectLabel = LABELS_KO[bestAspectKey] || "자세";
 
-  // 🔐 제목 길이에 따라 레이아웃 분기 (10자 이상 ⇒ 두 줄)
-  const isLongTitle = (title || "피드백")?.length >= 10;
-
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff", paddingTop: 0 }}>
       <View style={styles.container}>
@@ -162,32 +141,17 @@ export default function FeedbackResult() {
           </TouchableOpacity>
         </View>
 
-        {/* ✅ 조건부 레이아웃 */}
-        {!isLongTitle ? (
-          // 한 줄: 제목(왼쪽) + 날짜(오른쪽)
-          <View style={styles.headerRow}>
-            <Text
-              style={[styles.topTitle, styles.topTitleRow]}
-              numberOfLines={1}
-              ellipsizeMode="tail"
-            >
+        {/* 제목(좌 65% - 자동 줄바꿈) + 날짜(우 35% - 우측 하단 고정) */}
+        <View style={styles.headerGrid}>
+          <View style={styles.headerLeft}>
+            <Text style={styles.topTitleWrap}>
               {title || "피드백"}
             </Text>
+          </View>
+          <View style={styles.headerRight}>
             <Text style={styles.date}>{createdAt || "날짜 없음"}</Text>
           </View>
-        ) : (
-          // 두 줄: 1줄 - 제목 / 2줄 - 날짜(오른쪽 정렬)
-          <View style={styles.headerCol}>
-            <Text
-              style={styles.topTitle}
-              numberOfLines={1}
-              ellipsizeMode="tail"
-            >
-              {title || "피드백"}
-            </Text>
-            <Text style={styles.dateRight}>{createdAt || "날짜 없음"}</Text>
-          </View>
-        )}
+        </View>
 
         {isPinned && (
           <Image
@@ -327,41 +291,47 @@ const styles = StyleSheet.create({
     color: "#191919",
     fontFamily: "Pretendard",
   },
-  // 🔍 점 3개 아이콘 크게
   dotsIcon: {
     width: 36,
     height: 36,
     resizeMode: "contain",
   },
 
-  /** 기본: 한 줄(제목-날짜) */
-  headerRow: {
+  /** ⬇️ 2-칼럼 헤더: 제목(좌) + 날짜(우 하단) */
+  headerGrid: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    // 두 칼럼 높이를 가장 긴 쪽에 맞춤 → 오른쪽을 하단 정렬 가능
+    alignItems: "stretch",
     marginTop: 30,
     width: "100%",
   },
-  // 한 줄 레이아웃에서 제목이 너무 길 때 오른쪽 날짜를 침범하지 않도록
-  topTitleRow: {
-    flexShrink: 1,
-    marginRight: 8,
+  headerLeft: {
+    width: "65%",
+    paddingRight: 8,
+    alignSelf: "stretch",
+  },
+  headerRight: {
+    width: "35%",
+    alignItems: "flex-end",   // 가로: 오른쪽
+    justifyContent: "flex-end", // 세로: 하단
+    alignSelf: "stretch",
   },
 
-  /** 10자 이상일 때: 두 줄(제목 / 날짜 오른쪽) */
-  headerCol: {
-    marginTop: 30,
-    width: "100%",
+  /** 제목: ‘중간 정도’ 크기 + 줄바꿈 허용 */
+  topTitleWrap: {
+    fontSize: 16,
+    lineHeight: 22,
+    fontWeight: "700",
+    fontFamily: "Pretendard",
+    color: "#191919",
   },
-  dateRight: {
-    marginTop: 6,
-    fontSize: 18,
+
+  /** 날짜: 우측 하단 고정 */
+  date: {
+    fontSize: 15,
     fontWeight: "300",
     fontFamily: "Pretendard",
     color: "#808080",
-    textAlign: "right",
-    alignSelf: "flex-end",
-    width: "100%",
   },
 
   fullLine: {
@@ -373,18 +343,6 @@ const styles = StyleSheet.create({
     borderRadius: 3,
     elevation: 0,
     zIndex: 0,
-  },
-  topTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-    fontFamily: "Pretendard",
-    color: "#191919",
-  },
-  date: {
-    fontSize: 18,
-    fontWeight: "300",
-    fontFamily: "Pretendard",
-    color: "#808080",
   },
 
   graphTitle: {
