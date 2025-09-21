@@ -171,6 +171,10 @@ const EditListModal = ({
   const handleMemoChange = (text) => {
     setMemoInputText(text);
     const cleanedText = (text ?? "").replace(/\r?\n/g, "");
+
+    if (cleanedText.length > 50) {
+      setOpen(true);
+    }
     setMemoNum(cleanedText.length);
   };
 
