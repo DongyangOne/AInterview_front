@@ -1,4 +1,3 @@
-// Feedback_result.js
 import { useRouter, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState, useMemo } from "react";
 import axios from "axios";
@@ -54,7 +53,6 @@ export default function FeedbackResult() {
     understanding: 0,
   });
 
-  // 로딩/에러
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
@@ -90,15 +88,14 @@ export default function FeedbackResult() {
           });
         const data = res.data?.data || {};
 
-if (data.created_at) {
-  const date = new Date(data.created_at);
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, "0");
-  const d = String(date.getDate()).padStart(2, "0");
-  const formatted = `${y}년 ${m}월 ${d}일`;
-  setCreatedAt(formatted);
-}
-
+        if (data.created_at) {
+          const date = new Date(data.created_at);
+          const y = date.getFullYear();
+          const m = String(date.getMonth() + 1).padStart(2, "0");
+          const d = String(date.getDate()).padStart(2, "0");
+          const formatted = `${y}년 ${m}월 ${d}일`;
+          setCreatedAt(formatted);
+        }
 
         // 응답 값 매핑
         setPros(data.good || "");
@@ -160,9 +157,11 @@ if (data.created_at) {
           </TouchableOpacity>
         </View>
 
-        <View style={styles.headerRow}>
-          <Text style={styles.topTitle}>{title || "피드백"}</Text>
-          <Text style={styles.date}>{createdAt || "날짜 없음"}</Text>
+        <View style={styles.headerBlock}>
+          <Text style={styles.topTitle} numberOfLines={1} ellipsizeMode="tail">
+            {title || "피드백"}
+          </Text>
+          <Text style={styles.dateLine}>{createdAt || "날짜 없음"}</Text>
         </View>
 
         {isPinned && (
@@ -174,8 +173,8 @@ if (data.created_at) {
               top: 125,
               width: 50,
               height: 70,
-              zIndex:1,
-              elevation:30,
+              zIndex: 1,
+              elevation: 30,
             }}
           />
         )}
@@ -188,7 +187,7 @@ if (data.created_at) {
           <Text style={styles.graphTitle}>사용자 분석 그래프</Text>
           <RadarChart data={scores} />
 
-            {/*저번보다 OO이(가) 더 좋아졌어요! text style : improvementText*/}
+          {/*저번보다 OO이(가) 더 좋아졌어요! text style : improvementText*/}
 
           <Text style={styles.feedbackTitle}>피드백 및 평가</Text>
 
@@ -236,7 +235,6 @@ if (data.created_at) {
             showSoftInputOnFocus={false}
             underlineColorAndroid="transparent"
           />
-
         </View>
       </ScrollView>
 
@@ -288,7 +286,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     height: 56,
-    paddingTop:10,
+    paddingTop: 10,
     paddingBottom: 22,
     paddingHorizontal: 0,
     backgroundColor: "#fff",
@@ -310,13 +308,12 @@ const styles = StyleSheet.create({
     height: 36,
     resizeMode: "contain",
   },
-  headerRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+
+  headerBlock: {
     marginTop: 30,
     width: "100%",
   },
+
   fullLine: {
     height: 5,
     backgroundColor: "#DDDDDD",
@@ -324,8 +321,8 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     marginTop: 7,
     borderRadius: 3,
-    elevation:0,
-    zIndex:0,
+    elevation: 0,
+    zIndex: 0,
   },
   topTitle: {
     fontSize: 18,
@@ -333,19 +330,21 @@ const styles = StyleSheet.create({
     fontFamily: "Pretendard",
     color: "#191919",
   },
-  date: {
-    fontSize: 18,
+  dateLine: {
+    marginTop: 6,
+    fontSize: 16,
     fontWeight: "300",
     fontFamily: "Pretendard",
     color: "#808080",
   },
+
   graphTitle: {
     textAlign: "center",
     fontSize: 18,
     fontWeight: "300",
     fontFamily: "Pretendard",
     color: "#191919",
-    marginTop:35,
+    marginTop: 35,
     marginBottom: 16,
   },
   improvementText: {
@@ -409,7 +408,7 @@ const styles = StyleSheet.create({
     marginTop: 17,
     textAlignVertical: "top",
     fontFamily: "Pretendard",
-    marginBottom:104,
+    marginBottom: 104,
   },
-
 });
+
