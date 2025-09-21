@@ -158,7 +158,7 @@ const EditListModal = ({
   };
 
   const handleTitleChange = (text) => {
-    if (text.length >= 20) {
+    if (text.length > 20) {
       setOpen(true);
     } else {
       setOpen(false);
