@@ -158,7 +158,7 @@ const EditListModal = ({
     };
 
     const handleTitleChange = (text) => {
-        if (text.length > 20) {
+        if (text.length >= 20) {
             setOpen(true);
         } else {
             setOpen(false);
@@ -167,12 +167,14 @@ const EditListModal = ({
     };
 
     const handleMemoChange = (text) => {
-            setMemoInputText(text);
         const cleanedText = (text ?? "").replace(/\r?\n/g, "");
         if (cleanedText.length > 50) {
             setOpen(true);
+            setMemoInputText(text.substring(0, text.length - (cleanedText.length - 50)));
+        } else {
+            setOpen(false);
+            setMemoInputText(text);
         }
-        setMemoNum(cleanedText.length);
     };
 
     useEffect(() => {
@@ -186,10 +188,6 @@ const EditListModal = ({
 
     const handleSaveMemo = async () => {
         const memoToSave = (memoInputText ?? "").replace(/\r?\n/g, "");
-        if(memoToSave.length>50) {
-        setOpen(true);
-        return;
-        }
         await changeMemo(selectedId, memoToSave);
         setMemoModalVisible(false);
     };
