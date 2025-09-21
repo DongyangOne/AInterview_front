@@ -183,7 +183,7 @@ const EditListModal = ({
     if (open) {
       const timer = setTimeout(() => {
         setOpen(false);
-      }, 3000);
+      }, 2000);
       return () => clearTimeout(timer);
     }
   }, [open]);
