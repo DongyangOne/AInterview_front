@@ -95,7 +95,6 @@ const EditListModal = ({
         const updatedFeedback = res.data;
         onUpdateMemo(itemId, newMemo);
         console.log("수정된 데이터:", updatedFeedback);
-        console.log(url);
       } else {
         console.log("userId가 저장되어 있지 않습니다.");
       }
@@ -170,7 +169,7 @@ const EditListModal = ({
 
 
   const handleMemoChange = (text) => {
-    setMemoInputText(text); // 그냥 그대로 저장
+    setMemoInputText(text);
     const cleanedText = (text ?? "").replace(/\r?\n/g, "");
     setMemoNum(cleanedText.length);
   };
@@ -191,7 +190,7 @@ const EditListModal = ({
     const memoToSave = (memoInputText ?? "").replace(/\r?\n/g, "");
 
     if (memoToSave.length > 50) {
-      setOpen(true); // 글자 수 제한 모달 띄움
+      setOpen(true);
       return;
     }
 
@@ -295,6 +294,7 @@ const EditListModal = ({
               onChangeText={handleMemoChange}
               multiline={true}
               textAlignVertical="top"
+              maxLength={50}
             />
             {open ? (<Modal visible={open} transparent={true} animationType="fade">
               <View style={styles.limitModal2}>
