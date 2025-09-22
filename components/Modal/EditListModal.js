@@ -95,7 +95,6 @@ const EditListModal = ({
         const updatedFeedback = res.data;
         onUpdateMemo(itemId, newMemo);
         console.log("수정된 데이터:", updatedFeedback);
-        console.log(url);
       } else {
         console.log("userId가 저장되어 있지 않습니다.");
       }
@@ -159,41 +158,59 @@ const EditListModal = ({
   };
 
   const handleTitleChange = (text) => {
-    if (text.length >= 20) {
+    if (text.length > 20) {
       setOpen(true);
-    } else {
-      setOpen(false);
+      return;
     }
     setTitleInputText(text);
   };
 
+
+
   const handleMemoChange = (text) => {
+
     const cleanedText = (text ?? "").replace(/\r?\n/g, "");
+
     if (cleanedText.length > 50) {
       setOpen(true);
-      setMemoInputText(text.substring(0, text.length - (cleanedText.length - 50)));
-    } else {
-      setOpen(false);
-      setMemoInputText(text);
+      return;
     }
+    setMemoInputText(text);
+    setMemoNum(cleanedText.length);
   };
+
 
   useEffect(() => {
     if (open) {
       const timer = setTimeout(() => {
         setOpen(false);
-      }, 3000);
+      }, 2000);
       return () => clearTimeout(timer);
     }
   }, [open]);
 
+
+
   const handleSaveMemo = async () => {
     const memoToSave = (memoInputText ?? "").replace(/\r?\n/g, "");
+
+    if (memoToSave.length > 50) {
+      setOpen(true);
+      return;
+    }
+
     await changeMemo(selectedId, memoToSave);
     setMemoModalVisible(false);
   };
 
+
   const handleSaveTitle = async () => {
+
+    if (titleInputText.length > 20) {
+      setOpen(true);
+      return;
+    }
+
     await changeTitle(selectedId, titleInputText);
     setTitleModalVisible(false);
   };
@@ -240,7 +257,6 @@ const EditListModal = ({
               style={styles.textInput}
               value={titleInputText}
               onChangeText={handleTitleChange}
-              maxLength={20}
             />
             {open ? (<Modal visible={open} transparent={true} animationType="fade">
               <View style={styles.limitModal}>

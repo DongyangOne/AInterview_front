@@ -349,7 +349,7 @@ export default function Feedback() {
               </View>
 
               <View style={{ paddingLeft: 17, paddingRight: 17 }}>
-                <Text style={styles.titleText}>{item.title}</Text>
+                <Text style={styles.titleText}>{item.title?.length > 15 ? item.title.substring(0, 15) + "..." : item.title}</Text>
                 <Text
                   style={styles.memoText}
                   //말줄임표
