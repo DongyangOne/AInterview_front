@@ -44,6 +44,9 @@ export default function FeedbackResult() {
     understanding: 0,
   });
 
+  // 🔹 제목 줄 수 추적(기본 1줄)
+  const [titleLineCount, setTitleLineCount] = useState(1);
+
   // 로딩/에러
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -122,6 +125,11 @@ export default function FeedbackResult() {
 
   const bestAspectLabel = LABELS_KO[bestAspectKey] || "자세";
 
+  // 🔹 제목 lineHeight(아래 style과 동일 값)
+  const TITLE_LINE_HEIGHT = 22;
+  // 🔹 북마크 top: 기본 125 + (줄바꿈 수 * lineHeight)
+  const bookmarkTop = 125 + Math.max(0, titleLineCount - 1) * TITLE_LINE_HEIGHT;
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff", paddingTop: 0 }}>
       <View style={styles.container}>
@@ -144,7 +152,14 @@ export default function FeedbackResult() {
         {/* 제목(좌 65% - 자동 줄바꿈) + 날짜(우 35% - 우측 하단 고정) */}
         <View style={styles.headerGrid}>
           <View style={styles.headerLeft}>
-            <Text style={styles.topTitleWrap}>
+            <Text
+              style={styles.topTitleWrap}
+              // 🔹 실제 렌더링된 줄 수를 받아서 상태에 반영
+              onTextLayout={(e) => {
+                const lines = e?.nativeEvent?.lines?.length ?? 1;
+                setTitleLineCount(lines);
+              }}
+            >
               {title || "피드백"}
             </Text>
           </View>
@@ -156,10 +171,11 @@ export default function FeedbackResult() {
         {isPinned && (
           <Image
             source={require("../../assets/icons/bookmark.png")}
+            // 🔹 제목이 줄바꿈되면(top 증가) 그만큼만 자동으로 아래로 이동
             style={{
               position: "absolute",
               right: 18,
-              top: 125,
+              top: bookmarkTop,
               width: 50,
               height: 70,
               zIndex: 1,
@@ -328,7 +344,7 @@ const styles = StyleSheet.create({
 
   /** 날짜: 우측 하단 고정 */
   date: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: "300",
     fontFamily: "Pretendard",
     color: "#808080",
