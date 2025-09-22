@@ -160,8 +160,7 @@ const EditListModal = ({
   const handleTitleChange = (text) => {
     if (text.length > 20) {
       setOpen(true);
-    } else {
-      setOpen(false);
+      return;
     }
     setTitleInputText(text);
   };
@@ -169,12 +168,14 @@ const EditListModal = ({
 
 
   const handleMemoChange = (text) => {
-    setMemoInputText(text);
+
     const cleanedText = (text ?? "").replace(/\r?\n/g, "");
 
     if (cleanedText.length > 50) {
       setOpen(true);
+      return;
     }
+    setMemoInputText(text);
     setMemoNum(cleanedText.length);
   };
 
@@ -204,6 +205,12 @@ const EditListModal = ({
 
 
   const handleSaveTitle = async () => {
+
+    if (titleInputText.length > 20) {
+      setOpen(true);
+      return;
+    }
+
     await changeTitle(selectedId, titleInputText);
     setTitleModalVisible(false);
   };
@@ -250,7 +257,6 @@ const EditListModal = ({
               style={styles.textInput}
               value={titleInputText}
               onChangeText={handleTitleChange}
-              maxLength={20}
             />
             {open ? (<Modal visible={open} transparent={true} animationType="fade">
               <View style={styles.limitModal}>
@@ -298,7 +304,6 @@ const EditListModal = ({
               onChangeText={handleMemoChange}
               multiline={true}
               textAlignVertical="top"
-              maxLength={50}
             />
             {open ? (<Modal visible={open} transparent={true} animationType="fade">
               <View style={styles.limitModal2}>
