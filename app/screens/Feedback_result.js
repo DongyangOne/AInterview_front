@@ -53,7 +53,8 @@ export default function FeedbackResult() {
     tone: 0,
     understanding: 0,
   });
-
+  //이전 피드백 육각형 데이터 비교해서 가장 많이 증가한 데이터
+  const [mostImproved, setMostImproved] = useState([]);
   // 로딩/에러
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -61,8 +62,12 @@ export default function FeedbackResult() {
   const [isPinned, setIsPinned] = useState(false);
 
   const params = useLocalSearchParams();
-  const userId = Array.isArray(params.userId) ? params.userId[0] : params.userId;
-  const feedbackId = Array.isArray(params.feedbackId) ? params.feedbackId[0] : params.feedbackId;
+  const userId = Array.isArray(params.userId)
+    ? params.userId[0]
+    : params.userId;
+  const feedbackId = Array.isArray(params.feedbackId)
+    ? params.feedbackId[0]
+    : params.feedbackId;
   const title = Array.isArray(params.title) ? params.title[0] : params.title;
 
   const api = axios.create({
@@ -78,7 +83,11 @@ export default function FeedbackResult() {
         setLoading(true);
         setError(null);
         const res = await api
-          .get(`/feedback/${encodeURIComponent(userId)}/${encodeURIComponent(feedbackId)}`)
+          .get(
+            `/feedback/${encodeURIComponent(userId)}/${encodeURIComponent(
+              feedbackId
+            )}`
+          )
           .then((r) => {
             console.log("가져온 데이터", {
               userId,
@@ -90,15 +99,14 @@ export default function FeedbackResult() {
           });
         const data = res.data?.data || {};
 
-if (data.created_at) {
-  const date = new Date(data.created_at);
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, "0");
-  const d = String(date.getDate()).padStart(2, "0");
-  const formatted = `${y}년 ${m}월 ${d}일`;
-  setCreatedAt(formatted);
-}
-
+        if (data.created_at) {
+          const date = new Date(data.created_at);
+          const y = date.getFullYear();
+          const m = String(date.getMonth() + 1).padStart(2, "0");
+          const d = String(date.getDate()).padStart(2, "0");
+          const formatted = `${y}년 ${m}월 ${d}일`;
+          setCreatedAt(formatted);
+        }
 
         // 응답 값 매핑
         setPros(data.good || "");
@@ -114,6 +122,7 @@ if (data.created_at) {
           tone: data.tone || 0,
           understanding: data.understanding || 0,
         });
+        setMostImproved(data.mostImproved || "");
       } catch (e) {
         setError("피드백을 불러오지 못했어요.");
         console.warn(e?.response?.data || e?.message);
@@ -140,7 +149,15 @@ if (data.created_at) {
   }, [scores]);
 
   const bestAspectLabel = LABELS_KO[bestAspectKey] || "자세";
-
+  //받아온 데이터 매핑
+  const skillNameMap = {
+    pose: "자세",
+    confidence: "자신감",
+    facial: "표정",
+    risk_response: "위기대처능력",
+    tone: "말투",
+    understanding: "업무이해도",
+  };
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff", paddingTop: 0 }}>
       <View style={styles.container}>
@@ -174,8 +191,8 @@ if (data.created_at) {
               top: 125,
               width: 50,
               height: 70,
-              zIndex:1,
-              elevation:30,
+              zIndex: 1,
+              elevation: 30,
             }}
           />
         )}
@@ -188,8 +205,15 @@ if (data.created_at) {
           <Text style={styles.graphTitle}>사용자 분석 그래프</Text>
           <RadarChart data={scores} />
 
-            {/*저번보다 OO이(가) 더 좋아졌어요! text style : improvementText*/}
-
+          {mostImproved && mostImproved.length > 0 && (
+            <Text style={styles.improvementText}>
+              저번보다{" "}
+              <Text style={styles.highlight}>
+                {mostImproved.map((s) => skillNameMap[s] || s).join(", ")}
+              </Text>
+              이(가) 더 좋아졌어요!
+            </Text>
+          )}
           <Text style={styles.feedbackTitle}>피드백 및 평가</Text>
 
           <Text style={styles.labelGood}>장점</Text>
@@ -236,7 +260,6 @@ if (data.created_at) {
             showSoftInputOnFocus={false}
             underlineColorAndroid="transparent"
           />
-
         </View>
       </ScrollView>
 
@@ -264,7 +287,9 @@ if (data.created_at) {
               setOpenModalItemId={() => setModalVisible(false)}
               isModalVisible={modalVisible}
               isPinned={isPinned}
-              onUpdateTitle={(id, newTitle) => route.setParams({ title: newTitle })}
+              onUpdateTitle={(id, newTitle) =>
+                route.setParams({ title: newTitle })
+              }
               onUpdateMemo={(id, newMemo) => setMemo(newMemo)}
               onDelete={(id) => route.replace("/feedback")}
               onPin={(_id, newPin) => setIsPinned(newPin === "Y")}
@@ -288,7 +313,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     height: 56,
-    paddingTop:10,
+    paddingTop: 10,
     paddingBottom: 22,
     paddingHorizontal: 0,
     backgroundColor: "#fff",
@@ -324,8 +349,8 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     marginTop: 7,
     borderRadius: 3,
-    elevation:0,
-    zIndex:0,
+    elevation: 0,
+    zIndex: 0,
   },
   topTitle: {
     fontSize: 18,
@@ -345,7 +370,7 @@ const styles = StyleSheet.create({
     fontWeight: "300",
     fontFamily: "Pretendard",
     color: "#191919",
-    marginTop:35,
+    marginTop: 35,
     marginBottom: 16,
   },
   improvementText: {
@@ -409,7 +434,6 @@ const styles = StyleSheet.create({
     marginTop: 17,
     textAlignVertical: "top",
     fontFamily: "Pretendard",
-    marginBottom:104,
+    marginBottom: 104,
   },
-
 });
