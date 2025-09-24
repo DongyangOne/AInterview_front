@@ -31,7 +31,7 @@ export default function Interviewing() {
       const remained = 1 - currentValue;
       if (remained <= 0) {
         // 프로그래스바가 끝나면 이동
-        if (isMounted.current) router.replace('/interview_analysis');
+        if (isMounted.current) router.replace('/Interview_result');
         return;
       }
       const remainedMs = PROGRESS_DURATION * 1000 * remained;
@@ -44,7 +44,7 @@ export default function Interviewing() {
       isAnimating.current = true;
       animationRef.current.start( ({ finished }) => {
         if (finished && isMounted.current) {
-          router.replace('/interview_analysis');
+          router.replace('/Interview_result');
         }
       });
     });

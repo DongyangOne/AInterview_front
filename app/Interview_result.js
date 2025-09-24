@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -10,11 +10,76 @@ import {
 import { useRouter } from "expo-router";
 import CustomModal from "../components/Modal/Close";
 import { SafeAreaView } from "react-native-safe-area-context";
+import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 
 export default function Interview_result() {
   const router = useRouter();
+  const [titleError, setTitleError] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
+  const [usersId, setUsersId] = useState("");
   const [title, setTitle] = useState("");
+  const [memo, setMemo] = useState("");
+  const [good, setGood] = useState("");
+  const [bad, setBad] = useState("");
+  const [content, setContent] = useState("");
+  const [pose, setPose] = useState("");
+  const [confidence, setConfidence] = useState("");
+  const [facial, setFacial] = useState("");
+  const [riskResponse, setRiskResponse] = useState("");
+  const [tone, setTone] = useState("");
+  const [understanding, setUnderstanding] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+      const fetchUserId = async () => {
+        try {
+          const id = await AsyncStorage.getItem("userId");
+          if (id) setUsersId(Number(id));
+        } catch (error) {
+          console.log("AsyncStorage error:", error);
+        }
+      };
+      fetchUserId();
+    }, []);
+
+  const handleSave = () => {
+    if (!title.trim()) {
+      setTitleError(true); // 제목 없으면 에러 표시
+      return;
+    } else {
+      setTitleError(false);
+    }
+
+    if (!usersId) {
+      console.log("유저 아이디가 없습니다.");
+      return;
+    }
+
+    axios
+      .post(`${process.env.EXPO_PUBLIC_API_URL}/feedback`,{
+          userId: usersId,
+          title,
+          memo,
+          good,
+          bad,
+          content,
+          pose: parseInt(pose),
+          confidence: parseInt(confidence),
+          facial: parseInt(facial),
+          risk_response: parseInt(riskResponse),
+          tone: parseInt(tone),
+          understanding: parseInt(understanding),
+        })
+      .then((response) => {
+        console.log("피드백 생성 성공:", response.data);
+        router.push("/interview_analysis");
+      })
+      .catch((error) => {
+        console.log("Error:", error.message || error);
+      });
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -43,20 +108,24 @@ export default function Interview_result() {
           setModalVisible(false);
         }}
       />
-      <Text style={styles.header}>처리가 완료되었습니다.</Text>
+      <Text style={styles.header}>면접이 종료되었습니다.</Text>
       <Text style={styles.label}>면접 제목을 입력해주세요.</Text>
       <TextInput
         style={styles.input}
         value={title}
-        onChangeText={setTitle}
+        onChangeText={(text) => {
+          setTitle(text);
+          if (titleError) setTitleError(false);
+        }}
         placeholder="면접 제목을 입력해주세요."
         placeholderTextColor="#808080"
       />
+      {titleError && <Text style={styles.errorText}>면접 제목을 입력해주세요.</Text>}
       <TouchableOpacity
-        onPress={() => router.push("/screens/Feedback_result")}
+        onPress = {handleSave}
         style={styles.saveButton}
       >
-        <Text style={styles.saveButtonText}>저장 및 결과 확인하기</Text>
+        <Text style={styles.saveButtonText}>저장하기</Text>
       </TouchableOpacity>
     </SafeAreaView>
   );
@@ -101,7 +170,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingHorizontal: 10,
     marginLeft: 8,
-    marginBottom: 30,
+    marginBottom: 5,
     fontSize: 16,
     fontFamily: "Pretendard",
     color: "#171717",
@@ -125,7 +194,12 @@ const styles = StyleSheet.create({
   saveButtonText: {
     color: "#fff",
     fontSize: 20,
-    fontWeight: "600",
+    fontWeight: "700",
     fontFamily: "Pretendard",
   },
+  errorText: {
+      fontSize: 14,
+      color: "red",
+      marginLeft: 16,
+    },
 });
