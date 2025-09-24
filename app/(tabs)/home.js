@@ -14,31 +14,41 @@ import MainQuestion from "../../components/main/MainQuestion";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
-import { API_URL } from "@env";
+import { useIsFocused } from "@react-navigation/native";
 export default function Home() {
   const scrollRef = useRef(null);
   const router = useRouter();
   const [weekSchedules, setWeekSchedules] = useState("0");
-
+  const [nickname, setNickname] = useState(null);
+  const isFocused = useIsFocused();
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const usersId = await AsyncStorage.getItem("userId");
-        const res = await axios.get(`${API_URL}/calendar/thisweek`, {
-          params: { userId: usersId },
-        });
+    if (isFocused) {
+      const fetchData = async () => {
+        try {
+          setNickname(await AsyncStorage.getItem("NickName"));
+          const usersId = await AsyncStorage.getItem("userId");
+          await axios
+            .get(`${process.env.EXPO_PUBLIC_API_URL}/mainpage/calendar`, {
+              params: { userId: usersId },
+            })
+            .then((res) => {
+              console.log(res.data);
+              const count = res.data.data.map((item) => ({
+                id: item.calendar_id.toString(),
+              }));
+              setWeekSchedules(count.length.toString());
+            })
+            .catch((err) => {
+              console.log(err);
+            });
+        } catch (err) {
+          console.error(err);
+        }
+      };
 
-        const count = res.data.data.map((item) => ({
-          id: item.calendar_id.toString(),
-        }));
-        setWeekSchedules(count.length.toString());
-      } catch (err) {
-        console.error(err);
-      }
-    };
-
-    fetchData();
-  }, []);
+      fetchData();
+    }
+  }, [isFocused]);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
@@ -52,10 +62,7 @@ export default function Home() {
           paddingHorizontal: "4%",
         }}
       >
-        <TouchableOpacity
-          onPress={() => router.push("../screens/bell")}
-          style={{ padding: 6 }}
-        >
+        <TouchableOpacity onPress={() => router.push("../screens/bell")}>
           <Image
             source={require("../../assets/icons/bell.png")}
             style={{ width: 24, height: 24, right: 32 }}
@@ -70,7 +77,7 @@ export default function Home() {
         contentContainerStyle={styles.scrollContent}
       >
         <View style={styles.container}>
-          <Text style={styles.greeting}>닉네임님,</Text>
+          <Text style={styles.greeting}>{nickname}님,</Text>
           <Text style={styles.interviewInfo}>
             이번 주에 면접
             <Text style={styles.accent}>
@@ -127,6 +134,6 @@ const styles = StyleSheet.create({
     borderColor: "#CCCCCC",
     borderRadius: 10,
     marginTop: "5%",
-    height: 97,
+    minHeight: 97,
   },
 });

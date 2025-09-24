@@ -9,32 +9,9 @@ import {
 } from "react-native";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { API_URL } from "@env";
-function RoundedBar({
-  value = 0,
-  height = 7,
-  backgroundColor = "#E4E4E4",
-  barColor = "#5900FF",
-}) {
-  const percent = Math.max(0, Math.min(100, value));
-  return (
-    <View
-      style={[
-        styles.barContainer,
-        { height, backgroundColor, borderRadius: height / 2 },
-      ]}
-    >
-      <View
-        style={{
-          width: `${percent}%`,
-          height: "100%",
-          backgroundColor: barColor,
-          borderRadius: height / 2,
-        }}
-      />
-    </View>
-  );
-}
+import RoundedBar from "./RoundedBar";
+import { useIsFocused } from "@react-navigation/native";
+
 function formatDate(dateStr) {
   if (!dateStr) return "";
   const dateObj = new Date(dateStr);
@@ -43,74 +20,137 @@ function formatDate(dateStr) {
   const day = String(dateObj.getDate()).padStart(2, "0");
   return `${year}.${month}.${day}`;
 }
+
+// 시간 계산
+const getTimes = (apiDate) => {
+  const now = new Date();
+  const date = new Date(apiDate);
+  const diffMs = now.getTime() - date.getTime();
+  const minutes = Math.floor(diffMs / 1000 / 60);
+  if (minutes <= 1) {
+    return "방금 전";
+  } else if (minutes < 60) {
+    return `${minutes}분 전`;
+  } else if (minutes < 60 * 24) {
+    const hours = Math.floor(minutes / 60);
+    return `${hours}시간 전`;
+  } else if (minutes < 60 * 24 * 30) {
+    const days = Math.floor(minutes / 60 / 24);
+    return `${days}일 전`;
+  } else if (minutes < 60 * 24 * 30 * 12) {
+    const month = Math.floor(minutes / 60 / 24 / 30);
+    return `${month}달 전`;
+  } else {
+    const years = Math.floor(minutes / 60 / 24 / 365);
+    return `${years}년 전`;
+  }
+};
+
 function MainFeedback() {
   const [shouldScroll, setShouldScroll] = useState(false);
   const scrollRef = useRef(null);
   const [textBoxHeight, setTextBoxHeight] = useState(227);
   const [feedback, setFeedback] = useState([]);
   const [fetime, setFetime] = useState("");
+  const [feedtitle, setFeedTitle] = useState("");
+  const isFocused = useIsFocused();
+  const [scores, setScores] = useState({
+    pose: 0,
+    confidence: 0,
+    facial: 0,
+    risk_response: 0,
+    tone: 0,
+    understanding: 0,
+  });
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        console.log(API_URL);
-        const usersId = await AsyncStorage.getItem("userId");
-        console.log(usersId);
-        const res = await axios.get(`${API_URL}/feedback/recent`, {
-          params: { userId: usersId },
-        });
-        if (res.data && res.data.success) {
-          setFeedback(res.data.data);
-          const apiDate = res.data.data[0]?.created_at;
-          setFetime(formatDate(apiDate));
+    if (isFocused) {
+      const fetchData = async () => {
+        try {
+          const usersId = await AsyncStorage.getItem("userId");
+          await axios
+            .get(`${process.env.EXPO_PUBLIC_API_URL}/mainpage/feedback`, {
+              params: { userId: usersId },
+            })
+            .then((res) => {
+              if (res.data && res.data.success) {
+                const firstData = res.data.data[0];
+                setFeedback(res.data.data);
+                setFetime(formatDate(firstData.created_at));
+                setFeedTitle(firstData.title);
+                setScores({
+                  pose: firstData.pose || 0,
+                  confidence: firstData.confidence || 0,
+                  facial: firstData.facial || 0,
+                  risk_response: firstData.risk_response || 0,
+                  tone: firstData.tone || 0,
+                  understanding: firstData.understanding || 0,
+                });
+                console.log("메인피드백", res.data.data);
+              }
+            })
+            .catch((err) => {
+              console.log(err);
+            });
+        } catch (error) {
+          console.error("데이터 가져오기 실패:", error);
         }
-      } catch (error) {
-        console.error("데이터 가져오기 실패:", error);
-        alert("데이터 가져오기 실패");
-      }
-    };
+      };
+      fetchData();
+    }
+  }, [isFocused]);
 
-    fetchData();
-  }, []);
-
-  const evaluationData = [
-    { label: "업무이해도", percent: 77 },
-    { label: "기술역량", percent: 65 },
-    { label: "의사소통", percent: 88 },
+  const scoreArray = [
+    { label: "자세", percent: scores.pose },
+    { label: "자신감", percent: scores.confidence },
+    { label: "표정", percent: scores.facial },
+    { label: "위기대처능력", percent: scores.risk_response },
+    { label: "말투", percent: scores.tone },
+    { label: "업무이해도", percent: scores.understanding },
   ];
 
-  const expandedNotice = [
-    {
-      a: "위기대처능력 73% 자세 64% 자신감 55%",
-      b: "닉네임님은 지난 aa 회사 면접에서 업무이해도, 위기대처능력, 자세에서는 강한 편이고, 자신감, 표정, 말투에서는 아쉬운 편이에요.",
-      c: "다음 면접에서는 자신감, 표정, 말투에 더 노력해 보는 게 좋을 것 같아요",
-    },
-  ];
+  // 상위 3개
+  const TopScores = [...scoreArray]
+    .sort((a, b) => b.percent - a.percent)
+    .slice(0, 3);
 
+  // 상위 3개 제외하고 나머지만 추출
+  const TopScoreLabels = new Set(TopScores.map((item) => item.label));
+  const RestScores = scoreArray.filter(
+    (item) => !TopScoreLabels.has(item.label)
+  );
+  const BottomScores = [...RestScores].sort((a, b) => a.percent - b.percent);
+
+  // 메인 피드백 박스 크기 조절
   const toggleTextHeight = () => {
     setTextBoxHeight((prev) => (prev === 227 ? 412 : 227));
     setShouldScroll(true);
   };
+
   const firstfb = feedback?.[0];
-  console.log("가져온 데이터", firstfb);
+
   return firstfb ? (
     <View style={[styles.container, { minHeight: textBoxHeight }]}>
       {/* 헤더 영역 */}
-
       <View style={styles.headerRow}>
         <View style={styles.titleSection}>
-          <Text style={styles.title}>
-            {firstfb?.title ? firstfb.title : "로딩 중"}
+          <Text
+            numberOfLines={1}
+            style={[
+              styles.title,
+              feedtitle.length > 10 ? { maxWidth: 125 } : { maxWidth: "100%" },
+            ]}
+          >
+            {feedtitle ? feedtitle : "로딩 중"}
           </Text>
           <Text style={styles.date}>{fetime ? fetime : "로딩 중"}</Text>
         </View>
         <Text style={styles.rightTime}>
-          {firstfb?.days_ago ? firstfb.days_ago : "로딩 중"}일 전
+          {firstfb?.created_at ? getTimes(firstfb.created_at) : "로딩 중"}
         </Text>
       </View>
 
-      {/* 퍼센트 바 */}
-      {evaluationData.map((item, i) => (
+      {TopScores.map((item, i) => (
         <View key={i} style={styles.barRow}>
           <Text style={styles.barLabel}>{item.label}</Text>
           <View style={styles.barWrapper}>
@@ -120,36 +160,44 @@ function MainFeedback() {
         </View>
       ))}
 
-      {/* 확장 내용 */}
+      {/* 화살표 클릭 시 나오는 화면 */}
       {textBoxHeight === 412 && (
         <View style={styles.expandedSection}>
           <ScrollView
             style={{ flex: 1 }}
             contentContainerStyle={{ paddingBottom: 8 }}
             showsVerticalScrollIndicator={false}
+            ref={scrollRef}
           >
-            {expandedNotice.map((item, i) => (
-              <View key={i}>
-                <View style={styles.keywordRow}>
-                  {item.a.split(" ").map((word, idx) => (
-                    <Text
-                      key={idx}
-                      style={[
-                        styles.keywordText,
-                        /\d+%/.test(word) && styles.keywordHighlight,
-                      ]}
-                    >
-                      {word + " "}
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "center",
+                alignItems: "center",
+                marginBottom: 12,
+              }}
+            >
+              {BottomScores.map((item, i) => (
+                <View
+                  key={i}
+                  style={{
+                    alignItems: "center",
+                    marginTop: 47,
+                  }}
+                >
+                  <Text style={styles.keywordText}>
+                    {item.label + " "}
+                    <Text style={styles.keywordHighlight}>
+                      {typeof item.percent === "number" ? item.percent : 0}%
                     </Text>
-                  ))}
+                  </Text>
                 </View>
-                <Text style={styles.detailText}>
-                  {firstfb?.content ? firstfb.content : "로딩 중"}
-                </Text>
-                {/**아직 해당 db에 값이 없어서 임시 출력 */}
-                <Text style={styles.detailText}>{item.c}</Text>
-              </View>
-            ))}
+              ))}
+            </View>
+
+            <Text style={styles.detailText}>
+              {firstfb?.content ? firstfb.content : "분석 중..."}
+            </Text>
           </ScrollView>
         </View>
       )}
@@ -175,34 +223,14 @@ function MainFeedback() {
     </View>
   ) : (
     <View style={[styles.container, { minHeight: textBoxHeight }]}>
-      {/* 화살표 버튼 */}
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Text style={{ fontSize: 25, color: "#191919" }}>
+        <Text style={{ fontSize: 16, color: "#191919" }}>
           최근 피드백이 없습니다.
         </Text>
       </View>
-      {/* <TouchableOpacity
-        style={[
-          styles.arrowBtn,
-          { marginTop: textBoxHeight === 412 ? 8 : "auto" },
-        ]}
-        onPress={toggleTextHeight}
-        activeOpacity={0.7}
-      >
-        <Image
-          source={
-            textBoxHeight === 227
-              ? require("../../assets/icons/arow.png")
-              : require("../../assets/icons/main_arrow.png")
-          }
-          style={styles.arrowImage}
-        />
-      </TouchableOpacity> */}
     </View>
   );
 }
-
-export default MainFeedback;
 
 const styles = StyleSheet.create({
   container: {
@@ -220,13 +248,13 @@ const styles = StyleSheet.create({
   },
   headerRow: {
     flexDirection: "row",
-    alignItems: "center",
-    height: 32,
-    marginTop: "3%",
+    alignItems: "baseline",
+    marginTop: 15,
+    marginBottom: 10,
   },
   titleSection: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "baseline",
     flex: 1,
     marginLeft: "4%",
   },
@@ -236,22 +264,24 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     fontWeight: "600",
     textAlign: "left",
+    textAlignVertical: "bottom",
   },
   date: {
     fontSize: 12,
     fontWeight: "400",
     color: "#191919",
     marginLeft: "3%",
-    lineHeight: 34,
+    textAlignVertical: "bottom",
   },
   rightTime: {
     fontSize: 12,
     fontWeight: "400",
     color: "#808080",
-    lineHeight: 34,
     textAlign: "right",
     marginRight: "2%",
     minWidth: 50,
+
+    textAlignVertical: "bottom",
   },
   barRow: {
     width: "95%",
@@ -262,7 +292,7 @@ const styles = StyleSheet.create({
   },
   barLabel: {
     marginRight: "3%",
-    minWidth: 65,
+    minWidth: 75,
     width: "10%",
   },
   barWrapper: {
@@ -322,3 +352,5 @@ const styles = StyleSheet.create({
     alignSelf: "center",
   },
 });
+
+export default MainFeedback;

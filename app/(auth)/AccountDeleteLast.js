@@ -9,6 +9,8 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
+import axios from 'axios';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const REASONS = [
   "면접 기능을 사용하기 어려워요.",
@@ -28,12 +30,35 @@ export default function AccountDeleteLast() {
   const [confirmModalVisible, setConfirmModalVisible] = useState(false);
 
   useEffect(() => {
-    setModalVisible(true); // 페이지 진입 시 첫 번째 모달 띄우기
+    setModalVisible(true);
   }, []);
 
-  const handleDelete = () => {
-    setModalVisible(false);
-    setConfirmModalVisible(true); // 두 번째 모달 띄우기
+  const handleDelete = async () => {
+    try {
+      const usersId = await AsyncStorage.getItem("userId");
+      console.log("userId from storage:", usersId);
+
+      await axios
+        .get(`${process.env.EXPO_PUBLIC_API_URL}/delete/deleteUser`, {
+          params: { userId: usersId },
+        })
+        .then((response) => {
+          console.log("Response data:", response.data);
+          if (response.data.success) {
+            setModalVisible(false);
+            setConfirmModalVisible(true);
+          } else {
+            alert(response.data.message || "탈퇴에 실패했습니다.");
+          }
+        })
+        .catch((error) => {
+          console.error("Error in axios.get:", error);
+          alert("네트워크 오류 또는 탈퇴에 실패했습니다.");
+        });
+    } catch (error) {
+      console.error("Error in handleDelete:", error);
+      alert("예기치 않은 오류가 발생했습니다.");
+    }
   };
 
   const handleConfirm = () => {

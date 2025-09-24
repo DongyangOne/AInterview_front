@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Text, View, TouchableOpacity, StyleSheet } from "react-native";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { API_URL } from "@env";
+import { useIsFocused } from "@react-navigation/native";
 
 // 이번 주(일~토) 날짜 배열 반환
 function getCurrentWeekDates() {
@@ -21,43 +21,64 @@ function WeeklyCalendar() {
   const weekDates = getCurrentWeekDates();
   const today = new Date();
   const [schedules, setSchedules] = useState({});
+  const [schedulesConut, setSchedulesConst] = useState({});
+  const isFocused = useIsFocused();
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const usersId = await AsyncStorage.getItem("userId");
-        const res = await axios.get(`${API_URL}/calendar/thisweek`, {
-          params: { userId: usersId },
-        });
+    if (isFocused) {
+      const fetchData = async () => {
+        try {
+          const usersId = await AsyncStorage.getItem("userId");
+          await axios
+            .get(`${process.env.EXPO_PUBLIC_API_URL}/mainpage/calendar`, {
+              params: { userId: usersId },
+            })
+            .then((res) => {
+              // 이번 주 시작/끝
+              const weekStart = new Date(weekDates[0]);
+              weekStart.setHours(0, 0, 0, 0);
+              const weekEnd = new Date(weekDates[6]);
+              weekEnd.setHours(23, 59, 59, 999);
 
-        // 이번 주 시작/끝
-        const weekStart = new Date(weekDates[0]);
-        weekStart.setHours(0, 0, 0, 0);
-        const weekEnd = new Date(weekDates[6]);
-        weekEnd.setHours(23, 59, 59, 999);
+              // 이번 주 일정만 필터링
+              const weeklyEvents = res.data.data.filter((item) => {
+                const date = new Date(item.time); //가져온 값의 시간
+                return date >= weekStart && date <= weekEnd;
+              });
 
-        // 이번 주 일정만 필터링
-        const weeklyEvents = res.data.data.filter((item) => {
-          const date = new Date(item.time); //가져온 값의 시간
-          return date >= weekStart && date <= weekEnd;
-        });
+              const scheduleMap = {};
+              const scheduleMapC = {}; // 요일별 총 개수 카운터로 사용
 
-        const scheduleMap = {};
-        weeklyEvents.forEach((item) => {
-          const date = new Date(item.time);
-          const dayIndex = date.getDay(); // 0:일,~6:토
-          if (!scheduleMap[dayIndex]) scheduleMap[dayIndex] = [];
-          scheduleMap[dayIndex].push(item.title);
-        });
+              weeklyEvents.forEach((item) => {
+                const date = new Date(item.time);
+                const dayIndex = date.getDay(); // 0:일,~6:토
+                const dayIndexC = date.getDay(); // 0:일,~6:토
+                if (!scheduleMap[dayIndex]) scheduleMap[dayIndex] = [];
+                // 요일별 총 개수 누적 (숫자)
+                if (!scheduleMapC[dayIndexC]) scheduleMapC[dayIndexC] = 0;
+                scheduleMapC[dayIndexC] += 1;
 
-        setSchedules(scheduleMap);
-      } catch (err) {
-        console.error(err);
-      }
-    };
+                // 요일별 일정 최대 3개까지만 추가
+                if (scheduleMap[dayIndex].length < 3) {
+                  scheduleMap[dayIndex].push(item.title);
+                }
+              });
 
-    fetchData();
-  }, []);
+              setSchedules(scheduleMap);
+              setSchedulesConst(scheduleMapC);
+              console.log(res.data);
+            })
+            .catch((err) => {
+              console.log(err);
+            });
+        } catch (err) {
+          console.error(err);
+        }
+      };
+
+      fetchData();
+    }
+  }, [isFocused]);
 
   return (
     <View style={styles.calendarContainer}>
@@ -68,6 +89,8 @@ function WeeklyCalendar() {
           date.getDate() === today.getDate();
 
         const scheduleText = schedules[date.getDay()];
+        // 해당 요일의 총 일정 개수 (없으면 0)
+        const scheduleCount = schedulesConut[date.getDay()] || 0;
 
         return (
           <TouchableOpacity
@@ -87,6 +110,9 @@ function WeeklyCalendar() {
                       {t}
                     </Text>
                   ))}
+                {scheduleCount > 3 && (
+                  <Text style={styles.countText}>+{scheduleCount - 3}</Text>
+                )}
               </>
             ) : (
               <>
@@ -98,6 +124,9 @@ function WeeklyCalendar() {
                       {t}
                     </Text>
                   ))}
+                {scheduleCount > 3 && (
+                  <Text style={styles.countText}>+{scheduleCount - 3}</Text>
+                )}
               </>
             )}
           </TouchableOpacity>
@@ -108,11 +137,7 @@ function WeeklyCalendar() {
 }
 
 export default function MainCalendar() {
-  return (
-    <View>
-      <WeeklyCalendar />
-    </View>
-  );
+  return <WeeklyCalendar />;
 }
 
 const styles = StyleSheet.create({
@@ -168,7 +193,7 @@ const styles = StyleSheet.create({
     width: 4,
     height: 4,
     borderRadius: 2,
-    backgroundColor: "#222",
+    backgroundColor: "#5900FF",
     position: "absolute",
     top: 12,
     zIndex: 1,
@@ -181,5 +206,10 @@ const styles = StyleSheet.create({
     maxWidth: 40,
     lineHeight: 10,
     alignSelf: "center",
+  },
+  countText: {
+    fontSize: 10,
+    color: "#888",
+    marginTop: 4,
   },
 });

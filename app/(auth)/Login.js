@@ -18,22 +18,9 @@ export default function Login() {
   const [id, setId] = useState("");
   const [pw, setPw] = useState("");
   const [showPw, setShowPw] = useState(false);
-  const [keepLogin, setKeepLogin] = useState(true);
 
   const [idError, setIdError] = useState("");
   const [pwError, setPwError] = useState("");
-
-  useEffect(() => {
-    const checkKeepLogin = async () => {
-      const keep = await AsyncStorage.getItem("keepLogin");
-      const token = await AsyncStorage.getItem("token");
-      const userId = await AsyncStorage.getItem("userId");
-      if (keep === "true" && token && userId) {
-        router.replace("/(tabs)/home");
-      }
-    };
-    checkKeepLogin();
-  }, []);
 
   const handleLogin = async () => {
     setIdError("");
@@ -50,18 +37,14 @@ export default function Login() {
     }
 
     await axios
-      .post("http://183.101.17.181:3001/sign/login", {
+      .post(`${process.env.EXPO_PUBLIC_API_URL}/sign/login`, {
         loginUserId,
         password: pw,
       })
       .then(async (res) => {
         console.log(res.data.userId);
         AsyncStorage.setItem("userId", String(res.data.userId));
-        if (keepLogin) {
-          await AsyncStorage.setItem("keepLogin", "true");
-        } else {
-          await AsyncStorage.removeItem("keepLogin");
-        }
+        AsyncStorage.setItem("NickName", res.data.nickname);
 
         router.replace("/(tabs)/home");
       })
@@ -123,42 +106,9 @@ export default function Login() {
         {pwError !== "" && <Text style={styles.error}>{pwError}</Text>}
       </View>
 
-      <TouchableOpacity
-        style={styles.keepWrap}
-        onPress={() => setKeepLogin(!keepLogin)}
-      >
-        <Ionicons
-          name={keepLogin ? "checkbox" : "square-outline"}
-          size={20}
-          color="#5900FF"
-        />
-        <Text style={styles.keepText}>로그인 유지</Text>
-      </TouchableOpacity>
-
       <TouchableOpacity style={styles.loginBtn} onPress={handleLogin}>
         <Text style={styles.loginBtnText}>로그인</Text>
       </TouchableOpacity>
-
-      <View style={styles.socialWrap}>
-        <TouchableOpacity>
-          <Image
-            source={require("../../assets/images/kakao.png")}
-            style={styles.icon}
-          />
-        </TouchableOpacity>
-        <Image
-          source={require("../../assets/images/google.png")}
-          style={styles.icon}
-        />
-        <Image
-          source={require("../../assets/images/naver.png")}
-          style={styles.icon}
-        />
-        <Image
-          source={require("../../assets/images/facebook.png")}
-          style={styles.icon}
-        />
-      </View>
 
       <View style={styles.divider} />
 
@@ -229,15 +179,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 4,
   },
-  keepWrap: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 24,
-  },
-  keepText: {
-    marginLeft: 8,
-    fontSize: 14,
-  },
   loginBtn: {
     backgroundColor: "#5900FF",
     paddingVertical: 16,
@@ -249,18 +190,6 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 14,
     fontWeight: "bold",
-  },
-  socialWrap: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    marginBottom: 24,
-  },
-  icon: {
-    width: 44,
-    height: 44,
-    resizeMode: "contain",
-    borderRadius: 22,
-    overflow: "hidden",
   },
   divider: {
     height: 1,

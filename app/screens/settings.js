@@ -1,5 +1,4 @@
-"use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -10,12 +9,70 @@ import {
   Image,
 } from "react-native";
 import { useRouter } from "expo-router";
+import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function SettingsScreen() {
   const [isEnabled, setIsEnabled] = useState(false);
+  const [error, setError] = useState('');
   const router = useRouter();
 
-  const toggleSwitch = () => setIsEnabled((previousState) => !previousState);
+  useEffect(() => {
+    const fetchPushStatus = async () => {
+      const usersId = await AsyncStorage.getItem("userId");
+      setError('');
+
+      axios
+        .get(`${process.env.EXPO_PUBLIC_API_URL}/user/getAppPush`, {
+          params: { userId: usersId },
+          withCredentials: true,
+        })
+        .then((res) => {
+          console.log("[getAppPush] Response:", res.data);
+          setIsEnabled(res.data.status === "Y");
+        })
+        .catch((err) => {
+          console.error("[getAppPush] Error:", err?.response?.data || err);
+          setError(
+            "알림 상태 가져오기 실패: " +
+              (err?.response?.data?.message || err.message)
+          );
+          setIsEnabled(false);
+        });
+    };
+
+    fetchPushStatus();
+  }, []);
+
+  const toggleSwitch = async () => {
+    const newEnabled = !isEnabled;
+    setIsEnabled(newEnabled);
+
+    const usersId = await AsyncStorage.getItem("userId");
+    const statusParam = newEnabled ? "Y" : "N";
+
+    axios
+      .get(`${process.env.EXPO_PUBLIC_API_URL}/user/setAppPush`, {
+        params: { userId: usersId, status: statusParam },
+        withCredentials: true,
+      })
+      .then((res) => {
+        console.log("[setAppPush] Response:", res.data);
+        if (res.data && res.data.success) {
+          setIsEnabled(res.data.status === "Y");
+        } else {
+          setIsEnabled(isEnabled);
+        }
+      })
+      .catch((err) => {
+        console.error("[setAppPush] Error:", err?.response?.data || err);
+        setIsEnabled(isEnabled);
+        setError(
+          "알림 상태 변경 실패: " +
+            (err?.response?.data?.message || err.message)
+        );
+      });
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -25,7 +82,7 @@ export default function SettingsScreen() {
           <Image
             source={require("../../assets/icons/arrow1.png")}
             style={styles.backIcon}
-            resizeMode="20"
+            resizeMode="contain"
           />
         </TouchableOpacity>
         <Text style={styles.title}>설정</Text>
@@ -35,16 +92,19 @@ export default function SettingsScreen() {
       {/* 알림 설정 */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>알림</Text>
-        <TouchableOpacity style={styles.row}>
+        <View style={styles.row}>
           <Text style={styles.label}>알림 수신 설정</Text>
           <Switch
             trackColor={{ false: "#ccc", true: "#8e44ad" }}
-            thumbColor={isEnabled ? "#fff" : "#fff"}
+            thumbColor="#fff"
             ios_backgroundColor="#ccc"
             onValueChange={toggleSwitch}
             value={isEnabled}
           />
-        </TouchableOpacity>
+        </View>
+        {!!error && (
+          <Text style={{ color: 'red', marginTop: 8 }}>{error}</Text>
+        )}
       </View>
 
       {/* 기타 */}
@@ -89,7 +149,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: "#D9D9D9", // 구분선 컬러 변경
+    borderBottomColor: "#D9D9D9",
   },
   label: { fontSize: 16, fontWeight: "Medium", color: "#000000" },
   arrowIcon: {

@@ -15,55 +15,65 @@ import axios from "axios";
 
 export default function SignUpForm() {
   const router = useRouter();
-
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [id, setId] = useState("");
   const [nickname, setNickname] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [agreePush, setAgreePush] = useState(false);
-
   const [idError, setIdError] = useState("");
   const [nicknameError, setNicknameError] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [confirmPasswordError, setConfirmPasswordError] = useState("");
   const [termsError, setTermsError] = useState("");
   const [submitting, setSubmitting] = useState(false);
-
+  const [idCheckColor, setIdCheckColor] = useState("#e11d48");
   const badWords = ["욕", "fuck", "shit", "바보", "멍청이"];
-  const containsBadWord = (text) =>
-    badWords.some((word) => text.includes(word));
+  const containsBadWord = (t) => badWords.some((w) => t.includes(w));
 
   const checkDuplicateId = async () => {
     const trimmedId = id.trim();
 
     if (!trimmedId) {
       setIdError("아이디를 입력해 주세요.");
+      setIdCheckColor("#e11d48");
       return;
-    } else if (!/^[A-Za-z0-9]{3,15}$/.test(trimmedId)) {
+    }
+    if (!/^[A-Za-z0-9]{3,15}$/.test(trimmedId)) {
       setIdError("아이디는 3~15자의 영문자, 숫자만 사용할 수 있어요.");
+      setIdCheckColor("#e11d48");
       return;
     }
 
-    try {
-      const res = await axios.post(
-        "http://183.101.17.181:3001/sign/userIdCheck",
-        {
-          loginUserId: trimmedId,
+    axios
+      .post(`${process.env.EXPO_PUBLIC_API_URL}/sign/userIdCheck`, {
+        loginUserId: trimmedId,
+      })
+      .then((res) => {
+        console.log("[userIdCheck:success]", res.status, res.data);
+        setIdError("사용 가능한 아이디입니다.");
+        setIdCheckColor("#1900ff96");
+      })
+      .catch((err) => {
+        console.log(
+          "[userIdCheck:error]",
+          err.response?.status,
+          err.response?.data || err.message
+        );
+        if (err?.response?.status === 409) {
+          setIdError(err.response.data.message || "이미 사용 중인 아이디예요.");
+          setIdCheckColor("#e11d48");
+        } else {
+          setIdError("");
         }
-      );
-      const ok =
-        res?.data === true ||
-        res?.data?.idCheck === true ||
-        res?.data?.available === true ||
-        res?.data?.ok === true;
-      setIdError(ok ? "" : "사용할 수 없는 아이디예요.");
-    } catch {
-      setIdError("중복 확인 중 오류가 발생했어요.");
-    }
+      });
   };
 
   const validate = async () => {
+    if (submitting) return;
+
     let valid = true;
     setIdError("");
     setNicknameError("");
@@ -102,23 +112,25 @@ export default function SignUpForm() {
       setConfirmPasswordError("비밀번호가 일치하지 않아요.");
       valid = false;
     }
+
     if (!agreeTerms) {
       setTermsError("이용약관에 동의해 주세요.");
       valid = false;
     }
+
     if (!valid) return;
 
-    try {
-      const res = await axios.post(
-        "http://183.101.17.181:3001/sign/signup",
+    setSubmitting(true);
+
+    axios
+      .post(
+        `${process.env.EXPO_PUBLIC_API_URL}/sign/signup`,
         {
           loginUserId: id.trim(),
           nickname: nickname.trim(),
           password,
-          passwordCheck: confirmPassword,
-          service: "app",
-          appPush: agreePush,
-          idCheck: true,
+          service: agreeTerms ? "Y" : "N",
+          appPush: agreePush ? "Y" : "N",
         },
         {
           headers: {
@@ -126,17 +138,28 @@ export default function SignUpForm() {
             Accept: "application/json",
           },
         }
-      );
-
-      await AsyncStorage.setItem("userId", id.trim());
-      if (res?.data?.token)
-        await AsyncStorage.setItem("accessToken", res.data.token);
-      router.replace("/Login");
-    } catch (e) {
-      if (e.response?.data?.message) {
-        setConfirmPasswordError(e.response.data.message);
-      }
-    }
+      )
+      .then(async (res) => {
+        console.log("[signup:success]", res.status, res.data);
+        await AsyncStorage.setItem("userId", id.trim());
+        if (res?.data?.token) {
+          await AsyncStorage.setItem("accessToken", res.data.token);
+        }
+        router.replace("/Login");
+      })
+      .catch((e) => {
+        console.log(
+          "[signup:error]",
+          e.response?.status,
+          e.response?.data || e.message
+        );
+        if (e.response?.data?.message) {
+          setConfirmPasswordError(e.response.data.message);
+        }
+      })
+      .finally(() => {
+        setSubmitting(false);
+      });
   };
 
   return (
@@ -151,6 +174,7 @@ export default function SignUpForm() {
         </TouchableOpacity>
         <Text style={styles.headerText}>회원가입</Text>
       </View>
+
       <ScrollView>
         <Text style={styles.label}>아이디</Text>
         <View style={styles.inputRow}>
@@ -158,7 +182,10 @@ export default function SignUpForm() {
             style={styles.inputFull}
             placeholder="3~15자 영대소문자, 숫자 사용 가능"
             value={id}
-            onChangeText={setId}
+            onChangeText={(t) => {
+              setId(t);
+              setIdError("");
+            }}
             autoCapitalize="none"
             editable={!submitting}
           />
@@ -171,9 +198,8 @@ export default function SignUpForm() {
           </TouchableOpacity>
         </View>
         <View style={styles.errorBox}>
-          <Text style={styles.error}>{idError}</Text>
+          <Text style={{ color: idCheckColor, fontSize: 12 }}>{idError}</Text>
         </View>
-
         <Text style={styles.label}>닉네임</Text>
         <TextInput
           style={styles.input}
@@ -185,33 +211,54 @@ export default function SignUpForm() {
         <View style={styles.errorBox}>
           <Text style={styles.error}>{nicknameError}</Text>
         </View>
-
         <Text style={styles.label}>비밀번호</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="8~16자 영대소문자, 숫자, 특수문자 사용 가능"
-          value={password}
-          secureTextEntry
-          onChangeText={setPassword}
-          editable={!submitting}
-        />
+        <View style={styles.passwordRow}>
+          <TextInput
+            style={styles.inputWithIcon}
+            placeholder="8~16자 영대소문자, 숫자, 특수문자 사용 가능"
+            value={password}
+            secureTextEntry={!showPassword}
+            onChangeText={setPassword}
+            editable={!submitting}
+          />
+          <TouchableOpacity
+            style={styles.eyeContainer}
+            onPress={() => setShowPassword(!showPassword)}
+          >
+            <Ionicons
+              name={showPassword ? "eye" : "eye-off"}
+              size={20}
+              color="gray"
+            />
+          </TouchableOpacity>
+        </View>
         <View style={styles.errorBox}>
           <Text style={styles.error}>{passwordError}</Text>
         </View>
-
         <Text style={styles.label}>비밀번호 확인</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="비밀번호를 다시 입력해 주세요."
-          value={confirmPassword}
-          secureTextEntry
-          onChangeText={setConfirmPassword}
-          editable={!submitting}
-        />
+        <View style={styles.passwordRow}>
+          <TextInput
+            style={styles.inputWithIcon}
+            placeholder="비밀번호를 다시 입력해 주세요."
+            value={confirmPassword}
+            secureTextEntry={!showConfirmPassword}
+            onChangeText={setConfirmPassword}
+            editable={!submitting}
+          />
+          <TouchableOpacity
+            style={styles.eyeContainer}
+            onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+          >
+            <Ionicons
+              name={showConfirmPassword ? "eye" : "eye-off"}
+              size={20}
+              color="gray"
+            />
+          </TouchableOpacity>
+        </View>
         <View style={styles.errorBox}>
           <Text style={styles.error}>{confirmPasswordError}</Text>
         </View>
-
         <View style={styles.checkRow}>
           <TouchableOpacity
             onPress={() => setAgreeTerms(!agreeTerms)}
@@ -234,7 +281,6 @@ export default function SignUpForm() {
         <View style={styles.errorBox}>
           <Text style={styles.error}>{termsError}</Text>
         </View>
-
         <View style={styles.checkRow}>
           <TouchableOpacity
             onPress={() => setAgreePush(!agreePush)}
@@ -254,7 +300,6 @@ export default function SignUpForm() {
             (선택)
           </Text>
         </View>
-
         <TouchableOpacity
           style={[styles.submitBtn, submitting && { opacity: 0.6 }]}
           onPress={validate}
@@ -331,4 +376,22 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   submitText: { color: "#fff", fontSize: 14, fontWeight: "bold" },
+  passwordRow: {
+    position: "relative",
+    marginTop: 8,
+    justifyContent: "center",
+  },
+  inputWithIcon: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 14,
+    paddingRight: 40,
+  },
+  eyeContainer: {
+    position: "absolute",
+    right: 12,
+    top: 12,
+  },
 });

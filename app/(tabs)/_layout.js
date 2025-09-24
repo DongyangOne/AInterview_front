@@ -75,11 +75,12 @@ export default function TabLayout() {
           tabBarShowLabel: false,
           tabBarActiveTintColor: "#5900FF",
           tabBarStyle: {
-            height: 56, // 56/812 비율
+            height: 100, // 56/812 비율
+            backgroundColor: "#ffffff",
             borderTopWidth: 0, // 상단 경계선 제거
-            elevation: 0,
-            alignItems: "center",
-            width: "100%",
+            paddingTop: 10,
+            alignItems: "row",
+            justifyContent: "space-between",
           },
           tabBarButton: (props) => (
             <TouchableOpacity {...props} activeOpacity={1} />
@@ -152,13 +153,16 @@ export default function TabLayout() {
           options={{
             headerShown: false,
             title: "",
-            tabBarStyle: { display: "none" },
+            tabBarStyle: {
+              display: "none",
+            },
             tabBarIcon: () => null,
           }}
         />
         <Tabs.Screen
           name="calendar"
           options={{
+            headerShown: false,
             tabBarIcon: ({ color, focused }) => (
               <View style={{ alignItems: "center" }}>
                 <Image
@@ -283,7 +287,7 @@ export default function TabLayout() {
             position: "absolute",
             left: 0,
             right: 0,
-            bottom: 0,
+            bottom: 20,
             alignItems: "center",
             zIndex: 99999,
           }}

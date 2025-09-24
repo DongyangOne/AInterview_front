@@ -1,33 +1,27 @@
 import {
-    View, Text, TextInput, StyleSheet, TouchableOpacity, Alert, ScrollView, Image, Modal,
-} from 'react-native';
+    View,
+    Text,
+    TextInput,
+    StyleSheet,
+    TouchableOpacity,
+    Alert,
+    ScrollView,
+    Image,
+    Modal,
+} from "react-native";
 import { StatusBar } from "expo-status-bar";
 import React, { useEffect, useState } from "react";
-import useWindowDimensions from 'react-native';
-import { Picker } from '@react-native-picker/picker';
-import DropDownPicker from 'react-native-dropdown-picker';
+import useWindowDimensions from "react-native";
+import { Picker } from "@react-native-picker/picker";
+import DropDownPicker from "react-native-dropdown-picker";
+import { BlurView } from 'expo-blur';
 
-export default function App() {
-
+export default function memoChangeModal() {
     const [open, setOpen] = useState(false);
-    const [value, setValue] = useState("basic");
-    const [items, setItems] = useState([
-        { label: '정렬 기준', value: 'basic' },
-        { label: '최근 날짜 순', value: 'latest' },
-        { label: '가나다 순', value: 'name' },
-    ]);
 
-    const [open1, setOpen1] = useState(false);
-    const [open2, setOpen2] = useState(false);
-    const [value1, setValue1] = useState('basic');
-    const [items1, setItems1] = useState([
-        { label: '정렬 기준', value: 'basic' },
-        { label: '최상단 고정', value: 'static' },
-        { label: '제목 수정', value: 'title' },
-        { label: '메모 수정', value: 'memo' },
-        { label: '기록 삭제', value: 'delete' },
-    ]);
-
+    const [modalVisible, setModalVisible] = useState(false);
+    const [inputText, setInputText] = useState('');
+    const [selectedId, setSelectedId] = useState(null); // 어떤 항목을 수정 중인지 식별
 
 
     const [feedbacks, setFeedbacks] = useState([
@@ -35,27 +29,12 @@ export default function App() {
         { id: 2, date: '2025.07.06', title: '카카오 코딩 테스트', memo: '> 정답률 높이기...' },
     ]);
 
-    const [modalVisible, setModalVisible] = useState(false);
-    const [inputText, setInputText] = useState('');
-    const [selectedId, setSelectedId] = useState(null); // 어떤 항목을 수정 중인지 식별
-
 
     return (
-        <View style={{ flex: 1, }}>
-            <View style={styles.head}>
-                <Text style={{ fontSize: 20, top: 10, fontWeight: 'bold' }}>나의 피드백 목록</Text>
-                <View style={styles.search}>
-                    <TextInput style={styles.searchInput} placeholder='제목, 날짜, 메모 검색' />
-
-                </View>
-                <View style={{ top: 60, width: '85%', flexDirection: 'row', }}>
-                    <Text style={{ fontSize: 15, marginRight: 140, top: 5, color: '#808080' }}>모든 피드백</Text>
-                </View>
-            </View>
 
 
-            <ScrollView style={[styles.entire, { position: 'relative', }]}>
-
+        <ScrollView style={[styles.entire, { position: 'relative', }]}>
+            <View style={styles.subEntire}>
 
                 {feedbacks.map((item) => (
                     <View key={item.id} style={styles.contentBox}>
@@ -89,68 +68,76 @@ export default function App() {
                     visible={modalVisible}
                     onRequestClose={() => setModalVisible(false)}
                 >
-                    <View style={{
-                        flex: 1,
-                        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                        justifyContent: 'center',
-                        alignItems: 'center'
-                    }}>
+                    <BlurView
+                        style={{
+                            intensity: 70,
+                            tint: "dark",
+                            flex: 1,
+                            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                            justifyContent: 'center',
+                            alignItems: 'center'
+                        }}>
                         <View style={{
-                            width: 350,
-                            height: 210,
-                            padding: 20,
+                            width: 348,
+                            height: 379,
                             backgroundColor: 'white',
                             borderRadius: 10,
                             elevation: 5,
                             alignItems: 'center',
                         }}>
-                            <Text style={{ fontSize: 18, fontWeight: '600', marginBottom: 15 }}>제목 수정</Text>
-                            <TextInput
-                                style={{
-                                    width: 300, height: 50, borderRadius: 10,
-                                    borderWidth: 0.5, borderColor: '#CCCCCC', paddingLeft: 20
-                                }}
-                                value={inputText}
-                                onChangeText={setInputText}
-                            />
-                            <View style={{ flexDirection: 'row' }}>
+                            <Text style={{ position: 'absolute', fontSize: 18, fontWeight: 600, top: 24 }}>메모 수정</Text>
+                            <Text style={{ position: 'absolute', top: 63, fontSize: 12, marginLeft: 240, color: '#808080' }}>10/50</Text>
+                            <TextInput style={{
+                                position: 'absolute', top: 79,
+                                width: 295, height: 230, borderRadius: 10,
+                                borderWidth: 0.5, borderColor: '#CCCCCC', paddingLeft: 20,
+                                paddingBottom: 170, fontSize: 16, multiline: 'true'
+                            }} placeholder='메모를 작성해주세요' onChangeText={setInputText} />
+                            <View style={{ flexDirection: 'row', }}>
                                 <TouchableOpacity onPress={() => setModalVisible(false)}>
-                                    <View style={[styles.modalBtn, { marginRight: 15, marginTop: 15, backgroundColor: '#DDDDDD' }]}>
-                                        <Text style={{ fontSize: 16 }}>취소</Text>
+                                    <View style={[styles.modalBtn, { right: 7, backgroundColor: '#DDDDDD' }]}>
+                                        <Text style={{ fontSize: 16, }}>취소</Text>
                                     </View>
                                 </TouchableOpacity>
 
                                 <TouchableOpacity onPress={() => {
+                                    Alert.alert('저장 버튼 클릭됨');
+                                    setModalVisible(false);
                                     setFeedbacks((prev) =>
                                         prev.map((item) =>
-                                            item.id === selectedId ? { ...item, title: inputText } : item
+                                            item.id === selectedId ? { ...item, memo: inputText } : item
                                         )
                                     );
                                     setModalVisible(false);
                                 }}>
-                                    <View style={[styles.modalBtn, { marginTop: 15, backgroundColor: '#5900FF' }]}>
+                                    <View style={[styles.modalBtn, { left: 7, backgroundColor: '#5900FF' }]}>
                                         <Text style={{ fontSize: 16, color: 'white' }}>저장</Text>
                                     </View>
                                 </TouchableOpacity>
                             </View>
                         </View>
-                    </View>
+
+                    </BlurView>
                 </Modal>
+            </View>
+        </ScrollView>
 
-            </ScrollView>
 
 
-        </View>
     );
 }
 
 const styles = StyleSheet.create({
     entire: {
-        alignItems: 'center',
-        width: '100%',
+        width: "100%",
         height: "100%",
         top: 130,
-        paddingTop: 20
+        paddingTop: 150
+    },
+    subEntire: {
+        justifyContent: "center",
+        alignItems: "center",
+        marginTop: -150
     },
     head: {
         marginTop: 70,
@@ -211,9 +198,9 @@ const styles = StyleSheet.create({
         height: 45,
         borderRadius: 10,
         justifyContent: 'center',
-        alignItems: 'center'
+        alignItems: 'center',
+        position: 'absolute', top: 321,
     }
-
 
 
 });
