@@ -112,7 +112,7 @@ export default function ChangePasswordScreen() {
 
   const handleModalConfirm = () => {
       setModalVisible(false);
-      router.replace("/home");
+      router.replace("/myPage");
   };
 
   return (
