@@ -74,13 +74,6 @@ export default function MyPage() {
               style={styles.profileImage}
               resizeMode="cover"
             />
-            <TouchableOpacity style={styles.editIcon}>
-              <Image
-                source={require("../../assets/icons/user2.png")}
-                style={styles.editImageIcon}
-                resizeMode="cover"
-              />
-            </TouchableOpacity>
           </View>
 
           {/* 내 정보 */}

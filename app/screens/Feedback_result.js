@@ -1,6 +1,6 @@
 // Feedback_result.js
 import { useRouter, useLocalSearchParams } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import axios from "axios";
 import {
   View,
@@ -28,6 +28,15 @@ const formattedDate = today
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
+const LABELS_KO = {
+  pose: "자세",
+  confidence: "자신감",
+  facial: "표정",
+  risk_response: "위기 대처능력",
+  tone: "말투",
+  understanding: "업무이해도",
+};
+
 export default function FeedbackResult() {
   const route = useRouter();
 
@@ -44,18 +53,21 @@ export default function FeedbackResult() {
     tone: 0,
     understanding: 0,
   });
-
-
+  //이전 피드백 육각형 데이터 비교해서 가장 많이 증가한 데이터
+  const [mostImproved, setMostImproved] = useState([]);
   // 로딩/에러
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
-  // ✅ 추가: 최상단 고정 상태 (UI 변경 없음)
   const [isPinned, setIsPinned] = useState(false);
 
   const params = useLocalSearchParams();
-  const userId = Array.isArray(params.userId) ? params.userId[0] : params.userId;
-  const feedbackId = Array.isArray(params.feedbackId) ? params.feedbackId[0] : params.feedbackId;
+  const userId = Array.isArray(params.userId)
+    ? params.userId[0]
+    : params.userId;
+  const feedbackId = Array.isArray(params.feedbackId)
+    ? params.feedbackId[0]
+    : params.feedbackId;
   const title = Array.isArray(params.title) ? params.title[0] : params.title;
 
   const api = axios.create({
@@ -70,28 +82,30 @@ export default function FeedbackResult() {
       try {
         setLoading(true);
         setError(null);
-        const res = await api.get(
-          `/feedback/${encodeURIComponent(userId)}/${encodeURIComponent(feedbackId)}`
-        )
-       .then((r) => {
-           console.log("가져온 데이터",{
-               userId,
-               feedbackId,
-               title,
-               status: r?.status,
-           });
-           return r;
-       });
+        const res = await api
+          .get(
+            `/feedback/${encodeURIComponent(userId)}/${encodeURIComponent(
+              feedbackId
+            )}`
+          )
+          .then((r) => {
+            console.log("가져온 데이터", {
+              userId,
+              feedbackId,
+              title,
+              status: r?.status,
+            });
+            return r;
+          });
         const data = res.data?.data || {};
 
-        if(data.created_at) {
-        const date = new Date(data.created_at);
-        const formatted = date.toLocaleDateString("ko-KR", {
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-        }).replace(/\. /g, ".").replace(/\.$/,"");
-        setCreatedAt(formatted);
+        if (data.created_at) {
+          const date = new Date(data.created_at);
+          const y = date.getFullYear();
+          const m = String(date.getMonth() + 1).padStart(2, "0");
+          const d = String(date.getDate()).padStart(2, "0");
+          const formatted = `${y}년 ${m}월 ${d}일`;
+          setCreatedAt(formatted);
         }
 
         // 응답 값 매핑
@@ -99,7 +113,6 @@ export default function FeedbackResult() {
         setCons(data.bad || "");
         setTip(data.content || "");
         setMemo(data.memo || "");
-        // ✅ 목록과 동일 규칙: "Y"면 고정 (UI 영향 없음)
         setIsPinned((data.pin || "N") === "Y");
         setScores({
           pose: data.pose || 0,
@@ -109,6 +122,7 @@ export default function FeedbackResult() {
           tone: data.tone || 0,
           understanding: data.understanding || 0,
         });
+        setMostImproved(data.mostImproved || "");
       } catch (e) {
         setError("피드백을 불러오지 못했어요.");
         console.warn(e?.response?.data || e?.message);
@@ -120,6 +134,30 @@ export default function FeedbackResult() {
     fetchFeedback();
   }, [userId, feedbackId]);
 
+  const bestAspectKey = useMemo(() => {
+    const entries = Object.entries(scores);
+    if (!entries.length) return "pose";
+    let maxKey = "pose";
+    let maxVal = -Infinity;
+    for (const [k, v] of entries) {
+      if (typeof v === "number" && v > maxVal) {
+        maxVal = v;
+        maxKey = k;
+      }
+    }
+    return maxKey;
+  }, [scores]);
+
+  const bestAspectLabel = LABELS_KO[bestAspectKey] || "자세";
+  //받아온 데이터 매핑
+  const skillNameMap = {
+    pose: "자세",
+    confidence: "자신감",
+    facial: "표정",
+    risk_response: "위기대처능력",
+    tone: "말투",
+    understanding: "업무이해도",
+  };
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff", paddingTop: 0 }}>
       <View style={styles.container}>
@@ -141,9 +179,7 @@ export default function FeedbackResult() {
 
         <View style={styles.headerRow}>
           <Text style={styles.topTitle}>{title || "피드백"}</Text>
-          <Text style={styles.date}>
-          {createdAt || "날짜 없음"}
-          </Text>
+          <Text style={styles.date}>{createdAt || "날짜 없음"}</Text>
         </View>
 
         {isPinned && (
@@ -152,9 +188,11 @@ export default function FeedbackResult() {
             style={{
               position: "absolute",
               right: 18,
-              top: 90,
+              top: 125,
               width: 50,
               height: 70,
+              zIndex: 1,
+              elevation: 30,
             }}
           />
         )}
@@ -165,12 +203,17 @@ export default function FeedbackResult() {
       <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
         <View style={styles.container}>
           <Text style={styles.graphTitle}>사용자 분석 그래프</Text>
- <RadarChart data={scores} />
+          <RadarChart data={scores} />
 
-          <Text style={styles.improvementText}>
-            저번보다 <Text style={styles.highlight}>자세</Text>가 더 좋아졌어요!
-          </Text>
-
+          {mostImproved && mostImproved.length > 0 && (
+            <Text style={styles.improvementText}>
+              저번보다{" "}
+              <Text style={styles.highlight}>
+                {mostImproved.map((s) => skillNameMap[s] || s).join(", ")}
+              </Text>
+              이(가) 더 좋아졌어요!
+            </Text>
+          )}
           <Text style={styles.feedbackTitle}>피드백 및 평가</Text>
 
           <Text style={styles.labelGood}>장점</Text>
@@ -208,27 +251,15 @@ export default function FeedbackResult() {
 
           <Text style={styles.memoTitle}>메모</Text>
           <TextInput
-            style={styles.memoInput}
+            style={[styles.memoInput, styles.memoReadOnly]}
             multiline
-            placeholder="메모를 입력하세요..."
+            placeholder="메모가 없습니다."
             value={memo}
-            onChangeText={setMemo}
+            editable={false}
+            selectTextOnFocus={false}
+            showSoftInputOnFocus={false}
+            underlineColorAndroid="transparent"
           />
-
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity
-              style={styles.deleteButton}
-              onPress={() => route.replace("/home")}
-            >
-              <Text style={styles.deleteButtonText}>피드백 삭제</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.saveButton}
-              onPress={() => route.push("/feedback")}
-            >
-              <Text style={styles.saveButtonText}>피드백 저장</Text>
-            </TouchableOpacity>
-          </View>
         </View>
       </ScrollView>
 
@@ -256,7 +287,9 @@ export default function FeedbackResult() {
               setOpenModalItemId={() => setModalVisible(false)}
               isModalVisible={modalVisible}
               isPinned={isPinned}
-              onUpdateTitle={(id, newTitle) => route.setParams({ title: newTitle })}
+              onUpdateTitle={(id, newTitle) =>
+                route.setParams({ title: newTitle })
+              }
               onUpdateMemo={(id, newMemo) => setMemo(newMemo)}
               onDelete={(id) => route.replace("/feedback")}
               onPin={(_id, newPin) => setIsPinned(newPin === "Y")}
@@ -273,14 +306,15 @@ const styles = StyleSheet.create({
     flex: 0,
     backgroundColor: "#FFFFFF",
     paddingHorizontal: 32,
-    paddingTop: 0,
+    paddingTop: 24,
   },
   topHeader: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     height: 56,
-    paddingBottom: 12,
+    paddingTop: 10,
+    paddingBottom: 22,
     paddingHorizontal: 0,
     backgroundColor: "#fff",
   },
@@ -295,26 +329,28 @@ const styles = StyleSheet.create({
     color: "#191919",
     fontFamily: "Pretendard",
   },
+  // 🔍 점 3개 아이콘 크게
   dotsIcon: {
-    width: 26,
-    height: 26,
+    width: 36,
+    height: 36,
     resizeMode: "contain",
   },
   headerRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginTop: 10,
+    marginTop: 30,
     width: "100%",
   },
   fullLine: {
-    height: 2,
+    height: 5,
     backgroundColor: "#DDDDDD",
     width: "100%",
     alignSelf: "center",
     marginTop: 7,
-    marginBottom: 55,
     borderRadius: 3,
+    elevation: 0,
+    zIndex: 0,
   },
   topTitle: {
     fontSize: 18,
@@ -334,33 +370,9 @@ const styles = StyleSheet.create({
     fontWeight: "300",
     fontFamily: "Pretendard",
     color: "#191919",
-    marginBottom: 56,
+    marginTop: 35,
+    marginBottom: 16,
   },
-  graphWrapper: {
-    width: 206,
-    height: 206,
-    alignSelf: "center",
-    position: "relative",
-    marginBottom: 10,
-  },
-  graphImage: {
-    width: "100%",
-    height: "100%",
-    resizeMode: "contain",
-  },
-  graphLabel: {
-    position: "absolute",
-    fontSize: 13,
-    fontFamily: "Pretendard",
-    color: "#191919",
-    fontWeight: "400",
-  },
-  labelTopLeft: { top: -18, left: 38 },
-  labelTopRight: { top: -18, right: 30 },
-  labelLeft: { top: "42%", left: -40 },
-  labelRight: { top: "42%", right: -70, width: 68, textAlign: "center" },
-  labelBottomLeft: { bottom: -16, left: 40 },
-  labelBottomRight: { bottom: -16, right: 10 },
   improvementText: {
     marginTop: 40,
     textAlign: "center",
@@ -405,7 +417,7 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
   memoTitle: {
-    marginTop: 32,
+    marginTop: 61,
     fontSize: 16,
     fontWeight: "500",
     textAlign: "center",
@@ -419,46 +431,9 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#333",
     minHeight: 100,
-    marginTop: 12,
+    marginTop: 17,
     textAlignVertical: "top",
     fontFamily: "Pretendard",
-  },
-  buttonContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 24,
-    marginBottom: 40,
-  },
-  deleteButton: {
-    flex: 1,
-    marginRight: 12,
-    backgroundColor: "#FFFFFF",
-    borderColor: "#191919",
-    borderWidth: 0.3,
-    borderRadius: 10,
-    paddingVertical: 14,
-  },
-  saveButton: {
-    flex: 1,
-    marginLeft: 12,
-    backgroundColor: "#191919",
-    borderRadius: 10,
-    paddingVertical: 14,
-  },
-  deleteButtonText: {
-    color: "#808080",
-    textAlign: "center",
-    fontWeight: "600",
-    fontSize: 16,
-    fontFamily: "Inter",
-    letterSpacing: -0.5,
-  },
-  saveButtonText: {
-    color: "#FFFFFF",
-    textAlign: "center",
-    fontWeight: "600",
-    fontSize: 16,
-    fontFamily: "Inter",
-    letterSpacing: -0.5,
+    marginBottom: 104,
   },
 });

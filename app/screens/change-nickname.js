@@ -79,7 +79,7 @@ export default function ChangeNicknameScreen() {
 
     const handleModalConfirm = () => {
         setModalVisible(false);
-        router.replace("/home");
+        router.replace("/myPage");
     };
 
   return (

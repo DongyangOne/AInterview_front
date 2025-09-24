@@ -1,14 +1,16 @@
 import React, { useState } from "react";
 import { View, Text, Modal, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function Logout({ logout, setLogout }) {
   const router = useRouter();
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await AsyncStorage.clear();
     setLogout(false);
     console.log("로그아웃 처리");
-    router.replace("/Login");
+    router.replace("/Start");
   };
 
   return (

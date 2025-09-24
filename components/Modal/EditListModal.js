@@ -158,41 +158,59 @@ const EditListModal = ({
   };
 
   const handleTitleChange = (text) => {
-    if (text.length >= 20) {
+    if (text.length > 20) {
       setOpen(true);
-    } else {
-      setOpen(false);
+      return;
     }
     setTitleInputText(text);
   };
 
+
+
   const handleMemoChange = (text) => {
+
     const cleanedText = (text ?? "").replace(/\r?\n/g, "");
+
     if (cleanedText.length > 50) {
       setOpen(true);
-      setMemoInputText(text.substring(0, text.length - (cleanedText.length - 50)));
-    } else {
-      setOpen(false);
-      setMemoInputText(text);
+      return;
     }
+    setMemoInputText(text);
+    setMemoNum(cleanedText.length);
   };
+
 
   useEffect(() => {
     if (open) {
       const timer = setTimeout(() => {
         setOpen(false);
-      }, 3000);
+      }, 2000);
       return () => clearTimeout(timer);
     }
   }, [open]);
 
+
+
   const handleSaveMemo = async () => {
     const memoToSave = (memoInputText ?? "").replace(/\r?\n/g, "");
+
+    if (memoToSave.length > 50) {
+      setOpen(true);
+      return;
+    }
+
     await changeMemo(selectedId, memoToSave);
     setMemoModalVisible(false);
   };
 
+
   const handleSaveTitle = async () => {
+
+    if (titleInputText.length > 20) {
+      setOpen(true);
+      return;
+    }
+
     await changeTitle(selectedId, titleInputText);
     setTitleModalVisible(false);
   };
@@ -239,7 +257,6 @@ const EditListModal = ({
               style={styles.textInput}
               value={titleInputText}
               onChangeText={handleTitleChange}
-              maxLength={20}
             />
             {open ? (<Modal visible={open} transparent={true} animationType="fade">
               <View style={styles.limitModal}>
@@ -282,7 +299,7 @@ const EditListModal = ({
             <Text style={styles.charCount}>{memoNum}/50</Text>
             <TextInput
               style={styles.memoTextInput}
-              placeholder="메모를 작성해주세요"
+              placeholder={item.memo ? "" : "메모를 입력하세요."}
               value={memoInputText}
               onChangeText={handleMemoChange}
               multiline={true}
@@ -298,12 +315,12 @@ const EditListModal = ({
             ) : null}
             <View style={styles.buttonContainer}>
               <TouchableOpacity onPress={() => setMemoModalVisible(false)}>
-                <View style={[styles.modalBtn, styles.cancelBtn]}>
+                <View style={[styles.cancelBtn]}>
                   <Text style={styles.btnText}>취소</Text>
                 </View>
               </TouchableOpacity>
               <TouchableOpacity onPress={handleSaveMemo}>
-                <View style={[styles.modalBtn, styles.saveBtn]}>
+                <View style={[styles.saveBtn]}>
                   <Text style={[styles.btnText, styles.saveText]}>저장</Text>
                 </View>
               </TouchableOpacity>
@@ -422,7 +439,7 @@ const styles = StyleSheet.create({
     paddingLeft: 20,
     paddingRight: 20,
     paddingTop: 20,
-    paddingBottom: 20,
+    // paddingBottom: 10,
     fontSize: 16,
   },
   buttonContainer: {
@@ -438,9 +455,23 @@ const styles = StyleSheet.create({
     marginHorizontal: 7.5,
   },
   cancelBtn: {
+    marginTop: -3,
+    width: 140,
+    height: 45,
+    borderRadius: 10,
+    justifyContent: "center",
+    alignItems: "center",
+    marginHorizontal: 7.5,
     backgroundColor: "#DDDDDD",
   },
   saveBtn: {
+    marginTop: -3,
+    width: 140,
+    height: 45,
+    borderRadius: 10,
+    justifyContent: "center",
+    alignItems: "center",
+    marginHorizontal: 7.5,
     backgroundColor: "#5900FF",
   },
   deleteBtn: {

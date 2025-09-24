@@ -393,7 +393,7 @@ const styles = StyleSheet.create({
     },
 
     memoModalContent: {
-        height: 380,
+        paddingBottom:14,
     },
     modalTitle: {
         fontSize: 18,

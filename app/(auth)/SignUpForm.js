@@ -15,7 +15,8 @@ import axios from "axios";
 
 export default function SignUpForm() {
   const router = useRouter();
-
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [id, setId] = useState("");
   const [nickname, setNickname] = useState("");
   const [password, setPassword] = useState("");
@@ -199,7 +200,6 @@ export default function SignUpForm() {
         <View style={styles.errorBox}>
           <Text style={{ color: idCheckColor, fontSize: 12 }}>{idError}</Text>
         </View>
-
         <Text style={styles.label}>닉네임</Text>
         <TextInput
           style={styles.input}
@@ -211,33 +211,54 @@ export default function SignUpForm() {
         <View style={styles.errorBox}>
           <Text style={styles.error}>{nicknameError}</Text>
         </View>
-
         <Text style={styles.label}>비밀번호</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="8~16자 영대소문자, 숫자, 특수문자 사용 가능"
-          value={password}
-          secureTextEntry
-          onChangeText={setPassword}
-          editable={!submitting}
-        />
+        <View style={styles.passwordRow}>
+          <TextInput
+            style={styles.inputWithIcon}
+            placeholder="8~16자 영대소문자, 숫자, 특수문자 사용 가능"
+            value={password}
+            secureTextEntry={!showPassword}
+            onChangeText={setPassword}
+            editable={!submitting}
+          />
+          <TouchableOpacity
+            style={styles.eyeContainer}
+            onPress={() => setShowPassword(!showPassword)}
+          >
+            <Ionicons
+              name={showPassword ? "eye" : "eye-off"}
+              size={20}
+              color="gray"
+            />
+          </TouchableOpacity>
+        </View>
         <View style={styles.errorBox}>
           <Text style={styles.error}>{passwordError}</Text>
         </View>
-
         <Text style={styles.label}>비밀번호 확인</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="비밀번호를 다시 입력해 주세요."
-          value={confirmPassword}
-          secureTextEntry
-          onChangeText={setConfirmPassword}
-          editable={!submitting}
-        />
+        <View style={styles.passwordRow}>
+          <TextInput
+            style={styles.inputWithIcon}
+            placeholder="비밀번호를 다시 입력해 주세요."
+            value={confirmPassword}
+            secureTextEntry={!showConfirmPassword}
+            onChangeText={setConfirmPassword}
+            editable={!submitting}
+          />
+          <TouchableOpacity
+            style={styles.eyeContainer}
+            onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+          >
+            <Ionicons
+              name={showConfirmPassword ? "eye" : "eye-off"}
+              size={20}
+              color="gray"
+            />
+          </TouchableOpacity>
+        </View>
         <View style={styles.errorBox}>
           <Text style={styles.error}>{confirmPasswordError}</Text>
         </View>
-
         <View style={styles.checkRow}>
           <TouchableOpacity
             onPress={() => setAgreeTerms(!agreeTerms)}
@@ -260,7 +281,6 @@ export default function SignUpForm() {
         <View style={styles.errorBox}>
           <Text style={styles.error}>{termsError}</Text>
         </View>
-
         <View style={styles.checkRow}>
           <TouchableOpacity
             onPress={() => setAgreePush(!agreePush)}
@@ -280,7 +300,6 @@ export default function SignUpForm() {
             (선택)
           </Text>
         </View>
-
         <TouchableOpacity
           style={[styles.submitBtn, submitting && { opacity: 0.6 }]}
           onPress={validate}
@@ -357,4 +376,22 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   submitText: { color: "#fff", fontSize: 14, fontWeight: "bold" },
+  passwordRow: {
+    position: "relative",
+    marginTop: 8,
+    justifyContent: "center",
+  },
+  inputWithIcon: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 14,
+    paddingRight: 40,
+  },
+  eyeContainer: {
+    position: "absolute",
+    right: 12,
+    top: 12,
+  },
 });
