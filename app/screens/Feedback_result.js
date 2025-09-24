@@ -78,7 +78,9 @@ export default function FeedbackResult() {
         setLoading(true);
         setError(null);
         const res = await api.get(
-          `/feedback/${encodeURIComponent(userId)}/${encodeURIComponent(feedbackId)}`
+          `/feedback/${encodeURIComponent(userId)}/${encodeURIComponent(
+            feedbackId
+          )}`
         );
         const data = res.data?.data || {};
 
@@ -145,7 +147,7 @@ export default function FeedbackResult() {
     facial: "표정",
     risk_response: "위기대처능력",
     tone: "말투",
-    understanding: "업무이해도",
+    understanding: "침착함",
   };
 
   return (
@@ -354,7 +356,7 @@ const styles = StyleSheet.create({
   },
   headerRight: {
     width: "35%",
-    alignItems: "flex-end",   // 가로: 오른쪽
+    alignItems: "flex-end", // 가로: 오른쪽
     justifyContent: "flex-end", // 세로: 하단
     alignSelf: "stretch",
   },
