@@ -16,16 +16,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import Feedback_resultModal from "../../components/Modal/Feedback_resultModal";
 import RadarChart from "../../components/Modal/RadarChart";
 
-const today = new Date();
-const formattedDate = today
-  .toLocaleDateString("ko-KR", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  })
-  .replace(/\. /g, ".")
-  .replace(/\.$/, "");
-
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 const LABELS_KO = {
@@ -53,8 +43,13 @@ export default function FeedbackResult() {
     tone: 0,
     understanding: 0,
   });
+
+  // 🔹 제목 줄 수 추적(기본 1줄)
+  const [titleLineCount, setTitleLineCount] = useState(1);
+
   //이전 피드백 육각형 데이터 비교해서 가장 많이 증가한 데이터
   const [mostImproved, setMostImproved] = useState([]);
+
   // 로딩/에러
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -82,21 +77,11 @@ export default function FeedbackResult() {
       try {
         setLoading(true);
         setError(null);
-        const res = await api
-          .get(
-            `/feedback/${encodeURIComponent(userId)}/${encodeURIComponent(
-              feedbackId
-            )}`
-          )
-          .then((r) => {
-            console.log("가져온 데이터", {
-              userId,
-              feedbackId,
-              title,
-              status: r?.status,
-            });
-            return r;
-          });
+        const res = await api.get(
+          `/feedback/${encodeURIComponent(userId)}/${encodeURIComponent(
+            feedbackId
+          )}`
+        );
         const data = res.data?.data || {};
 
         if (data.created_at) {
@@ -122,7 +107,7 @@ export default function FeedbackResult() {
           tone: data.tone || 0,
           understanding: data.understanding || 0,
         });
-        setMostImproved(data.mostImproved || "");
+        setMostImproved(data.mostImproved || []);
       } catch (e) {
         setError("피드백을 불러오지 못했어요.");
         console.warn(e?.response?.data || e?.message);
@@ -149,6 +134,12 @@ export default function FeedbackResult() {
   }, [scores]);
 
   const bestAspectLabel = LABELS_KO[bestAspectKey] || "자세";
+
+  // 🔹 제목 lineHeight(아래 style과 동일 값)
+  const TITLE_LINE_HEIGHT = 22;
+  // 🔹 북마크 top: 기본 125 + (줄바꿈 수 * lineHeight)
+  const bookmarkTop = 125 + Math.max(0, titleLineCount - 1) * TITLE_LINE_HEIGHT;
+
   //받아온 데이터 매핑
   const skillNameMap = {
     pose: "자세",
@@ -156,8 +147,9 @@ export default function FeedbackResult() {
     facial: "표정",
     risk_response: "위기대처능력",
     tone: "말투",
-    understanding: "업무이해도",
+    understanding: "침착함",
   };
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff", paddingTop: 0 }}>
       <View style={styles.container}>
@@ -177,9 +169,22 @@ export default function FeedbackResult() {
           </TouchableOpacity>
         </View>
 
-        <View style={styles.headerRow}>
-          <Text style={styles.topTitle}>{title || "피드백"}</Text>
-          <Text style={styles.date}>{createdAt || "날짜 없음"}</Text>
+        {/* 제목(좌 65% - 자동 줄바꿈) + 날짜(우 35% - 우측 하단 고정) */}
+        <View style={styles.headerGrid}>
+          <View style={styles.headerLeft}>
+            <Text
+              style={styles.topTitleWrap}
+              onTextLayout={(e) => {
+                const lines = e?.nativeEvent?.lines?.length ?? 1;
+                setTitleLineCount(lines);
+              }}
+            >
+              {title || "피드백"}
+            </Text>
+          </View>
+          <View style={styles.headerRight}>
+            <Text style={styles.date}>{createdAt || "날짜 없음"}</Text>
+          </View>
         </View>
 
         {isPinned && (
@@ -188,7 +193,7 @@ export default function FeedbackResult() {
             style={{
               position: "absolute",
               right: 18,
-              top: 125,
+              top: bookmarkTop,
               width: 50,
               height: 70,
               zIndex: 1,
@@ -214,6 +219,7 @@ export default function FeedbackResult() {
               이(가) 더 좋아졌어요!
             </Text>
           )}
+
           <Text style={styles.feedbackTitle}>피드백 및 평가</Text>
 
           <Text style={styles.labelGood}>장점</Text>
@@ -329,19 +335,49 @@ const styles = StyleSheet.create({
     color: "#191919",
     fontFamily: "Pretendard",
   },
-  // 🔍 점 3개 아이콘 크게
   dotsIcon: {
     width: 36,
     height: 36,
     resizeMode: "contain",
   },
-  headerRow: {
+
+  /** ⬇️ 2-칼럼 헤더: 제목(좌) + 날짜(우 하단) */
+  headerGrid: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    // 두 칼럼 높이를 가장 긴 쪽에 맞춤 → 오른쪽을 하단 정렬 가능
+    alignItems: "stretch",
     marginTop: 30,
     width: "100%",
   },
+  headerLeft: {
+    width: "65%",
+    paddingRight: 8,
+    alignSelf: "stretch",
+  },
+  headerRight: {
+    width: "35%",
+    alignItems: "flex-end", // 가로: 오른쪽
+    justifyContent: "flex-end", // 세로: 하단
+    alignSelf: "stretch",
+  },
+
+  /** 제목: ‘중간 정도’ 크기 + 줄바꿈 허용 */
+  topTitleWrap: {
+    fontSize: 16,
+    lineHeight: 22,
+    fontWeight: "700",
+    fontFamily: "Pretendard",
+    color: "#191919",
+  },
+
+  /** 날짜: 우측 하단 고정 */
+  date: {
+    fontSize: 14,
+    fontWeight: "300",
+    fontFamily: "Pretendard",
+    color: "#808080",
+  },
+
   fullLine: {
     height: 5,
     backgroundColor: "#DDDDDD",
@@ -352,18 +388,7 @@ const styles = StyleSheet.create({
     elevation: 0,
     zIndex: 0,
   },
-  topTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-    fontFamily: "Pretendard",
-    color: "#191919",
-  },
-  date: {
-    fontSize: 18,
-    fontWeight: "300",
-    fontFamily: "Pretendard",
-    color: "#808080",
-  },
+
   graphTitle: {
     textAlign: "center",
     fontSize: 18,

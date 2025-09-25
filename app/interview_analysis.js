@@ -30,7 +30,7 @@ const router = useRouter();
         const remained = 1 - currentValue;
         if (remained <= 0) {
           // 프로그래스바가 끝나면 이동
-          if (isMounted.current) router.replace('/interview_analysis');
+          if (isMounted.current) router.replace('/interview_end');
           return;
         }
       const remainedMs = 10000 * remained; // 총길이 10초 기준
@@ -44,7 +44,7 @@ const router = useRouter();
       isAnimating.current = true;
             animationRef.current.start( ({ finished }) => {
               if (finished && isMounted.current) {
-                router.replace('/Interview_result');
+                router.replace('/interview_end');
               }
             });
           });

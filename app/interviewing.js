@@ -63,7 +63,8 @@ export default function Interviewing() {
     progressAnim.stopAnimation((currentValue) => {
       const remained = 1 - currentValue;
       if (remained <= 0) {
-        if (isMounted.current) router.replace("/interview_analysis");
+        // 프로그래스바가 끝나면 이동
+        if (isMounted.current) router.replace("/Interview_result");
         return;
       }
 
@@ -78,7 +79,7 @@ export default function Interviewing() {
       isAnimating.current = true;
       animationRef.current.start(({ finished }) => {
         if (finished && isMounted.current) {
-          router.replace("/interview_analysis");
+          router.replace("/Interview_result");
         }
       });
     });
