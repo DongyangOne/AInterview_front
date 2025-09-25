@@ -6,6 +6,7 @@ import {
   TextInput,
   TouchableOpacity,
   Image,
+  Button,
 } from "react-native";
 import { useRouter } from "expo-router";
 import CustomModal from "../components/Modal/Close";
@@ -13,7 +14,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-
+import * as ImagePicker from "expo-image-picker";
 export default function Interview_result() {
   const router = useRouter();
   const [titleError, setTitleError] = useState(false);
@@ -33,16 +34,16 @@ export default function Interview_result() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-      const fetchUserId = async () => {
-        try {
-          const id = await AsyncStorage.getItem("userId");
-          if (id) setUsersId(Number(id));
-        } catch (error) {
-          console.log("AsyncStorage error:", error);
-        }
-      };
-      fetchUserId();
-    }, []);
+    const fetchUserId = async () => {
+      try {
+        const id = await AsyncStorage.getItem("userId");
+        if (id) setUsersId(Number(id));
+      } catch (error) {
+        console.log("AsyncStorage error:", error);
+      }
+    };
+    fetchUserId();
+  }, []);
 
   const handleSave = () => {
     if (!title.trim()) {
@@ -58,23 +59,27 @@ export default function Interview_result() {
     }
 
     axios
-      .post(`${process.env.EXPO_PUBLIC_API_URL}/feedback`,{
-          userId: usersId,
-          title,
-          memo,
-          good,
-          bad,
-          content,
-          pose: parseInt(pose),
-          confidence: parseInt(confidence),
-          facial: parseInt(facial),
-          risk_response: parseInt(riskResponse),
-          tone: parseInt(tone),
-          understanding: parseInt(understanding),
-        })
+      .post(`${process.env.EXPO_PUBLIC_API_URL}/feedback`, {
+        userId: usersId,
+        title,
+        memo,
+        good,
+        bad,
+        content,
+        pose: parseInt(pose),
+        confidence: parseInt(confidence),
+        facial: parseInt(facial),
+        risk_response: parseInt(riskResponse),
+        tone: parseInt(tone),
+        understanding: parseInt(understanding),
+      })
       .then((response) => {
+        const feedbackId = response.data.data.feedbackId;
         console.log("피드백 생성 성공:", response.data);
-        router.push("/interview_analysis");
+        router.push({
+          pathname: "/interview_image", // 이동할 페이지 경로
+          params: { feedbackId }, // 쿼리 파라미터로 전달
+        });
       })
       .catch((error) => {
         console.log("Error:", error.message || error);
@@ -120,11 +125,7 @@ export default function Interview_result() {
         placeholder="면접 제목을 입력해주세요."
         placeholderTextColor="#808080"
       />
-      {titleError && <Text style={styles.errorText}>면접 제목을 입력해주세요.</Text>}
-      <TouchableOpacity
-        onPress = {handleSave}
-        style={styles.saveButton}
-      >
+      <TouchableOpacity onPress={handleSave} style={styles.saveButton}>
         <Text style={styles.saveButtonText}>저장하기</Text>
       </TouchableOpacity>
     </SafeAreaView>
@@ -198,8 +199,8 @@ const styles = StyleSheet.create({
     fontFamily: "Pretendard",
   },
   errorText: {
-      fontSize: 14,
-      color: "red",
-      marginLeft: 16,
-    },
+    fontSize: 14,
+    color: "red",
+    marginLeft: 16,
+  },
 });

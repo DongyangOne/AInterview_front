@@ -13,11 +13,15 @@ import {
   Linking,
 } from "react-native";
 import { useRouter } from "expo-router";
-import { CameraView, useCameraPermissions } from "expo-camera";
+import {
+  CameraView,
+  useCameraPermissions,
+  useMicrophonePermissions,
+} from "expo-camera";
 import CustomModal from "../components/Modal/Close";
 
 const { width } = Dimensions.get("window");
-const PROGRESS_DURATION = 15;
+const PROGRESS_DURATION = 5;
 
 export default function Interviewing() {
   const router = useRouter();
@@ -25,32 +29,48 @@ export default function Interviewing() {
   const [timeLeft, setTimeLeft] = useState(PROGRESS_DURATION);
   const [modalVisible, setModalVisible] = useState(false);
   const [permission, requestPermission] = useCameraPermissions();
-
+  const [permission1, requestPermission1] = useMicrophonePermissions();
+  const [isRecording, setIsRecording] = useState(true);
+  const [video, setVideo] = useState();
   const cameraRef = useRef(null);
   const progressAnim = useRef(new Animated.Value(0)).current;
   const animationRef = useRef(null);
   const isAnimating = useRef(false);
   const isMounted = useRef(true);
-
-  // 권한 요청
-  useEffect(() => {
-    if (permission && permission.status !== "granted") {
-      if (permission.canAskAgain) {
-        requestPermission();
-      } else {
-        Alert.alert("권한 필요", "앱 설정에서 카메라 권한을 허용해주세요.", [
-          { text: "취소", style: "cancel" },
-          { text: "설정", onPress: () => Linking.openSettings() },
-        ]);
-      }
-    }
-  }, [permission]);
+  // // 권한 요청
+  // useEffect(() => {
+  //   if (permission1 && permission1.status !== "granted") {
+  //     if (permission1.canAskAgain) {
+  //       requestPermission1();
+  //     } else {
+  //       Alert.alert("권한 필요", "앱 설정에서 마이크 권한을 허용해주세요.", [
+  //         { text: "취소", style: "cancel" },
+  //         { text: "설정", onPress: () => Linking.openSettings() },
+  //       ]);
+  //     }
+  //   }
+  // }, [permission1]);
+  // // 권한 요청
+  // useEffect(() => {
+  //   if (permission && permission.status !== "granted") {
+  //     if (permission.canAskAgain) {
+  //       requestPermission();
+  //     } else {
+  //       Alert.alert("권한 필요", "앱 설정에서 카메라 권한을 허용해주세요.", [
+  //         { text: "취소", style: "cancel" },
+  //         { text: "설정", onPress: () => Linking.openSettings() },
+  //       ]);
+  //     }
+  //   }
+  // }, [permission]);
 
   // 타이머 + 프로그래스 시작
   useEffect(() => {
-    isMounted.current = true;
-    startProgress();
-    startTimer();
+    if (isRecording) {
+      isMounted.current = true;
+      startProgress();
+      startTimer();
+    }
     return () => {
       isMounted.current = false;
       animationRef.current?.stop();
@@ -58,7 +78,52 @@ export default function Interviewing() {
     };
   }, []);
 
-  // 프로그래스바 애니메이션
+  // const recordVideo = async () => {
+  //   setIsRecording(true);
+
+  //   if (!cameraRef.current) {
+  //     console.log("시작:Camera reference is null or undefined");
+  //     setIsRecording(false);
+  //     return;
+  //   }
+
+  //   console.log("Starting video recording...");
+
+  //   try {
+  //     const newVideo = await cameraRef.current.recordAsync();
+
+  //     console.log("Video recorded successfully:", newVideo);
+
+  //     setVideo(newVideo);
+  //   } catch (error) {
+  //     console.error("Error recording video:", error.message);
+  //   } finally {
+  //     setIsRecording(false);
+  //   }
+  // };
+
+  // // stop recording video
+  // async function stopRecording() {
+  //   console.log("Stopping video recording...");
+
+  //   if (!cameraRef.current) {
+  //     console.log("Camera reference is null or undefined");
+  //     return;
+  //   }
+
+  //   try {
+  //     cameraRef.current.stopRecording();
+  //     console.log("Video recording stopped");
+  //   } catch (error) {
+  //     console.error("Error stopping video recording:", error.message);
+  //   } finally {
+  //     setIsRecording(false);
+  //   }
+
+  //   console.log("Video URL after stop:", video);
+  // }
+
+  // // 프로그래스바 애니메이션
   const startProgress = () => {
     progressAnim.stopAnimation((currentValue) => {
       const remained = 1 - currentValue;
@@ -93,6 +158,10 @@ export default function Interviewing() {
       setTimeLeft((prev) => {
         if (prev <= 1) {
           clearInterval(animationRef.current?.timer);
+          // 녹화 종료
+          if (isRecording) {
+            stopRecording();
+          }
           return 0;
         }
         return prev - 1;
@@ -138,6 +207,19 @@ export default function Interviewing() {
       </View>
     );
   }
+  // if (!permission1 || permission1.status !== "granted") {
+  //   return (
+  //     <View style={styles.center}>
+  //       <Text>카메라 권한이 필요합니다.</Text>
+  //       <TouchableOpacity
+  //         style={styles.permissionButton}
+  //         onPress={requestPermission1}
+  //       >
+  //         <Text style={{ color: "#fff" }}>권한 요청</Text>
+  //       </TouchableOpacity>
+  //     </View>
+  //   );
+  // }
 
   return (
     <>
@@ -150,6 +232,7 @@ export default function Interviewing() {
         ref={cameraRef}
         style={StyleSheet.absoluteFill}
         facing="front"
+        // onCameraReady={recordVideo}
       />
 
       <TouchableOpacity style={styles.closeButton} onPress={onOpenModal}>

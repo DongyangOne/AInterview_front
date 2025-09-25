@@ -12,7 +12,6 @@ import {
   Pressable,
 } from "react-native";
 import { BlurView } from "expo-blur";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 const { width, height } = Dimensions.get("window");
 
@@ -34,7 +33,7 @@ function FloatingActionButton({ open, setOpen }) {
   });
 
   return (
-    <SafeAreaView style={styles.fabContainer}>
+    <View style={styles.fabContainer}>
       <TouchableOpacity
         activeOpacity={0.8}
         onPress={() => setOpen(!open)}
@@ -59,7 +58,7 @@ function FloatingActionButton({ open, setOpen }) {
           />
         </View>
       </TouchableOpacity>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -68,7 +67,7 @@ export default function TabLayout() {
   const [open, setOpen] = useState(false);
   const router = useRouter();
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <View style={{ flex: 1 }}>
       {/* (1) 기본 Tabs 화면 */}
       <Tabs
         screenOptions={{
@@ -96,7 +95,7 @@ export default function TabLayout() {
                 <Image
                   source={require("../../assets/icons/home.png")}
                   style={{
-                    marginBottom: 5,
+                    marginTop: 10,
                     width: 22,
                     height: 18.9,
                     marginLeft: "10.19%",
@@ -122,11 +121,11 @@ export default function TabLayout() {
           options={{
             headerShown: false,
             tabBarIcon: ({ color, focused }) => (
-              <View style={{ alignItems: "center", justifyContent: "center" }}>
+              <View style={{ alignItems: "center" }}>
                 <Image
                   source={require("../../assets/icons/feedback.png")}
                   style={{
-                    marginBottom: 5,
+                    marginTop: 10,
                     width: 18,
                     height: 20,
                     marginLeft: "10%",
@@ -168,7 +167,7 @@ export default function TabLayout() {
                 <Image
                   source={require("../../assets/icons/calendar.png")}
                   style={{
-                    marginBottom: 5,
+                    marginTop: 10,
                     width: 18,
                     height: 20,
                     tintColor: color,
@@ -196,7 +195,7 @@ export default function TabLayout() {
                 <Image
                   source={require("../../assets/icons/Person.png")}
                   style={{
-                    marginBottom: 5,
+                    marginTop: 10,
                     width: 24,
                     height: 24,
                     marginRight: "30.77%",
@@ -289,13 +288,13 @@ export default function TabLayout() {
             right: 0,
             bottom: 20,
             alignItems: "center",
-            zIndex: 99999,
+            zIndex: 10,
           }}
         >
           <FloatingActionButton open={open} setOpen={setOpen} />
         </View>
       )}
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -304,7 +303,7 @@ const styles = StyleSheet.create({
   fabContainer: {
     alignItems: "center",
     justifyContent: "flex-end",
-    marginBottom: 20,
+    marginBottom: 18,
     width: width,
   },
   fab: {
