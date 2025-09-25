@@ -101,8 +101,11 @@ export default function InterviewVideo() {
 
   return (
     <View style={styles.container}>
-      <Button title="갤러리에서 동영상 선택하기" onPress={pickVideo} />
-
+      <TouchableOpacity style={[styles.nextBtn]} onPress={pickVideo}>
+        <Text style={{ color: "#fff", textAlign: "center", lineHeight: 50 }}>
+          갤러리에서 동영상 선택하기
+        </Text>
+      </TouchableOpacity>
       <TouchableOpacity style={[styles.nextBtn]} onPress={handleSave}>
         <Text style={{ color: "#fff", textAlign: "center", lineHeight: 50 }}>
           다음
