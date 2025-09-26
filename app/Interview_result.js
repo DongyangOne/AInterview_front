@@ -6,7 +6,7 @@ import {
   TextInput,
   TouchableOpacity,
   Image,
-  Button,
+  Dimensions,
 } from "react-native";
 import { useRouter } from "expo-router";
 import CustomModal from "../components/Modal/Close";
@@ -14,7 +14,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-import * as ImagePicker from "expo-image-picker";
+const { width } = Dimensions.get("window");
+
 export default function Interview_result() {
   const router = useRouter();
   const [titleError, setTitleError] = useState(false);
@@ -165,12 +166,13 @@ const styles = StyleSheet.create({
   },
   input: {
     height: 50,
-    width: 348,
+    width: width * 0.85,
     borderColor: "#ccc",
     borderWidth: 0.5,
     borderRadius: 10,
     paddingHorizontal: 10,
     marginLeft: 8,
+    marginRight: 8,
     marginBottom: 5,
     fontSize: 16,
     fontFamily: "Pretendard",
@@ -178,8 +180,9 @@ const styles = StyleSheet.create({
   },
   saveButton: {
     height: 67,
-    width: 348,
+    width: width * 0.85,
     marginLeft: 8,
+    marginRight: 8,
     marginTop: 50,
     marginBottom: 140,
     borderRadius: 10,
