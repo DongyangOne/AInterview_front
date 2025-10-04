@@ -3,7 +3,6 @@ import { View } from "react-native";
 import Svg, { Polygon, Line, Text as SvgText, G } from "react-native-svg";
 
 const RadarChart = ({ data }) => {
-
   const size = 300;
   const padX = 28;
   const padY = 28;
@@ -12,9 +11,12 @@ const RadarChart = ({ data }) => {
   const radius = size / 2 - 24;
 
   const ROT = -Math.PI / 6;
-  const angles = Array.from({ length: count }, (_, i) => (Math.PI * 2 * i) / count);
+  const angles = Array.from(
+    { length: count },
+    (_, i) => (Math.PI * 2 * i) / count
+  );
 
-  const getPoint = (angle: number, value: number) => {
+  const getPoint = (angle, value) => {
     const a = angle - Math.PI / 2 + ROT;
     const x = center + radius * value * Math.cos(a);
     const y = center + radius * value * Math.sin(a);
@@ -32,24 +34,22 @@ const RadarChart = ({ data }) => {
   const normalized = values.map((v) => Math.min((Number(v) || 0) / 100, 1));
   const points = normalized.map((v, i) => getPoint(angles[i], v)).join(" ");
 
-  const labels = ["자세", "자신감", "위기 대처능력", "업무이해도", "말투", "표정"];
+  const labels = ["자세", "자신감", "위기 대처능력", "침착함", "말투", "표정"];
 
   return (
     <View style={{ alignItems: "center", marginBottom: 20 }}>
       <Svg width={size + padX * 2} height={size + padY * 2}>
         <G transform={`translate(${padX}, ${padY})`}>
-
-        {Array.from({ length: 6 }, (_, i) => (i + 1) / 6).map((level, i) => (
-          <Polygon
-            key={`grid-${i}`}
-            points={angles.map((angle) => getPoint(angle, level)).join(" ")}
-            fill="none"
-            stroke="#000"
-            strokeWidth={0.7}
-            opacity={0.6}
-          />
-        ))}
-
+          {Array.from({ length: 6 }, (_, i) => (i + 1) / 6).map((level, i) => (
+            <Polygon
+              key={`grid-${i}`}
+              points={angles.map((angle) => getPoint(angle, level)).join(" ")}
+              fill="none"
+              stroke="#000"
+              strokeWidth={0.7}
+              opacity={0.6}
+            />
+          ))}
 
           {/* 축 라인 */}
           {angles.map((angle, i) => {
@@ -88,7 +88,7 @@ const RadarChart = ({ data }) => {
                 <React.Fragment key={`label-${i}-frag`}>
                   <SvgText
                     key={`label-${i}-1`}
-                    x={x+7}
+                    x={x + 7}
                     y={y - 8}
                     fontSize="13"
                     fill="#000"
@@ -98,7 +98,7 @@ const RadarChart = ({ data }) => {
                   </SvgText>
                   <SvgText
                     key={`label-${i}-2`}
-                    x={x+7}
+                    x={x + 7}
                     y={y + 9}
                     fontSize="13"
                     fill="#000"
