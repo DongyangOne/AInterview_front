@@ -47,7 +47,10 @@
     "react-native-svg": "15.11.2",
     "react-native-web": "~0.20.0",
     "react-native-wheel-picker-expo": "^0.5.4",
-    "svg": "^0.1.0"
+    "svg": "^0.1.0",
+    "expo-media-library": "~17.1.7",
+    "expo-video": "~2.2.2",
+    "expo-file-system": "~18.1.11"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
