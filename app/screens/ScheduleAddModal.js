@@ -56,13 +56,15 @@ export default function ScheduleAddModal({
         setTitle(editData.title || "");
         setHour(editData.hour || "");
         setMinute(editData.minute || "");
-        setPriority(
-          editData.priority === "매우 중요"
-            ? "S"
-            : editData.priority === "중요하지 않음"
-            ? "N"
-            : "I"
-        );
+        if(editData.priority === "S" || editData.priority === "매우 중요") {
+            setPriority("S");
+          } else if(editData.priority === "X" || editData.priority === "중요하지 않음") {
+            setPriority("N");
+          } else if(editData.priority === "I" || editData.priority === "중요") {
+            setPriority("I");
+          } else {
+            setPriority("I");  // 기본값
+          }
         setMemo(editData.memo || "");
         setTempHour(editData.hour || "00");
         setTempMinute(editData.minute || "00");
@@ -387,11 +389,16 @@ const styles = StyleSheet.create({
   },
   inputRow: {
     flexDirection: "row",
-    alignItems: "stretch",
+    alignItems: "center",
     marginBottom: 10,
     minHeight: 50,
   },
-  label: { fontWeight: "bold", width: 80, fontSize: 15, marginTop: 4 },
+  label: {
+   fontWeight: "bold",
+   width: 80,
+   fontSize: 15,
+   marginTop: 4
+   },
   input: {
     flex: 1,
     borderWidth: 1,
@@ -411,6 +418,7 @@ const styles = StyleSheet.create({
     textAlignVertical: "top",
   },
   footerButtons: {
+    flex:1,
     flexDirection: "row",
     justifyContent: "space-between",
     paddingVertical: 10,
@@ -429,7 +437,9 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   required: { color: "red", marginLeft: 6, fontSize: 16 },
-  priorityBox: { flexDirection: "row", gap: 8 },
+  priorityBox: {
+    flexDirection: "row",
+    gap: 7 },
   priorityBtn: {
     width: 84,
     alignItems: "center",
