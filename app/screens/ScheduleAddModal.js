@@ -1,4 +1,4 @@
-import React, { useRef, useState, useMemo, useEffect } from "react";
+import React, { useRef, useState, useEffect, useMemo } from "react";
 import {
   View,
   Text,
@@ -17,7 +17,6 @@ import { pad } from "./ScheduleList";
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 const SCREEN_PAD = 32;
 
-// 중요도 옵션 (API 값: value)
 const importanceOptions = [
   { label: "매우 중요", value: "S", color: "#FFB7B7" },
   { label: "보통", value: "I", color: "#FFCB82" },
@@ -29,34 +28,17 @@ export default function ScheduleAddModal({
   onClose,
   selectedDate,
   onSave,
-  isEditing,
+  isEditing = false,
+  editData = null,
   saving,
 }) {
   const modalAddRef = useRef(null);
-
-  React.useEffect(() => {
-    if (visible) {
-      setHour("");
-      setMinute("");
-      setTempHour("00");
-      setTempMinute("00");
-      modalAddRef.current?.open();
-    } else {
-      modalAddRef.current?.close();
-    }
-  }, [visible]);
-
-  React.useEffect(() => {
-    // 시간 또는 분이 변경되면 별도 처리 가능 (필요시)
-    console.log("시간 변경: ", hour, minute);
-  }, [hour, minute]);
 
   const [title, setTitle] = useState("");
   const [hour, setHour] = useState("");
   const [minute, setMinute] = useState("");
   const [tempHour, setTempHour] = useState("00");
   const [tempMinute, setTempMinute] = useState("00");
-  // 중요도 초기값 반드시 API value ("S"/"I"/"N")
   const [priority, setPriority] = useState("");
   const [memo, setMemo] = useState("");
   const [showTimePicker, setShowTimePicker] = useState(false);
@@ -65,101 +47,130 @@ export default function ScheduleAddModal({
   const [priorityRequired, setPriorityRequired] = useState(false);
   const [saveError, setSaveError] = useState("");
 
-  const hourList = useMemo(
-    () => Array.from({ length: 24 }, (_, i) => pad(i)),
-    []
-  );
-  const minuteList = useMemo(
-    () => Array.from({ length: 60 }, (_, i) => pad(i)),
-    []
-  );
+  const hourList = useMemo(() => Array.from({ length: 24 }, (_, i) => pad(i)), []);
+  const minuteList = useMemo(() => Array.from({ length: 60 }, (_, i) => pad(i)), []);
 
-  const openPicker = () => {
-    setTempHour(hour || "00");
-    setTempMinute(minute || "00");
-    setShowTimePicker(true);
+  useEffect(() => {
+    if (visible) {
+      if (isEditing && editData) {
+        setTitle(editData.title || "");
+        setHour(editData.hour || "");
+        setMinute(editData.minute || "");
+        setPriority(
+          editData.priority === "매우 중요"
+            ? "S"
+            : editData.priority === "중요하지 않음"
+            ? "N"
+            : "I"
+        );
+        setMemo(editData.memo || "");
+        setTempHour(editData.hour || "00");
+        setTempMinute(editData.minute || "00");
+      } else {
+        setTitle("");
+        setHour("");
+        setMinute("");
+        setPriority("");
+        setMemo("");
+      }
+      setSaveError("");
+      modalAddRef.current?.open();
+    } else {
+      modalAddRef.current?.close();
+    }
+  }, [visible, isEditing, editData]);
+
+  const handleModalClosed = () => {
+    setTempHour("00");
+    setTempMinute("00");
+    handleCancel();
   };
 
-  // API 요구 포맷으로 반환 (예: 2025-09-13 10:00:00)
   const getApiDateTime = () => {
-    // selectedDate가 JS Date 객체이어야 함!
     const dateObj = new Date(selectedDate);
     const yyyy = dateObj.getFullYear();
     const mm = pad(dateObj.getMonth() + 1);
     const dd = pad(dateObj.getDate());
-    const h = hour !== "" ? pad(hour) : "00";
-    const m = minute !== "" ? pad(minute) : "00";
     return `${yyyy}-${mm}-${dd} ${pad(hour)}:${pad(minute)}:00`;
   };
 
   const handleSave = () => {
-    const isTitleValid = title.trim() !== "";
-    if (!isTitleValid) {
-        setTitleRequired(true);
-        setPriorityRequired(false);
-        setTimeRequired(false);
-        return;
-      } else {
-        setTitleRequired(false);
-      }
+    if (title.trim() === "") {
+      setTitleRequired(true);
+      setPriorityRequired(false);
+      setTimeRequired(false);
+      return;
+    } else {
+      setTitleRequired(false);
+    }
 
-    const isTimeValid = hour !== "" && minute !== "";
-        if (!isTimeValid) {
-            setTimeRequired(true);
-            return;
-          } else {
-            setTimeRequired(false);
-          }
+    if (hour === "" || minute === "") {
+      setTimeRequired(true);
+      return;
+    } else {
+      setTimeRequired(false);
+    }
 
-    const isPriorityValid = priority !== "";
-    if (!isPriorityValid) {
-        setPriorityRequired(true);
-        setTimeRequired(false);
-        return;
-      } else {
-        setPriorityRequired(false);
-      }
+    if (priority === "") {
+      setPriorityRequired(true);
+      setTimeRequired(false);
+      return;
+    } else {
+      setPriorityRequired(false);
+    }
 
-      if (title.length > 7) {
-        return;
-      }
+    if (title.length > 7) {
+      return;
+    }
 
     AsyncStorage.getItem("userId")
       .then((userId) => {
-        return axios.get(`${process.env.EXPO_PUBLIC_API_URL}/calendar/add`, {
-          params: {
-            userId,
-            title,
-            time: getApiDateTime(),
-            importance: priority,   // 반드시 "S" | "I" | "N"
-            memo,
-          },
-          withCredentials: true
-        });
+        if (!userId) {
+          throw new Error("사용자 정보가 없습니다.");
+        }
+
+        const params = {
+          userId,
+          title,
+          time: getApiDateTime(),
+          importance: priority,
+          memo,
+        };
+
+        if (isEditing && editData?.id) {
+          return axios.get(`${process.env.EXPO_PUBLIC_API_URL}/calendar/update`, {
+            params: { ...params, calendar_id: editData.id },
+            withCredentials: true,
+          });
+        } else {
+          return axios.get(`${process.env.EXPO_PUBLIC_API_URL}/calendar/add`, {
+            params,
+            withCredentials: true,
+          });
+        }
       })
       .then((res) => {
-        const calendarId = res.data.calendarId || res.data.id;
-        if (calendarId) {
-            AsyncStorage.setItem("calendarId", calendarId.toString());
-          }
-        console.log("[schedule add] Response:", res.data);
+        const calendarId = isEditing ? editData.id : res.data.calendarId || res.data.id;
         onSave &&
           onSave({
+            id: calendarId,
             title,
             hour,
             minute,
             priority,
             memo,
-            calendarId
           });
         handleCancel();
       })
       .catch((err) => {
-        setSaveError(
-          "일정 저장 실패: " + (err?.response?.data?.message || err.message)
-        );
-        console.error("[schedule add] Error:", err?.response?.data || err);
+        setSaveError("일정 저장 실패: " + (err?.response?.data?.message || err.message));
       });
+  };
+
+  const openPicker = () => {
+    setTempHour(hour || "00");
+    setTempMinute(minute || "00");
+    setShowTimePicker(true);
   };
 
   const handleCancel = () => {
@@ -175,19 +186,15 @@ export default function ScheduleAddModal({
     onClose && onClose();
   };
 
-  // 한글 라벨 반환 (API 값 → label)
-  const getPriorityLabel = (val) =>
-    importanceOptions.find((opt) => opt.value === val)?.label ?? "";
-
   return (
     <Modalize
       ref={modalAddRef}
       modalHeight={SCREEN_HEIGHT}
       snapPoint={SCREEN_HEIGHT * 0.66}
       handlePosition="inside"
-      panGestureEnabled={true}
-      withHandle={true}
-      onClosed={handleCancel}
+      panGestureEnabled
+      withHandle
+      onClosed={handleModalClosed}
       modalStyle={{
         borderTopLeftRadius: 20,
         borderTopRightRadius: 20,
@@ -235,49 +242,55 @@ export default function ScheduleAddModal({
         </View>
         <View style={styles.inputRow}>
           <Text style={styles.label}>면접시간</Text>
-          <View style={{flex : 1}}>
-          <Pressable style={styles.input} onPress={() => setShowTimePicker(true)}>
-            <Text style={{ color: hour && minute ? "#191919" : "#888" }}>
-            {hour || minute ? `${hour || "00"}:${minute || "00"}` : "시간을 선택하세요."}</Text>
-          </Pressable>
-          {timeRequired && <Text style={styles.errorMsg}>시간을 선택해 주세요.</Text>}
-        </View>
+          <View style={{ flex: 1 }}>
+            <Pressable
+              style={styles.input}
+              onPress={openPicker}
+            >
+              <Text style={{ color: hour && minute ? "#191919" : "#888" }}>
+                {hour || minute ? `${hour || "00"}:${minute || "00"}` : "시간을 선택하세요."}
+              </Text>
+            </Pressable>
+            {timeRequired && (
+              <Text style={styles.errorMsg}>시간을 선택해 주세요.</Text>
+            )}
+          </View>
         </View>
         <View style={styles.inputRow}>
           <Text style={styles.label}>중요도</Text>
-          <View style={{flex : 1}}>
-          <View style={styles.priorityBox}>
-            {importanceOptions.map((opt) => {
-            const selected = priority === opt.value;
-            return (
-              <Pressable
-                key={opt.value}
-                style={[
-                  styles.priorityBtn,
-                  { borderColor: opt.color },
-                  selected && { backgroundColor: opt.color, borderWidth: 2 },
-                  !selected && { backgroundColor: "#fff", borderWidth: 2 },
-                ]}
-                onPress={() => {
-                  setPriority(opt.value);
-                  setPriorityRequired(false);
-                }}
-              >
-                <Text
-                  style={[
-                    { color: opt.color, fontSize: 13, fontWeight: 600, textAlign: "center"},
-                    selected && { color: "#fff" },
-                  ]}
-                >
-                  {opt.label}
-                </Text>
-              </Pressable>
-              );
-            })}
-          </View>
-          {priorityRequired && (
-            <Text style={styles.errorMsg}>중요도를 선택해 주세요</Text>
-          )}
+          <View style={{ flex: 1 }}>
+            <View style={styles.priorityBox}>
+              {importanceOptions.map((opt) => {
+                const selected = priority === opt.value;
+                return (
+                  <Pressable
+                    key={opt.value}
+                    style={[
+                      styles.priorityBtn,
+                      { borderColor: opt.color },
+                      selected && { backgroundColor: opt.color, borderWidth: 2 },
+                      !selected && { backgroundColor: "#fff", borderWidth: 2 },
+                    ]}
+                    onPress={() => {
+                      setPriority(opt.value);
+                      setPriorityRequired(false);
+                    }}
+                  >
+                    <Text
+                      style={[
+                        { color: opt.color, fontSize: 13, fontWeight: "600", textAlign: "center" },
+                        selected && { color: "#fff" },
+                      ]}
+                    >
+                      {opt.label}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+            {priorityRequired && (
+              <Text style={styles.errorMsg}>중요도를 선택해 주세요</Text>
+            )}
           </View>
         </View>
         <View style={styles.inputRow}>
@@ -287,7 +300,7 @@ export default function ScheduleAddModal({
             multiline
             value={memo}
             onChangeText={(text) => {
-            if (text.length <= 49) {  // 50자 미만(49자 이하) 제한
+              if (text.length <= 49) {
                 setMemo(text);
               }
             }}
@@ -311,24 +324,27 @@ export default function ScheduleAddModal({
       </View>
       {showTimePicker && (
         <Modal transparent animationType="slide">
-          <View style={{
+          <View
+            style={{
               ...styles.pickerContainer,
               backgroundColor: "rgba(0,0,0,0)",
-            }}>
+            }}
+          >
             <View style={styles.pickerHeader}>
-              <Pressable onPress={() => {
-               setShowTimePicker(false);
-               // wheel picker의 임시값 초기화
-               setTempHour("00");
-               setTempMinute("00");
-              }}>
+              <Pressable
+                onPress={() => {
+                  setShowTimePicker(false);
+                }}
+              >
                 <Text>취소</Text>
               </Pressable>
-              <Pressable onPress={() => {
-              setShowTimePicker(false);
-              setHour(tempHour);
-              setMinute(tempMinute);
-              }}>
+              <Pressable
+                onPress={() => {
+                  setShowTimePicker(false);
+                  setHour(tempHour);
+                  setMinute(tempMinute);
+                }}
+              >
                 <Text style={{ color: "#5B28EB" }}>확인</Text>
               </Pressable>
             </View>
@@ -440,7 +456,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     paddingBottom: 20,
     justifyContent: "center",
-    height: 270
+    height: 270,
   },
   errorMsg: {
     color: "#FF5A5A",
