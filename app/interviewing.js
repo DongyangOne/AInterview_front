@@ -26,7 +26,7 @@ function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-//  이전 파일 삭제 함수: 영구 저장소(documentDirectory)에서 모든 이전 영상 파일을 삭제합니다.
+//  이전 파일 삭제 함수: 영구 저장소(documentDirectory)에서 모든 이전 영상 파일을 삭제합니다.
 const deleteExistingVideo = async () => {
   const directoryUri = FileSystem.documentDirectory;
   try {
@@ -40,7 +40,7 @@ const deleteExistingVideo = async () => {
 
         if (fileInfo.exists && !fileInfo.isDirectory) {
           await FileSystem.deleteAsync(fileUri, { idempotent: true });
-          console.log(`[삭제됨] 이전 영상 파일: ${file}`);
+          console.log(` 이전 영상 파일: ${file}`);
         }
       }
     }
@@ -64,6 +64,10 @@ export default function Interviewing() {
   const isMounted = useRef(true);
 
   const hasAutoRecordingStarted = useRef(false);
+
+  //  일시 정지 시점의 상태를 저장하기 위한 Ref
+  const pausedProgress = useRef(null);
+  const pausedTimeLeft = useRef(null);
 
   // --- 1. 권한 요청 및 상태 관리 ---
   useEffect(() => {
@@ -91,12 +95,46 @@ export default function Interviewing() {
     }
   };
 
-  // --- 3. 타이머 및 진행 표시줄 시작/중단 로직 ---
+  // 타이머를 시작/재개하는 함수: 시작 시간을 인수로 받음
+  const startTimer = (initialTime = PROGRESS_DURATION) => {
+    clearInterval(animationRef.current?.timer);
+    setTimeLeft(initialTime); // 초기 시간을 설정
+    animationRef.current.timer = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(animationRef.current?.timer);
+          if (isRecording && cameraRef.current)
+            cameraRef.current.stopRecording();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+
+  // 진행 표시줄 애니메이션을 시작/재개하는 함수
+  const startProgress = (startValue = 0) => {
+    progressAnim.setValue(startValue); // 시작 값 (0 ~ 1)을 설정
+
+    // 남은 진행률을 기준으로 남은 애니메이션 지속 시간 계산
+    const remainingDuration = PROGRESS_DURATION * 1000 * (1 - startValue);
+
+    animationRef.current = Animated.timing(progressAnim, {
+      toValue: 1, // 목표 값은 항상 1 (끝)
+      duration: remainingDuration, // 남은 시간만 애니메이션
+      easing: Easing.linear,
+      useNativeDriver: false,
+    });
+    animationRef.current.start();
+  };
+
+  // --- 3. useEffect (초기 시작) ---
   useEffect(() => {
     if (isRecording) {
       isMounted.current = true;
-      startProgress();
-      startTimer();
+      // 초기 시작 시: 0부터 30초 전체 애니메이션 시작
+      startProgress(0);
+      startTimer(PROGRESS_DURATION);
     }
     return () => {
       isMounted.current = false;
@@ -105,7 +143,7 @@ export default function Interviewing() {
     };
   }, [isRecording]);
 
-  // --- 4. 실제 녹화 실행 및 완료 처리 (URI 전달 핵심) ---
+  // 실제 녹화 실행 및 완료 처리 (URI 전달 핵심)
   const recordVideo = () => {
     if (
       !cameraRef.current ||
@@ -121,9 +159,8 @@ export default function Interviewing() {
     console.log("녹화 시작됨");
 
     cameraRef.current
-      .recordAsync({ maxDuration: PROGRESS_DURATION })
+      .recordAsync({ maxDuration: PROGRESS_DURATION }) //녹화
       .then(async (newVideo) => {
-        // 🚨 async 추가
         if (!newVideo || !newVideo.uri) {
           console.error("녹화 에러: 녹화 데이터가 생성되지 않았습니다.");
 
@@ -135,10 +172,10 @@ export default function Interviewing() {
 
         let finalUri = newVideo.uri; // 기본값은 임시 URI
 
-        // 🚨 1. 이전 파일 모두 삭제
+        // 1. 이전 파일 모두 삭제
         await deleteExistingVideo();
 
-        // 🚨 2. 새 파일 복사 로직 (캐시 소멸 방지)
+        // 2. 새 파일 복사 로직 (캐시 소멸 방지)
         try {
           const newFileName = `interview_${Date.now()}.mp4`;
           const permanentPath = FileSystem.documentDirectory + newFileName;
@@ -148,12 +185,9 @@ export default function Interviewing() {
             to: permanentPath, // 영구 저장소 URI
           });
           finalUri = permanentPath;
-          console.log(
-            "[SUCCESS] 영상 파일이 영구 저장소로 즉시 복사됨:",
-            permanentPath
-          );
+          console.log("영상 파일이 영구 저장소로 즉시 복사됨:", permanentPath);
         } catch (error) {
-          console.error("[FATAL] 파일 즉시 복사 실패. 임시 URI 유지:", error);
+          console.error("파일 즉시 복사 실패. 임시 URI 유지:", error);
         }
 
         // URI와 feedbackId를 다음 화면으로 전달
@@ -161,7 +195,7 @@ export default function Interviewing() {
           router.replace({
             pathname: "/Interview_result",
             params: {
-              videoUri: finalUri, // ⬅복사된 새 (영구) URI 전달
+              videoUri: finalUri, // 복사된 새 (영구) URI 전달
             },
           });
         }
@@ -174,67 +208,87 @@ export default function Interviewing() {
       });
   };
 
-  const stopRecording = () => {
-    if (cameraRef.current) cameraRef.current.stopRecording();
-    console.log("녹화 중단됨");
-  };
-
-  // --- 5. 애니메이션 및 타이머 로직 ---
-  const startProgress = () => {
-    progressAnim.setValue(0);
-    animationRef.current = Animated.timing(progressAnim, {
-      toValue: 1,
-      duration: PROGRESS_DURATION * 1000,
-      easing: Easing.linear,
-      useNativeDriver: false,
-    });
-    animationRef.current.start();
-  };
-
-  const startTimer = () => {
+  // 강제 중단 후 조기 완료 처리 함수 (Result 페이지로 이동)
+  const handlePrematureCompletion = () => {
+    // 1. 타이머/애니메이션 정리
+    animationRef.current?.stop();
     clearInterval(animationRef.current?.timer);
-    setTimeLeft(PROGRESS_DURATION);
-    animationRef.current.timer = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev <= 1) {
-          clearInterval(animationRef.current?.timer);
-          if (isRecording) stopRecording();
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
+
+    // 2. 녹화 최종 중단 (stopRecording을 호출하면 recordVideo의 .then()이 실행됩니다.)
+    if (isRecording && cameraRef.current) {
+      cameraRef.current.stopRecording();
+      console.log("녹화 최종 완료 및 Result 페이지로 이동");
+    }
+
+    // 3. 모달 닫기
+    setModalVisible(false);
+    // 저장된 상태 초기화
+    pausedTimeLeft.current = null;
+    pausedProgress.current = null;
   };
 
+  // --- 5. 애니메이션 계산 ---
   const widthInterpolate = progressAnim.interpolate({
     inputRange: [0, 1],
     outputRange: [0, 348],
   });
 
-  // --- 6. 모달 관련 로직 ---
+  // onOpenModal: 녹화 일시 정지 및 상태 저장
   const onOpenModal = () => {
-    animationRef.current?.stop();
+    // 1. 타이머/애니메이션 중단 및 값 저장
     clearInterval(animationRef.current?.timer);
-    if (isRecording) stopRecording();
+    pausedTimeLeft.current = timeLeft; // 현재 남은 시간 저장
+
+    // 애니메이션을 멈추고 현재 값(0~1 사이)을 받아서 저장
+    animationRef.current?.stop();
+    progressAnim.stopAnimation((value) => {
+      pausedProgress.current = value;
+      console.log(
+        ` TimeLeft: ${
+          pausedTimeLeft.current
+        }s, ProgressValue: ${pausedProgress.current.toFixed(2)}`
+      );
+    });
+
+    // 2. 녹화 일시 정지
+    if (isRecording && cameraRef.current) {
+      cameraRef.current.toggleRecordingAsync();
+      console.log("녹화 일시 정지: 모달 확인을 위해 멈춤");
+    }
+
+    // 3. 모달 띄우기
     setModalVisible(true);
   };
 
+  //  onCancelModal: 모달 취소 시 녹화 및 타이머 재개
   const onCancelModal = () => {
     setModalVisible(false);
-    if (isRecording) {
-      startProgress();
-      startTimer();
+
+    // 1. 녹화 재개
+    if (isRecording && cameraRef.current) {
+      cameraRef.current.toggleRecordingAsync();
+      console.log("녹화 재개");
+    }
+
+    // 2. 저장된 상태를 사용하여 타이머/애니메이션 재개
+    if (pausedTimeLeft.current !== null && pausedProgress.current !== null) {
+      // 타이머 재개 (저장된 남은 시간부터)
+      startTimer(pausedTimeLeft.current);
+
+      // 애니메이션 재개 (저장된 진행 값부터)
+      startProgress(pausedProgress.current);
+
+      // 저장된 상태 초기화
+      pausedTimeLeft.current = null;
+      pausedProgress.current = null;
+    } else {
+      // 안전 장치: 재개할 상태가 없으면 처음부터 다시 시작
+      startProgress(0);
+      startTimer(PROGRESS_DURATION);
     }
   };
 
-  const onFinishAndGoHome = () => {
-    animationRef.current?.stop();
-    clearInterval(animationRef.current?.timer);
-    if (isRecording) stopRecording();
-    router.replace("/home");
-  };
-
-  // --- 7. 권한 체크 UI ---
+  // --- 7. 권한 체크 UI (변동 없음) ---
   if (!permission?.granted)
     return (
       <View style={styles.center}>
@@ -270,23 +324,18 @@ export default function Interviewing() {
         facing="front"
         onCameraReady={handleCameraReady}
       />
-      {isRecording && (
-        <View style={styles.statusBox}>
-          <Text style={styles.recordingText}>녹화 중...</Text>
-        </View>
-      )}
 
       <TouchableOpacity style={styles.closeButton} onPress={onOpenModal}>
         <Image
           source={require("../assets/icons/close.png")}
-          style={{ width: 15, height: 15 }}
+          style={{ top: 23, left: 20, width: 17, height: 17 }}
         />
       </TouchableOpacity>
 
       <CustomModal
         visible={modalVisible}
         onCancel={onCancelModal}
-        onConfirm={onFinishAndGoHome}
+        onConfirm={handlePrematureCompletion}
       />
 
       <Text style={styles.questionText}>자기소개 부탁드립니다.</Text>

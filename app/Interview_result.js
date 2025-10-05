@@ -21,7 +21,7 @@ const { width } = Dimensions.get("window");
 export default function Interview_result() {
   const router = useRouter();
 
-  const { videoUri } = useLocalSearchParams(); //  URI 수신
+  const { videoUri } = useLocalSearchParams(); //  URI 수신
 
   const [titleError, setTitleError] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
@@ -55,11 +55,45 @@ export default function Interview_result() {
     fetchUserId();
   }, []);
 
+  // 추가된 함수 영상 업로드 로직 (InterviewVideo.js에서 이동)
+  const uploadVideo = async (feedbackId, userId) => {
+    // InterviewVideo.js에서 가져온 파일 이름 생성 로직
+    const file1Name = `${feedbackId}_${Date.now()}.mp4`;
+
+    const formData = new FormData();
+    formData.append("userId", userId);
+    formData.append("feedbackId", feedbackId);
+
+    formData.append("file1", {
+      uri: videoUri,
+      type: "video/mp4",
+      name: file1Name,
+    });
+
+    console.log("영상 업로드 시작... feedbackId:", feedbackId);
+
+    //  파일 업로드 API 호출
+    const response = await axios.post(
+      `${process.env.EXPO_PUBLIC_API_URL}/file/upload`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+
+    console.log("영상 업로드 성공:", response.data);
+    return response.data; // 성공 응답 반환
+  };
+
+  // 수정된 함수 피드백 저장과 영상 업로드를 한 번에 처리
   const handleSave = () => {
     // 1. 유효성 검사
     if (!title.trim()) {
       setTitleError(true);
       setSaveError(null);
+
       return;
     }
 
@@ -77,7 +111,7 @@ export default function Interview_result() {
     }
 
     // 2. 데이터 준비
-    const data = {
+    const feedbackData = {
       userId: usersId,
       title,
       memo,
@@ -97,7 +131,7 @@ export default function Interview_result() {
 
     // 3. API 호출 및 다음 단계로 이동
     axios
-      .post(`${process.env.EXPO_PUBLIC_API_URL}/feedback`, data)
+      .post(`${process.env.EXPO_PUBLIC_API_URL}/feedback`, feedbackData)
       .then((response) => {
         const newFeedbackId = response.data?.data?.feedbackId;
 
@@ -107,18 +141,22 @@ export default function Interview_result() {
 
         console.log("피드백 생성 성공:", response.data);
 
-        router.push({
-          pathname: "/interview_image",
-          params: {
-            feedbackId: newFeedbackId,
-            videoUri: videoUri, // ⬅️ URI를 다음 화면으로 반드시 재전달!
-          },
-        });
+        //  피드백 저장 성공 후, 바로 영상 파일 업로드 시작
+        return uploadVideo(newFeedbackId, usersId);
+      })
+      .then(() => {
+        //  영상 업로드 성공 후, AI 분석 페이지로 이동
+        // router.replace를 사용해 뒤로가기를 방지하고 분석 페이지로 이동
+        router.replace("/interview_analysis");
       })
       .catch((error) => {
+        //  피드백 저장 또는 영상 업로드 중 오류 발생 시 처리
         const message = error.response?.data?.message || error.message;
-        console.error("Error saving feedback:", message);
-        setSaveError(`저장 실패: ${message}`);
+        console.error(
+          "전체 프로세스 실패:",
+          error.response?.data || error.message
+        );
+        setSaveError(`전송 실패: ${message}`);
       })
       .finally(() => {
         setLoading(false);
@@ -155,7 +193,7 @@ export default function Interview_result() {
 
       <Text style={styles.label}>면접 제목을 입력해주세요.</Text>
       <TextInput
-        style={[styles.input, titleError && styles.inputError]}
+        style={[styles.input]}
         value={title}
         onChangeText={(text) => {
           setTitle(text);
@@ -167,21 +205,6 @@ export default function Interview_result() {
         editable={!loading}
       />
 
-      {/* 🔴 제목 에러 메시지 표시 */}
-      {titleError && (
-        <Text style={styles.errorText}>면접 제목은 필수 항목입니다.</Text>
-      )}
-
-      {/* 🔴 API 저장 에러 메시지 표시 */}
-      {saveError && <Text style={styles.errorText}>{saveError}</Text>}
-
-      {/* 🔴 비디오 URI 상태 표시 (디버깅용) */}
-      {!videoUri && (
-        <Text style={styles.uriMissingText}>
-          🚨 영상 경로 누락: 이전 화면에서 URI가 전달되지 않았습니다.
-        </Text>
-      )}
-
       <TouchableOpacity
         onPress={handleSave}
         style={[styles.saveButton, loading && styles.saveButtonDisabled]}
@@ -190,7 +213,8 @@ export default function Interview_result() {
         {loading ? (
           <ActivityIndicator size="small" color="#fff" />
         ) : (
-          <Text style={styles.saveButtonText}>저장하고 다음 단계로</Text>
+          //  버튼 텍스트 변경: 저장 후 즉시 전송됨을 강조
+          <Text style={styles.saveButtonText}>저장하기</Text>
         )}
       </TouchableOpacity>
     </SafeAreaView>
