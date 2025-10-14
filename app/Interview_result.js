@@ -237,8 +237,8 @@ const styles = StyleSheet.create({
   closeImage: {
     top: 23,
     left: 20,
-    width: 17,
-    height: 17,
+    width: 30,
+    height: 30,
   },
   header: {
     fontSize: 28,

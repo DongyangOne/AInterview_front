@@ -328,7 +328,7 @@ export default function Interviewing() {
       <TouchableOpacity style={styles.closeButton} onPress={onOpenModal}>
         <Image
           source={require("../assets/icons/close.png")}
-          style={{ top: 23, left: 20, width: 17, height: 17 }}
+          style={{ top: 23, left: 20, width: 30, height: 30 }}
         />
       </TouchableOpacity>
 

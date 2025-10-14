@@ -39,8 +39,8 @@ export default function Interview() {
             style={{
               top: 23,
               left: 20,
-              width: 17,
-              height: 17,
+              width: 30,
+              height: 30,
             }}
             resizeMode="contain"
           />
