@@ -338,7 +338,10 @@ export default function Interviewing() {
         onConfirm={handlePrematureCompletion}
       />
 
-      <Text style={styles.questionText}>자기소개 부탁드립니다.</Text>
+      <Text style={styles.questionText}>
+        프로젝트 진행 경험 중 프론트 업무를 맡으면서{"\n"} 극복해 나간 경험에
+        대해 설명해주세요.
+      </Text>
 
       <View style={styles.progressSection}>
         <View style={styles.progressContainer}>
