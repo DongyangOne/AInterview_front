@@ -20,7 +20,7 @@ import * as FileSystem from "expo-file-system";
 import CustomModal from "../components/Modal/Close";
 
 const { width } = Dimensions.get("window");
-const PROGRESS_DURATION = 30; // 30초 녹화 제한 시간
+const PROGRESS_DURATION = 20; // 30초 녹화 제한 시간
 
 function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
