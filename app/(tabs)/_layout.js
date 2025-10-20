@@ -110,36 +110,35 @@ export default function TabLayout() {
                         ),
                     }}
                 />
-                <Tabs.Screen
-                    name="feedback"
-                    options={{
-                        headerShown: false,
-                        tabBarIcon: ({ color, focused }) => (
-                            <View style={{ alignItems: 'center' }}>
-                                <Image
-                                    source={require('../../assets/icons/feedback.png')}
-                                    style={{
-                                        marginTop: 10,
-                                        width: 18,
-                                        height: 20,
-                                        marginLeft: '10%',
-                                        tintColor: color,
-                                    }}
-                                    resizeMode="contain"
-                                />
-                                <Text
-                                    style={{
-                                        marginLeft: '10%',
-                                        fontSize: 10,
-                                        width: 30,
-                                        color: focused ? color : '#999',
-                                    }}
-                                >
-                                    피드백
-                                </Text>
-                            </View>
-                        ),
-                    }}
+                <Text
+                  style={{
+                    marginLeft: "10.19%",
+                    fontSize: 10,
+                    color: focused ? color : "#999",
+                  }}
+                >
+                  홈
+                </Text>
+              </View>
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="feedback"
+          options={{
+            headerShown: false,
+            tabBarIcon: ({ color, focused }) => (
+              <View style={{ alignItems: "center" }}>
+                <Image
+                  source={require("../../assets/icons/feedback.png")}
+                  style={{
+                    marginTop: 10,
+                    width: 18,
+                    height: 20,
+                    marginRight: "5%",
+                    tintColor: color,
+                  }}
+                  resizeMode="contain"
                 />
                 <Tabs.Screen
                     name="interview"
