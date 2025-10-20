@@ -106,7 +106,7 @@ function MainFeedback() {
     { label: "표정", percent: scores.facial },
     { label: "위기대처능력", percent: scores.risk_response },
     { label: "말투", percent: scores.tone },
-    { label: "업무이해도", percent: scores.understanding },
+    { label: "침착함", percent: scores.understanding },
   ];
 
   // 상위 3개
