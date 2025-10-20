@@ -128,7 +128,7 @@ export default function TabLayout() {
                     marginTop: 10,
                     width: 18,
                     height: 20,
-                    marginLeft: "10%",
+                    marginRight: "5%",
                     tintColor: color,
                   }}
                   resizeMode="contain"
