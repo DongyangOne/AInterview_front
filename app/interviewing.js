@@ -387,7 +387,8 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontSize: 20,
     fontWeight: "600",
-    color: "#fff",
+    color: "#000",
+    backgroundColor: "#fff",
   },
   progressSection: {
     alignItems: "center",
