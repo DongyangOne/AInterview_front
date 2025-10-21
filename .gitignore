@@ -83,11 +83,9 @@ web_modules/
 .yarn-integrity
 
 # dotenv environment variable files
-.env
 .env.development.local
 .env.test.local
 .env.production.local
-.env.local
 
 # parcel-bundler cache (https://parceljs.org/)
 .cache
@@ -261,3 +259,4 @@ gradle-app.setting
 
 expo-env.d.ts
 # @end expo-cli
+config.bat

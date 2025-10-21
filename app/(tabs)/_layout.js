@@ -152,10 +152,14 @@ export default function TabLayout() {
           options={{
             headerShown: false,
             title: "",
+            // 해당 탭이 활성화될 경우, 탭 바 숨기기
             tabBarStyle: {
               display: "none",
             },
+            // 아이콘/라벨 렌더링 제거
             tabBarIcon: () => null,
+            // ⭐️ 핵심 수정: 터치 가능한 버튼 대신 단순 View 렌더링 (터치 비활성화 + 공간 확보)
+            tabBarButton: (props) => <View {...props} style={props.style} />,
           }}
         />
         <Tabs.Screen
