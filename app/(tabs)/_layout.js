@@ -128,7 +128,7 @@ export default function TabLayout() {
                     marginTop: 10,
                     width: 18,
                     height: 20,
-                    marginLeft: "10%",
+                    marginRight: "5%",
                     tintColor: color,
                   }}
                   resizeMode="contain"
@@ -327,7 +327,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     left: 0,
     right: 0,
-    top: height * 0.525,
+    top: height * 0.625,
     alignItems: "center",
     zIndex: 12,
   },
